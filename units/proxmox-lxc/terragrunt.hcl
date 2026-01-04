@@ -2,6 +2,10 @@ include "root" {
   path = find_in_parent_folders("root.hcl")
 }
 
+include "provider_proxmox" {
+  path = find_in_parent_folders("provider-config.hcl")
+}
+
 terraform {
   source = "git::git@github.com:sflab-io/terragrunt-infrastructure-catalog-homelab.git//modules/proxmox-lxc?ref=${values.version}"
 }
