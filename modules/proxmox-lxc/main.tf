@@ -23,7 +23,8 @@ resource "proxmox_virtual_environment_container" "this" {
     hostname = data.homelab_naming.this.name
 
     dynamic "dns" {
-      for_each = var.network_config.type == "static" && length(var.network_config.dns_servers) > 0 ? [1] : []
+      # for_each = var.network_config.type == "static" && length(var.network_config.dns_servers) > 0 ? [1] : []
+      for_each = length(var.network_config.dns_servers) > 0 ? [1] : []
       content {
         domain  = var.network_config.domain
         servers = var.network_config.dns_servers
