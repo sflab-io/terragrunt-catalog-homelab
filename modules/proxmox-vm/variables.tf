@@ -1,10 +1,10 @@
 variable "env" {
-  description = "The environment this VM belongs to (e.g., dev, staging, prod)."
+  description = "The environment this VM belongs to (e.g., develop, staging, production)."
   type        = string
 }
 
 variable "app" {
-  description = "The application this VM belongs to (e.g., web, db, api)."
+  description = "The name of the application this VM belongs to (e.g., web, db, api)."
   type        = string
 }
 

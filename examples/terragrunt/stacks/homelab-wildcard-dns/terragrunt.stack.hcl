@@ -3,7 +3,6 @@ locals {
   pool_id = "example-stack-pool"
   env     = "dev"
   app     = "wc-test"
-  password = "SecurePassword123!"
   zone    = "home.sflab.io."
 }
 
@@ -15,7 +14,6 @@ unit "proxmox_lxc" {
     version  = local.version
     env      = local.env
     app      = local.app
-    password = local.password
     pool_id  = local.pool_id
   }
 }

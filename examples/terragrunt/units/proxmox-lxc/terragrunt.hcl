@@ -29,18 +29,6 @@ EOF
 
 terraform {
   source = "../../../.././/modules/proxmox-lxc"
-
-  extra_arguments "bucket" {
-    commands = [
-      "apply",
-      "plan",
-      "destroy",
-    ]
-
-    arguments = [
-      "-var", "password=password",
-    ]
-  }
 }
 
 dependency "proxmox_pool" {
@@ -57,6 +45,15 @@ inputs = {
   app = "terragrunt-lxc"
 
   ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
+
+  network_config = {
+    type        = "static"
+    ip_address  = "192.168.1.99"
+    cidr        = 24
+    gateway     = "192.168.1.1"
+    dns_servers = ["192.168.1.13", "192.168.1.14"]
+    domain      = "home.sflab.io"
+  }
 
   # Derived inputs
   pool_id = dependency.proxmox_pool.outputs.pool_id

@@ -6,8 +6,11 @@ locals {
 
   # container configuration
   env      = "dev"
-  app      = "example"
-  password = "SecurePassword123!"
+  app      = "example-lxc"
+
+  # Optional: Customize VM resources
+  # memory = 4096  # Memory in MB (default: 2048)
+  # cores  = 4     # CPU cores (default: 2)
 
   zone = "home.sflab.io."
 
@@ -25,11 +28,21 @@ unit "proxmox_lxc_1" {
 
     env      = local.env
     app      = "${local.app}-1"
-    password = local.password
     pool_id  = local.pool_id
 
     # SSH key path
     ssh_public_key_path = local.ssh_public_key_path
+
+    # Optional: Customize VM resources
+    # memory = try(local.memory, 2048)
+    # cores  = try(local.cores, 2)
+    network_config = {
+      type        = "static"
+      ip_address  = "192.168.1.99"
+      cidr        = 24
+      gateway     = "192.168.1.1"
+      # dns_servers = ["8.8.8.8", "8.8.4.4"]  # Optional
+    }
   }
 }
 
@@ -43,11 +56,21 @@ unit "proxmox_lxc_2" {
 
     env      = local.env
     app      = "${local.app}-2"
-    password = local.password
     pool_id  = local.pool_id
 
     # SSH key path
     ssh_public_key_path = local.ssh_public_key_path
+
+    # Optional: Customize VM resources
+    # memory = try(local.memory, 2048)
+    # cores  = try(local.cores, 2)
+    network_config = {
+      type        = "static"
+      ip_address  = "192.168.1.100"
+      cidr        = 24
+      gateway     = "192.168.1.1"
+      # dns_servers = ["8.8.8.8", "8.8.4.4"]  # Optional
+    }
   }
 }
 

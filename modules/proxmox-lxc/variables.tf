@@ -1,17 +1,23 @@
 variable "env" {
-  description = "The environment this compute resource belongs to (e.g., staging, prod)."
+  description = "The environment this LXC container belongs to (e.g., develop, staging, production)."
   type        = string
 }
 
 variable "app" {
-  description = "The name of the application this compute resource belongs to (e.g., web, db)."
+  description = "The name of the application this LXC container belongs to (e.g., web, db, api)."
   type        = string
 }
 
-variable "password" {
-  description = "The password for the root user of the LXC container."
-  type        = string
-  sensitive   = true
+variable "memory" {
+  description = "The amount of memory in MB allocated to the virtual machine."
+  type        = number
+  default     = 2048
+}
+
+variable "cores" {
+  description = "The number of CPU cores allocated to the virtual machine."
+  type        = number
+  default     = 2
 }
 
 variable "pool_id" {
@@ -20,13 +26,70 @@ variable "pool_id" {
   default     = ""
 }
 
-variable "username" {
-  description = "Username for SSH access."
-  type        = string
-  default     = "admin"
+variable "network_config" {
+  description = <<-EOT
+    Network configuration for the virtual machine. Supports both DHCP (default) and static IP configuration.
+
+    For DHCP (default):
+      network_config = {
+        type = "dhcp"
+      }
+
+    For static IP:
+      network_config = {
+        type        = "static"
+        ip_address  = "192.168.1.100"
+        cidr        = 24
+        gateway     = "192.168.1.1"
+        dns_servers = ["8.8.8.8", "8.8.4.4"] # Optional
+        domain      = "example.com"          # Optional
+      }
+  EOT
+  type = object({
+    type        = string
+    ip_address  = optional(string)
+    cidr        = optional(number)
+    gateway     = optional(string)
+    dns_servers = optional(list(string), [])
+    domain      = optional(string, "home.sflab.io")
+  })
+  default = {
+    type        = "dhcp"
+    ip_address  = null
+    cidr        = null
+    gateway     = null
+    dns_servers = []
+    domain      = null
+  }
+
+  validation {
+    condition     = contains(["dhcp", "static"], var.network_config.type)
+    error_message = "network_config.type must be either 'dhcp' or 'static'."
+  }
+
+  validation {
+    condition = var.network_config.type == "dhcp" || (
+      var.network_config.ip_address != null &&
+      var.network_config.cidr != null &&
+      var.network_config.gateway != null
+    )
+    error_message = "When network_config.type is 'static', ip_address, cidr, and gateway must be provided."
+  }
 }
+
+# variable "username" {
+#   description = "Username for SSH access."
+#   type        = string
+#   default     = "root"
+# }
 
 variable "ssh_public_key_path" {
   description = "Path to the SSH public key file for SSH access."
   type        = string
+}
+
+variable "network_bridge" {
+  description = "The network bridge to connect the VM to."
+  type        = string
+  default     = "vmbr0"
 }

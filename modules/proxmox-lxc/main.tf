@@ -11,24 +11,40 @@ resource "proxmox_virtual_environment_container" "this" {
   node_name    = "pve1"
   unprivileged = true
 
+  cpu {
+    cores = var.cores
+  }
+
+  memory {
+    dedicated = var.memory
+  }
+
   initialization {
     hostname = data.homelab_naming.this.name
 
+    dynamic "dns" {
+      for_each = var.network_config.type == "static" && length(var.network_config.dns_servers) > 0 ? [1] : []
+      content {
+        domain  = var.network_config.domain
+        servers = var.network_config.dns_servers
+      }
+    }
+
     ip_config {
       ipv4 {
-        address = "dhcp"
+        address = var.network_config.type == "dhcp" ? "dhcp" : "${var.network_config.ip_address}/${var.network_config.cidr}"
+        gateway = var.network_config.type == "static" ? var.network_config.gateway : null
       }
     }
 
     user_account {
-      password = var.password
-      keys     = [trimspace(data.local_file.ssh_public_key.content)]
+      keys = [trimspace(data.local_file.ssh_public_key.content)]
     }
   }
 
   network_interface {
     name   = "veth0"
-    bridge = "vmbr0"
+    bridge = var.network_bridge
   }
 
   disk {

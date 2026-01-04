@@ -46,12 +46,6 @@ inputs = {
 
   ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
 
-  # Optional inputs
-  # memory = 4096 # Customize memory allocation (default: 2048MB)
-  # cores  = 4    # Customize CPU cores (default: 2)
-
-  # Derived inputs
-  pool_id = dependency.proxmox_pool.outputs.pool_id
   network_config = {
     type        = "static"
     ip_address  = "192.168.1.33"
@@ -59,4 +53,11 @@ inputs = {
     gateway     = "192.168.1.1"
     # dns_servers = ["8.8.8.8", "8.8.4.4"]  # Optional
   }
+
+  # Optional inputs
+  # memory = 4096 # Customize memory allocation (default: 2048MB)
+  # cores  = 4    # Customize CPU cores (default: 2)
+
+  # Derived inputs
+  pool_id = dependency.proxmox_pool.outputs.pool_id
 }

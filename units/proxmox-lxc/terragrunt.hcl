@@ -14,9 +14,14 @@ inputs = {
   # Required inputs
   env                 = values.env
   app                 = values.app
-  password            = values.password
   ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
 
   # Optional inputs
+  memory  = try(values.memory, 2048)
+  cores   = try(values.cores, 2)
   pool_id = try(values.pool_id, "")
+
+  network_config = try(values.network_config, {
+    type = "dhcp"
+  })
 }

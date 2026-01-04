@@ -33,12 +33,23 @@ variable "pool_id" {
   default     = ""
 }
 
+variable "network_config" {
+  description = "The network configuration for the virtual machine."
+  type = object({
+    type        = string
+    ip_address  = optional(string)
+    cidr        = optional(number)
+    gateway     = optional(string)
+    dns_servers = optional(list(string), [])
+  })
+}
+
 module "proxmox_lxc" {
   source = "../../../modules/proxmox-lxc"
 
   env                 = var.env
   app                 = var.app
-  password            = "StrongPassword!"
   pool_id             = var.pool_id
+  network_config      = var.network_config
   ssh_public_key_path = "${path.module}/../../../keys/admin_id_ecdsa.pub"
 }

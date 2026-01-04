@@ -6,7 +6,7 @@ locals {
 
   # VM naming configuration
   env = "dev"
-  app = "stack-vm"
+  app = "example-vm"
 
   # Optional: Customize VM resources
   # memory = 4096  # Memory in MB (default: 2048)
