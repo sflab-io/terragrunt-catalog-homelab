@@ -124,9 +124,9 @@ Units and stacks use Git URLs in their `source` field because they are designed 
 **DNS Configuration** (`examples/terragrunt/dns-config.hcl`):
 
 - Centralized DNS server configuration for all DNS units
-- Server: `192.168.1.13:5353`
+- Server: `192.168.1.13:53`
 - TSIG key name: `ddnskey.`
-- Algorithm: `hmac-sha512`
+- Algorithm: `hmac-sha256`
 - Used by DNS units to configure the hashicorp/dns provider
 
 ## Common Commands
@@ -257,8 +257,8 @@ export TF_VAR_dns_key_secret="your-tsig-key-secret"
 terragrunt stack generate
 terragrunt stack run apply
 
-# Verify DNS resolution (note: DNS server runs on port 5353)
-dig example-stack-vm.home.sflab.io @192.168.1.13 -p 5353
+# Verify DNS resolution
+dig example-stack-vm.home.sflab.io @192.168.1.13
 ```
 
 ### Development Commands
@@ -446,9 +446,9 @@ cd examples/terragrunt/stacks/homelab-proxmox-container
 terragrunt stack generate
 terragrunt stack run apply
 
-# Verify DNS resolution (note: DNS server runs on port 5353)
+# Verify DNS resolution
 # Example: If env=dev and app=example, the FQDN will be dev-example.home.sflab.io
-dig dev-example.home.sflab.io @192.168.1.13 -p 5353
+dig dev-example.home.sflab.io @192.168.1.13
 ```
 
 **Deploying Multiple VMs or Containers:**
@@ -752,9 +752,9 @@ Current modules support:
   - DNS record name: Automatically generated as `<env>-<app>` via naming module (or `*.<env>-<app>` for wildcard records)
   - Outputs: `fqdn` (normal record FQDN, null if not created), `fqdn_wildcard` (wildcard record FQDN, null if not created), `addresses` (IP addresses)
   - DNS Server Configuration (in units):
-    - Server: `192.168.1.13:5353` (Port 5353, not default 53!)
+    - Server: `192.168.1.13:53` (Port 53, default DNS port)
     - TSIG Key: `ddnskey` (fully-qualified with trailing dot)
-    - Algorithm: `hmac-sha512`
+    - Algorithm: `hmac-sha256`
     - Authentication: Uses TSIG (Transaction Signature) for secure dynamic DNS updates
     - Secret: Passed via `TF_VAR_dns_key_secret` environment variable
 

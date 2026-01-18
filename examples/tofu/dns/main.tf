@@ -11,9 +11,9 @@ terraform {
 provider "dns" {
   update {
     server        = "192.168.1.13"
-    port          = 5353
+    port          = 53
     key_name      = "ddnskey."
-    key_algorithm = "hmac-sha512"
+    key_algorithm = "hmac-sha256"
     key_secret    = var.dns_key_secret
   }
 }

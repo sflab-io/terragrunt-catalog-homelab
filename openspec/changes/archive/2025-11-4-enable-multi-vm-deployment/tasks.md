@@ -215,9 +215,9 @@ Tasks are ordered to enable incremental progress with testable deliverables at e
          zone          = "home.sflab.io."
          name          = unit.value.vm_name
          dns_server    = "192.168.1.13"
-         dns_port      = 5353
+         dns_port      = 53
          key_name      = "ddnskey."
-         key_algorithm = "hmac-sha512"
+         key_algorithm = "hmac-sha256"
          vm_unit_path  = "../proxmox-vm"
          vm_identifier = unit.key
        }
