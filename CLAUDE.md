@@ -124,7 +124,8 @@ Units and stacks use Git URLs in their `source` field because they are designed 
 **DNS Configuration** (`examples/terragrunt/dns-config.hcl`):
 
 - Centralized DNS server configuration for all DNS units
-- Server: `192.168.1.13:53`
+- Server: `192.168.1.13`
+- Port: `53` (default DNS port)
 - TSIG key name: `ddnskey.`
 - Algorithm: `hmac-sha256`
 - Used by DNS units to configure the hashicorp/dns provider
@@ -157,6 +158,12 @@ mise run minio:list
 
 # Setup Proxmox resources (creates role and user)
 mise run proxmox:setup
+
+# Configure network settings
+mise run network:configure
+
+# Print network configuration
+mise run network:status
 
 # Edit SOPS-encrypted secrets
 mise run secrets:edit
@@ -257,7 +264,7 @@ export TF_VAR_dns_key_secret="your-tsig-key-secret"
 terragrunt stack generate
 terragrunt stack run apply
 
-# Verify DNS resolution
+# Verify DNS resolution (note: DNS server runs on port 53)
 dig example-stack-vm.home.sflab.io @192.168.1.13
 ```
 
@@ -446,7 +453,7 @@ cd examples/terragrunt/stacks/homelab-proxmox-container
 terragrunt stack generate
 terragrunt stack run apply
 
-# Verify DNS resolution
+# Verify DNS resolution (note: DNS server runs on port 53)
 # Example: If env=dev and app=example, the FQDN will be dev-example.home.sflab.io
 dig dev-example.home.sflab.io @192.168.1.13
 ```
@@ -752,8 +759,9 @@ Current modules support:
   - DNS record name: Automatically generated as `<env>-<app>` via naming module (or `*.<env>-<app>` for wildcard records)
   - Outputs: `fqdn` (normal record FQDN, null if not created), `fqdn_wildcard` (wildcard record FQDN, null if not created), `addresses` (IP addresses)
   - DNS Server Configuration (in units):
-    - Server: `192.168.1.13:53` (Port 53, default DNS port)
-    - TSIG Key: `ddnskey` (fully-qualified with trailing dot)
+    - Server: `192.168.1.13`
+    - Port: `53` (default DNS port)
+    - TSIG Key: `ddnskey.` (fully-qualified with trailing dot)
     - Algorithm: `hmac-sha256`
     - Authentication: Uses TSIG (Transaction Signature) for secure dynamic DNS updates
     - Secret: Passed via `TF_VAR_dns_key_secret` environment variable
