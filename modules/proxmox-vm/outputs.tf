@@ -5,7 +5,7 @@ output "ipv4" {
 
 output "disk" {
   description = "The size of the disk allocated to the virtual machine in GB."
-  value       = proxmox_virtual_environment_vm.this
+  value       = proxmox_virtual_environment_vm.this.disk[0].size
 }
 
 output "vm_id" {
