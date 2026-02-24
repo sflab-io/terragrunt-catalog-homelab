@@ -3,6 +3,11 @@ output "ipv4" {
   value       = try(proxmox_virtual_environment_vm.this.ipv4_addresses[1][0], null)
 }
 
+output "disk" {
+  description = "The size of the disk allocated to the virtual machine in GB."
+  value       = proxmox_virtual_environment_vm.this
+}
+
 output "vm_id" {
   description = "The Proxmox VM ID."
   value       = proxmox_virtual_environment_vm.this.id

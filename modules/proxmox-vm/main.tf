@@ -37,7 +37,8 @@ resource "proxmox_virtual_environment_vm" "this" {
   }
 
   disk {
-    size = var.disk_size
+    interface = "scsi0"
+    size      = var.disk_size
   }
 
   initialization {
