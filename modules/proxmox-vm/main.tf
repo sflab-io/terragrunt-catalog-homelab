@@ -36,6 +36,10 @@ resource "proxmox_virtual_environment_vm" "this" {
     bridge = var.network_bridge
   }
 
+  disk {
+    size = var.disk_size
+  }
+
   initialization {
     dynamic "dns" {
       for_each = var.network_config.type == "static" && length(var.network_config.dns_servers) > 0 ? [1] : []

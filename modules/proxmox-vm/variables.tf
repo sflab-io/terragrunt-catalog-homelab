@@ -77,6 +77,12 @@ variable "network_config" {
   }
 }
 
+variable "disk_size" {
+  description = "The size of the disk allocated to the virtual machine in GB."
+  type        = number
+  default     = 8
+}
+
 variable "username" {
   description = "Username for SSH access."
   type        = string
