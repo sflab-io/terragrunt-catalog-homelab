@@ -4,8 +4,9 @@ locals {
   env    = values.env
   app    = values.app
 
-  memory = try(values.memory, 2048)
-  cores  = try(values.cores, 2)
+  memory    = try(values.memory, 2048)
+  cores     = try(values.cores, 2)
+  disk_size = try(values.disk_size, 8)
 
   # SSH public key path for SSH access
   ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
