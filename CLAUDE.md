@@ -104,7 +104,7 @@ Units and stacks use Git URLs in their `source` field because they are designed 
 **Root Configuration** (`examples/terragrunt/root.hcl`):
 
 - Defines shared locals for S3 backend and provider configuration
-- Reads from `backend-config.hcl`, `provider-proxmox-config.hcl`, and `dns-config.hcl`
+- Reads from `backend-config.hcl`, `provider-proxmox-config.hcl`, and `provider-dns-config.hcl`
 - Generates `backend.tf` and `provider.tf` for all child modules
 - All units must include this via `include "root"`
 
@@ -121,7 +121,7 @@ Units and stacks use Git URLs in their `source` field because they are designed 
 - Uses `PROXMOX_VE_API_TOKEN` environment variable for authentication
 - SSH agent support enabled for advanced operations
 
-**DNS Configuration** (`examples/terragrunt/dns-config.hcl`):
+**DNS Configuration** (`examples/terragrunt/provider-dns-config.hcl`):
 
 - Centralized DNS server configuration for all DNS units
 - Server: `192.168.1.13`

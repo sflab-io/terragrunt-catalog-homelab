@@ -29,4 +29,6 @@ inputs = {
   # zone = values.zone
 
   # Optional inputs
+  netbox_region_name = values.netbox_region_name
+  netbox_region_description = values.netbox_region_description
 }

@@ -1,22 +1,8 @@
 locals {
   version = "feat/netbox"
 
-  # # pool configuration
-  # pool_id = "example-stack-pool"
-
-  # # VM naming configuration
-  # env = "dev"
-  # app = "example-vm"
-
-  # # Optional: Customize VM resources
-  # # memory = 4096  # Memory in MB (default: 2048)
-  # # cores  = 4     # CPU cores (default: 2)
-
-  # # DNS configuration
-  # zone = "home.sflab.io."
-
-  # # SSH key configuration - use absolute path for stack deployments
-  # ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
+  netbox_region_name = "sflab Homelab Region"
+  netbox_region_description = "Region for sflab homelab infrastructure"
 }
 
 unit "netbox" {
@@ -26,6 +12,9 @@ unit "netbox" {
 
   values = {
     version = local.version
+
+    netbox_region_name = local.netbox_region_name
+    netbox_region_description = local.netbox_region_description
 
     # env     = local.env
     # app     = "${local.app}-1"

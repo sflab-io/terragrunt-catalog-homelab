@@ -3,7 +3,7 @@ include "root" {
 }
 
 locals {
-  dns_config = read_terragrunt_config(find_in_parent_folders("dns-config.hcl"))
+  dns_config = read_terragrunt_config(find_in_parent_folders("provider-dns-config.hcl"))
 
   dns_server    = "${local.dns_config.locals.dns_server}"
   dns_port      = "${local.dns_config.locals.dns_port}"

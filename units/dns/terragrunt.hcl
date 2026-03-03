@@ -3,7 +3,7 @@ include "root" {
 }
 
 include "dns-config" {
-  path = find_in_parent_folders("dns-config.hcl")
+  path = find_in_parent_folders("provider-dns-config.hcl")
   expose = true
 }
 

@@ -640,7 +640,7 @@ endpoint = "proxmox.home.sflab.io:8006"
 
 Centralized DNS server configuration.
 
-Configuration file: `examples/terragrunt/dns-config.hcl`
+Configuration file: `examples/terragrunt/provider-dns-config.hcl`
 
 ```hcl
 server    = "192.168.1.13"
