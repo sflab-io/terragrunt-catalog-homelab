@@ -630,7 +630,7 @@ bucket   = "homelab-tfstates"
 
 Uses the bpg/proxmox provider (>= 0.69.0).
 
-Configuration file: `examples/terragrunt/provider-config.hcl`
+Configuration file: `examples/terragrunt/provider-proxmox-config.hcl`
 
 ```hcl
 endpoint = "proxmox.home.sflab.io:8006"

@@ -3,7 +3,7 @@ include "root" {
 }
 
 locals {
-  provider_config = read_terragrunt_config(find_in_parent_folders("provider-config.hcl"))
+  provider_config = read_terragrunt_config(find_in_parent_folders("provider-proxmox-config.hcl"))
 
   proxmox_endpoint = "https://${local.provider_config.locals.proxmox_host}:${local.provider_config.locals.proxmox_port}/"
   proxmox_insecure = local.provider_config.locals.proxmox_insecure
