@@ -47,3 +47,13 @@ variable "cluster_types" {
   type        = list(string)
   default     = []
 }
+
+variable "clusters" {
+  description = "A list of clusters to create in NetBox, where each cluster is an object with attributes (e.g., name, cluster_type)."
+  type = list(object({
+    name             = string
+    cluster_type     = string
+    cluster_group_id = optional(number)
+  }))
+  default = []
+}
