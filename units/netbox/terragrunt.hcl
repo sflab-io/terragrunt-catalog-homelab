@@ -33,6 +33,11 @@ inputs = {
   site_longitude = values.site_longitude
   timezone = values.timezone
 
+  device_roles = values.device_roles
+
+  cluster_types = values.cluster_types
+  clusters = values.clusters
+
   # Optional inputs
   # ...
 }

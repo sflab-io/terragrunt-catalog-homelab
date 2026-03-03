@@ -13,13 +13,17 @@ device_roles = {
         color_hex = "8a2be2"
         vm_role   = false
     }
+    "Server" = {
+        color_hex = "ffff00"
+        vm_role   = true
+    }
     "Router" = {
         color_hex = "00ffff"
         vm_role   = false
     }
-    "Server" = {
-        color_hex = "ffff00"
-        vm_role   = true
+    "Firewall" = {
+        color_hex = "ff00ff"
+        vm_role   = false
     }
     "Switch" = {
         color_hex = "00ff00"
@@ -32,3 +36,15 @@ device_roles = {
 }
 
 cluster_types = ["Kubernetes", "Proxmox"]
+
+clusters = [
+  {
+    name         = "k8s-cluster-01"
+    cluster_type = "Kubernetes"
+  },
+  {
+    name         = "proxmox-cluster-01"
+    cluster_type = "Proxmox"
+    # cluster_group_id = 1
+  }
+]
