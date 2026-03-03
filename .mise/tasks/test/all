@@ -16,27 +16,30 @@ if [ "$usage_all" != "true" ] && [ "$usage_tofu" != "true" ] && [ "$usage_units"
 fi
 
 TOFUS=(
-  naming
-  proxmox-pool
-  proxmox-vm
-  proxmox-lxc
-  dns
+  # naming
+  # proxmox-pool
+  # proxmox-vm
+  # proxmox-lxc
+  # dns
+  netbox
 )
 
 UNITS=(
-  naming
-  proxmox-pool
-  proxmox-vm
-  proxmox-lxc
-  dns
-  dns-wildcard
+  # naming
+  # proxmox-pool
+  # proxmox-vm
+  # proxmox-lxc
+  # dns
+  # dns-wildcard
+  netbox
 )
 
 STACKS=(
-  homelab-proxmox-pool
-  homelab-proxmox-container
-  homelab-proxmox-vm
-  homelab-wildcard-dns
+  # homelab-proxmox-pool
+  # homelab-proxmox-container
+  # homelab-proxmox-vm
+  # homelab-wildcard-dns
+  homelab-netbox
 )
 
 mise run terragrunt:cleanup

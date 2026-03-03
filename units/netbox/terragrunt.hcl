@@ -12,9 +12,9 @@ terraform {
 
 inputs = {
   # Required inputs
-  env = values.env
-  app = values.app
-  zone = values.zone
+  # env = values.env
+  # app = values.app
+  # zone = values.zone
 
   # Optional inputs
 }

@@ -28,7 +28,7 @@ variable "cluster_types" {
   default     = []
 }
 
-variable "timezone" {
+variable "netbox_timezone" {
   description = "The timezone to use for the site."
   type        = string
   default     = "Europe/Berlin"
@@ -82,7 +82,7 @@ resource "netbox_site" "this" {
   latitude  = var.netbox_site_latitude
   longitude = var.netbox_site_longitude
   status    = "active"
-  timezone  = var.timezone
+  timezone  = var.netbox_timezone
   region_id = netbox_region.this.id
 }
 

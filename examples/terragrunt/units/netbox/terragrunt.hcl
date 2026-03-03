@@ -3,10 +3,10 @@ include "root" {
 }
 
 locals {
-  netbox_config    = read_terragrunt_config(find_in_parent_folders("netbox-config.hcl"))
+  netbox_config    = read_terragrunt_config(find_in_parent_folders("provider-netbox-config.hcl"))
 
-  server_url         = local.netbox_config.locals.server_url
-  skip_version_check = local.netbox_config.locals.skip_version_check
+  server_url         = local.netbox_config.locals.netbox_server_url
+  skip_version_check = local.netbox_config.locals.netbox_skip_version_check
 }
 
 # Generate Netbox provider block
@@ -24,14 +24,6 @@ EOF
 terraform {
   source = "../../../.././/modules/netbox"
 }
-
-# dependency "proxmox_pool" {
-#   config_path = "../proxmox-pool"
-
-#   mock_outputs = {
-#     pool_id = "mock-pool"
-#   }
-# }
 
 # inputs = {
 #   # Required inputs
