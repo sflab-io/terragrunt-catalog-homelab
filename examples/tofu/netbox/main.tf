@@ -13,6 +13,41 @@ provider "netbox" {
   skip_version_check = true
 }
 
+variable "region_name" {
+  description = "The name of the NetBox region."
+  type        = string
+}
+
+variable "region_description" {
+  description = "The description of the NetBox region."
+  type        = string
+}
+
+variable "site_name" {
+  description = "The name of the NetBox site."
+  type        = string
+}
+
+variable "site_facility" {
+  description = "The facility of the NetBox site."
+  type        = string
+}
+
+variable "site_latitude" {
+  description = "The latitude of the NetBox site."
+  type        = string
+}
+
+variable "site_longitude" {
+  description = "The longitude of the NetBox site."
+  type        = string
+}
+
+variable "timezone" {
+  description = "The timezone to use for the site."
+  type        = string
+}
+
 variable "device_roles" {
   description = "A map of device roles to create in NetBox, where the key is the role name and the value is an object with role attributes (e.g., color_hex)."
   type = map(object({
@@ -28,56 +63,13 @@ variable "cluster_types" {
   default     = []
 }
 
-variable "timezone" {
-  description = "The timezone to use for the site."
-  type        = string
-  default     = "Europe/Berlin"
-}
-
-variable "site_name" {
-  description = "The name of the NetBox site."
-  type        = string
-  default     = "Home Site"
-}
-
-variable "site_facility" {
-  description = "The facility of the NetBox site."
-  type        = string
-  default     = "Data center"
-}
-
-variable "site_latitude" {
-  description = "The latitude of the NetBox site."
-  type        = string
-  default     = "48.7844"
-}
-
-variable "site_longitude" {
-  description = "The longitude of the NetBox site."
-  type        = string
-  default     = "9.2078"
-}
-
-variable "region_name" {
-  description = "The name of the NetBox region."
-  type        = string
-  default     = "Home Region"
-}
-
-variable "region_description" {
-  description = "The description of the NetBox region."
-  type        = string
-  default     = "This is the home region for my lab environment."
-}
-
 resource "netbox_region" "this" {
   name        = var.region_name
   description = var.region_description
 }
 
 resource "netbox_site" "this" {
-  name = var.site_name
-  # asn       = 1337
+  name      = var.site_name
   facility  = var.site_facility
   latitude  = var.site_latitude
   longitude = var.site_longitude

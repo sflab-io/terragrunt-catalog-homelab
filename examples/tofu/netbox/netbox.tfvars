@@ -1,3 +1,11 @@
+region_name        = "Home Region"
+region_description = "This is the home region for my lab environment."
+
+site_name      = "Home Site"
+site_facility  = "Home data center"
+site_latitude  = "48.7844"
+site_longitude = "9.2078"
+
 timezone = "Europe/Berlin"
 
 device_roles = {

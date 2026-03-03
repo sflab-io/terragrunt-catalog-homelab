@@ -24,11 +24,15 @@ terraform {
 
 inputs = {
   # Required inputs
-  # env = values.env
-  # app = values.app
-  # zone = values.zone
-
-  # Optional inputs
   region_name = values.region_name
   region_description = values.region_description
+
+  site_name = values.site_name
+  site_facility = values.site_facility
+  site_latitude = values.site_latitude
+  site_longitude = values.site_longitude
+  timezone = values.timezone
+
+  # Optional inputs
+  # ...
 }

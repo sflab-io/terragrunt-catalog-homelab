@@ -3,6 +3,12 @@ locals {
 
   region_name = "sflab Homelab Region"
   region_description = "Region for sflab homelab infrastructure"
+
+  site_name = "sflab Homelab Site"
+  site_facility = "sflab Homelab Facility"
+  site_latitude = "48.7844"
+  site_longitude = "9.2078"
+  timezone = "Europe/Berlin"
 }
 
 unit "netbox" {
@@ -13,25 +19,17 @@ unit "netbox" {
   values = {
     version = local.version
 
+    # Required values
     region_name = local.region_name
     region_description = local.region_description
 
-    # env     = local.env
-    # app     = "${local.app}-1"
-    # pool_id = local.pool_id
+    site_name = local.site_name
+    site_facility = local.site_facility
+    site_latitude = local.site_latitude
+    site_longitude = local.site_longitude
+    timezone = local.timezone
 
-    # # SSH key path
-    # ssh_public_key_path = local.ssh_public_key_path
-
-    # # Optional: Customize VM resources
-    # # memory = try(local.memory, 2048)
-    # # cores  = try(local.cores, 2)
-    # network_config = {
-    #   type        = "static"
-    #   ip_address  = "192.168.1.33"
-    #   cidr        = 24
-    #   gateway     = "192.168.1.1"
-    #   # dns_servers = ["8.8.8.8", "8.8.4.4"]  # Optional
-    # }
+    # Optional values
+    # ...
   }
 }
