@@ -1,0 +1,57 @@
+include "root" {
+  path = find_in_parent_folders("root.hcl")
+}
+
+locals {
+  netbox_config    = read_terragrunt_config(find_in_parent_folders("netbox-config.hcl"))
+
+  server_url         = local.netbox_config.locals.server_url
+  skip_version_check = local.netbox_config.locals.skip_version_check
+}
+
+# Generate Netbox provider block
+generate "provider" {
+  path      = "provider.tf"
+  if_exists = "overwrite_terragrunt"
+  contents  = <<EOF
+provider "netbox" {
+  server_url         = "${local.server_url}"
+  skip_version_check = ${local.skip_version_check}
+}
+EOF
+}
+
+terraform {
+  source = "../../../.././/modules/netbox"
+}
+
+# dependency "proxmox_pool" {
+#   config_path = "../proxmox-pool"
+
+#   mock_outputs = {
+#     pool_id = "mock-pool"
+#   }
+# }
+
+# inputs = {
+#   # Required inputs
+#   env = "dev"
+#   app = "terragrunt-vm"
+
+#   ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
+
+#   network_config = {
+#     type        = "static"
+#     ip_address  = "192.168.1.33"
+#     cidr        = 24
+#     gateway     = "192.168.1.1"
+#     # dns_servers = ["8.8.8.8", "8.8.4.4"]  # Optional
+#   }
+
+#   # Optional inputs
+#   # memory = 4096 # Customize memory allocation (default: 2048MB)
+#   # cores  = 4    # Customize CPU cores (default: 2)
+
+#   # Derived inputs
+#   pool_id = dependency.proxmox_pool.outputs.pool_id
+# }
