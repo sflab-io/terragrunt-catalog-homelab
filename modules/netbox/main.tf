@@ -1,15 +1,15 @@
 resource "netbox_region" "this" {
-  name        = var.netbox_region_name
-  description = var.netbox_region_description
+  name        = var.region_name
+  description = var.region_description
 }
 
 # resource "netbox_site" "this" {
-#   name      = var.netbox_site_name
-#   facility  = var.netbox_site_facility
-#   latitude  = var.netbox_site_latitude
-#   longitude = var.netbox_site_longitude
+#   name      = var.site_name
+#   facility  = var.site_facility
+#   latitude  = var.site_latitude
+#   longitude = var.site_longitude
 #   status    = "active"
-#   timezone  = var.netbox_timezone
+#   timezone  = var.timezone
 #   region_id = netbox_region.this.id
 # }
 

@@ -28,61 +28,61 @@ variable "cluster_types" {
   default     = []
 }
 
-variable "netbox_timezone" {
+variable "timezone" {
   description = "The timezone to use for the site."
   type        = string
   default     = "Europe/Berlin"
 }
 
-variable "netbox_site_name" {
+variable "site_name" {
   description = "The name of the NetBox site."
   type        = string
   default     = "Home Site"
 }
 
-variable "netbox_site_facility" {
+variable "site_facility" {
   description = "The facility of the NetBox site."
   type        = string
   default     = "Data center"
 }
 
-variable "netbox_site_latitude" {
+variable "site_latitude" {
   description = "The latitude of the NetBox site."
   type        = string
   default     = "48.7844"
 }
 
-variable "netbox_site_longitude" {
+variable "site_longitude" {
   description = "The longitude of the NetBox site."
   type        = string
   default     = "9.2078"
 }
 
-variable "netbox_region_name" {
+variable "region_name" {
   description = "The name of the NetBox region."
   type        = string
   default     = "Home Region"
 }
 
-variable "netbox_region_description" {
+variable "region_description" {
   description = "The description of the NetBox region."
   type        = string
   default     = "This is the home region for my lab environment."
 }
 
 resource "netbox_region" "this" {
-  name        = var.netbox_region_name
-  description = var.netbox_region_description
+  name        = var.region_name
+  description = var.region_description
 }
 
 resource "netbox_site" "this" {
-  name = var.netbox_site_name
+  name = var.site_name
   # asn       = 1337
-  facility  = var.netbox_site_facility
-  latitude  = var.netbox_site_latitude
-  longitude = var.netbox_site_longitude
+  facility  = var.site_facility
+  latitude  = var.site_latitude
+  longitude = var.site_longitude
   status    = "active"
-  timezone  = var.netbox_timezone
+  timezone  = var.timezone
   region_id = netbox_region.this.id
 }
 

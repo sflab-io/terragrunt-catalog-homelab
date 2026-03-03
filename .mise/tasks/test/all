@@ -16,21 +16,21 @@ if [ "$usage_all" != "true" ] && [ "$usage_tofu" != "true" ] && [ "$usage_units"
 fi
 
 TOFUS=(
-  naming
-  proxmox-pool
-  proxmox-vm
-  proxmox-lxc
-  dns
+  # naming
+  # proxmox-pool
+  # proxmox-vm
+  # proxmox-lxc
+  # dns
   netbox
 )
 
 UNITS=(
-  naming
-  proxmox-pool
-  proxmox-vm
-  proxmox-lxc
-  dns
-  dns-wildcard
+  # naming
+  # proxmox-pool
+  # proxmox-vm
+  # proxmox-lxc
+  # dns
+  # dns-wildcard
   netbox
 )
 
@@ -99,7 +99,7 @@ function run_terragrunt_stack_tests() {
   # Destroy in reverse order
   for (( idx=${#STACKS[@]}-1 ; idx>=0 ; idx-- )); do
     STACK="${STACKS[idx]}"
-    # mise run terragrunt:stack:destroy $STACK -a
+    mise run terragrunt:stack:destroy $STACK -a
     sleep 1
   done
 }

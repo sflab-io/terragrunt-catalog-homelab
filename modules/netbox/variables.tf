@@ -1,40 +1,40 @@
-variable "netbox_region_name" {
+variable "region_name" {
   description = "The name of the NetBox region."
   type        = string
   default     = "Home Region"
 }
 
-variable "netbox_region_description" {
+variable "region_description" {
   description = "The description of the NetBox region."
   type        = string
   default     = "This is the home region for my lab environment."
 }
 
-variable "netbox_site_name" {
+variable "site_name" {
   description = "The name of the NetBox site."
   type        = string
   default     = "Home Site"
 }
 
-variable "netbox_site_facility" {
+variable "site_facility" {
   description = "The facility of the NetBox site."
   type        = string
   default     = "Data center"
 }
 
-variable "netbox_site_latitude" {
+variable "site_latitude" {
   description = "The latitude of the NetBox site."
   type        = string
   default     = "48.7844"
 }
 
-variable "netbox_site_longitude" {
+variable "site_longitude" {
   description = "The longitude of the NetBox site."
   type        = string
   default     = "9.2078"
 }
 
-variable "netbox_timezone" {
+variable "timezone" {
   description = "The timezone to use for the site."
   type        = string
   default     = "Europe/Berlin"

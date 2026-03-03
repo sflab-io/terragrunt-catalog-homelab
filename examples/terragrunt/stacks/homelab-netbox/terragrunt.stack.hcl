@@ -1,8 +1,8 @@
 locals {
   version = "feat/netbox"
 
-  netbox_region_name = "sflab Homelab Region"
-  netbox_region_description = "Region for sflab homelab infrastructure"
+  region_name = "sflab Homelab Region"
+  region_description = "Region for sflab homelab infrastructure"
 }
 
 unit "netbox" {
@@ -13,8 +13,8 @@ unit "netbox" {
   values = {
     version = local.version
 
-    netbox_region_name = local.netbox_region_name
-    netbox_region_description = local.netbox_region_description
+    region_name = local.region_name
+    region_description = local.region_description
 
     # env     = local.env
     # app     = "${local.app}-1"
