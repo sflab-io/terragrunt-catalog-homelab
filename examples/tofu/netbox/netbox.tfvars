@@ -63,15 +63,15 @@ tenant_groups = [
 
 tenants = [
   {
-    name     = "Customer A"
-    group_id = 1
+    name       = "Customer A"
+    group_name = "customers"
   },
   {
-    name     = "Customer B"
-    group_id = 1
+    name       = "Customer B"
+    group_name = "customers"
   },
   {
-    name     = "Platform Team"
-    group_id = 2
+    name       = "Platform Team"
+    group_name = "internal"
   }
 ]

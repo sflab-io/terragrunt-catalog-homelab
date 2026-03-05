@@ -7,10 +7,10 @@ variable "tenant_groups" {
 }
 
 variable "tenants" {
-  description = "A list of tenants to create in NetBox, where each tenant is an object with attributes (e.g., name, group_id)."
+  description = "A list of tenants to create in NetBox, where each tenant is an object with attributes (e.g., name, group_name)."
   type = list(object({
-    name     = string
-    group_id = optional(number)
+    name       = string
+    group_name = optional(string)
   }))
   default = []
 }
@@ -25,5 +25,5 @@ resource "netbox_tenant_group" "this" {
 resource "netbox_tenant" "this" {
   for_each = { for tenant in var.tenants : tenant.name => tenant }
   name     = each.value.name
-  group_id = try(lookup(netbox_tenant_group.this, each.value.group_id, null).id, null)
+  group_id = try(netbox_tenant_group.this[each.value.group_name].id, null)
 }
