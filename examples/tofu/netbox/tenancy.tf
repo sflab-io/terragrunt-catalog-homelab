@@ -15,6 +15,34 @@ variable "tenants" {
   default = []
 }
 
+variable "contact_groups" {
+  description = "A list of contact groups to create in NetBox, where each contact group is an object with attributes (e.g., name)."
+  type = list(object({
+    name = string
+  }))
+  default = []
+}
+
+variable "contact_roles" {
+  description = "A list of contact roles to create in NetBox, where each contact role is an object with attributes (e.g., name)."
+  type = list(object({
+    name = string
+  }))
+  default = []
+}
+
+variable "contacts" {
+  description = "A list of contacts to create in NetBox, where each contact is an object with attributes (e.g., name, email, phone, group_name, role_name)."
+  type = list(object({
+    name       = string
+    email      = string
+    phone      = string
+    group_name = optional(string)
+    role_name  = optional(string)
+  }))
+  default = []
+}
+
 # -- Resources --
 
 resource "netbox_tenant_group" "this" {
@@ -27,3 +55,33 @@ resource "netbox_tenant" "this" {
   name     = each.value.name
   group_id = try(netbox_tenant_group.this[each.value.group_name].id, null)
 }
+
+resource "netbox_contact_group" "this" {
+  for_each = { for contact_group in var.contact_groups : contact_group.name => contact_group }
+  name     = each.value.name
+}
+
+# resource "netbox_contact_role" "this" {
+#   for_each = { for contact_role in var.contact_roles : contact_role.name => contact_role }
+#   name     = each.value.name
+# }
+
+resource "netbox_contact" "this" {
+  for_each = { for contact in var.contacts : contact.name => contact }
+  name     = each.value.name
+  email    = each.value.email
+  phone    = each.value.phone
+  # seems like group_id of netbox_contact is buggy and doesn't set the group reference in the UI, even if the API call is correct.
+  # need to investigate further.
+  group_id = try(netbox_contact_group.this[each.value.group_name].id, null)
+  # group_id = 11
+}
+
+# data "netbox_contact_group" "this" {
+#   for_each = { for contact_group in var.contact_groups : contact_group.name => contact_group }
+#   name     = each.value.name
+# }
+
+# output "contact_group_ids" {
+#   value = { for name, group in data.netbox_contact_group.this : name => group.id }
+# }

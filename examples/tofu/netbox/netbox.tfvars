@@ -53,7 +53,7 @@ clusters = [
 
 # tenancy
 tenant_groups = [
-  {
+{
     name = "customers"
   },
   {
@@ -75,3 +75,44 @@ tenants = [
     group_name = "internal"
   }
 ]
+
+contact_groups = [
+  {
+    name = "Platform Team Contacts"
+  },
+  {
+    name = "Customer Contacts"
+  }
+]
+
+# contact_roles = [
+#   {
+#     name = "Primary Contact"
+#   },
+#   {
+#     name = "Secondary Contact"
+#   }
+# ]
+
+contacts = [
+    {
+        name       = "John Doe"
+        email      = "john.doe@example.com"
+        phone      = "123-123123"
+        group_name = "Platform Team Contacts"
+        # role_name  = "Primary Contact"
+    },
+    {
+        name       = "Jane Smith"
+        email      = "jane.smith@example.com"
+        phone      = "456-456456"
+        group_name = "Customer Contacts"
+        # role_name  = "Secondary Contact"
+    }
+]
+
+# manufacturers = [
+#   {
+#     name = "VMware"
+#   }
+# ]

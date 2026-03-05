@@ -42,6 +42,14 @@ variable "device_roles" {
   default = {}
 }
 
+variable "manufacturers" {
+  description = "A list of manufacturers to create in NetBox, where each manufacturer is an object with attributes (e.g., name)."
+  type = list(object({
+    name = string
+  }))
+  default = []
+}
+
 # -- Resources --
 
 resource "netbox_region" "this" {
@@ -65,3 +73,8 @@ resource "netbox_device_role" "this" {
   color_hex = each.value.color_hex
   vm_role   = try(each.value.vm_role, false)
 }
+
+# resource "netbox_manufacturer" "this" {
+#   for_each = { for manufacturer in var.manufacturers : manufacturer.name => manufacturer }
+#   name     = each.value.name
+# }
