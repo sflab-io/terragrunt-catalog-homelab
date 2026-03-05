@@ -57,7 +57,7 @@ function run_tofu_tests() {
 
   for (( idx=${#TOFUS[@]}-1 ; idx>=0 ; idx-- )); do
     TOFU="${TOFUS[idx]}"
-    mise run tofu:destroy $TOFU -a
+    # mise run tofu:destroy $TOFU -a
     sleep 1
   done
 }

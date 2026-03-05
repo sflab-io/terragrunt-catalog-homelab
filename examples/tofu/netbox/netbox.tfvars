@@ -1,3 +1,4 @@
+# dcim
 region_name        = "Home Region"
 region_description = "This is the home region for my lab environment."
 
@@ -35,6 +36,7 @@ device_roles = {
     }
 }
 
+# virtualization
 cluster_types = ["Kubernetes", "Proxmox"]
 
 clusters = [
@@ -46,5 +48,30 @@ clusters = [
     name         = "proxmox-cluster-01"
     cluster_type = "Proxmox"
     # cluster_group_id = 1
+  }
+]
+
+# tenancy
+tenant_groups = [
+  {
+    name = "customers"
+  },
+  {
+    name = "internal"
+  }
+]
+
+tenants = [
+  {
+    name     = "Customer A"
+    group_id = 1
+  },
+  {
+    name     = "Customer B"
+    group_id = 1
+  },
+  {
+    name     = "Platform Team"
+    group_id = 2
   }
 ]
