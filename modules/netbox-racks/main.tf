@@ -14,7 +14,8 @@ resource "netbox_rack_type" "this" {
 }
 
 data "netbox_site" "this" {
-  name = distinct(flatten([for rack in var.racks : rack.site_name]))
+  for_each = toset([for rack in var.racks : rack.site_name])
+  name     = each.value
 }
 
 resource "netbox_rack" "this" {
@@ -23,10 +24,3 @@ resource "netbox_rack" "this" {
   site_id  = data.netbox_site.this[each.value.site_name].id
   status   = each.value.status
 }
-
-# data "netbox_racks" "this" {
-#   filter {
-#     name  = "name"
-#     value = "test"
-#   }
-# }

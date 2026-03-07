@@ -43,4 +43,12 @@ inputs = {
       starting_unit = 1
     }
   ]
+
+  racks = [
+    {
+      name      = "Rack 1"
+      site_name = "SFLAB Homelab Site"
+      status    = "active"
+    }
+  ]
 }
