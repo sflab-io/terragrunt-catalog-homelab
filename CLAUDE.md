@@ -33,8 +33,8 @@ This is a Terragrunt infrastructure catalog for homelab Proxmox environments. It
 Managed via mise (mise.toml):
 
 - **Go**: 1.24.2
-- **OpenTofu**: 1.9.0
-- **Terragrunt**: 0.78.0
+- **OpenTofu**: 1.11.5
+- **Terragrunt**: 0.99.4
 - **MinIO Client (mc)**: latest
 
 Run `mise install` to install all required tools.

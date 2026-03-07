@@ -10,38 +10,38 @@ site_longitude = "9.2078"
 timezone = "Europe/Berlin"
 
 device_roles = {
-    "Hypervisor" = {
-        color_hex = "8a2be2"
-        vm_role   = false
-    }
-    "Server" = {
-        color_hex = "ffff00"
-        vm_role   = true
-    }
-    "Router" = {
-        color_hex = "00ffff"
-        vm_role   = false
-    }
-    "Firewall" = {
-        color_hex = "ff00ff"
-        vm_role   = false
-    }
-    "Switch" = {
-        color_hex = "00ff00"
-        vm_role   = false
-    }
-    "AP" = {
-        color_hex = "0000ff"
-        vm_role   = false
-    }
-    "K8s Control Plane" = {
-        color_hex = "ffa500"
-        vm_role   = true
-    }
-    "K8s Worker" = {
-        color_hex = "800000"
-        vm_role   = true
-    }
+  "Hypervisor" = {
+    color_hex = "8a2be2"
+    vm_role   = false
+  }
+  "Server" = {
+    color_hex = "ffff00"
+    vm_role   = true
+  }
+  "Router" = {
+    color_hex = "00ffff"
+    vm_role   = false
+  }
+  "Firewall" = {
+    color_hex = "ff00ff"
+    vm_role   = false
+  }
+  "Switch" = {
+    color_hex = "00ff00"
+    vm_role   = false
+  }
+  "AP" = {
+    color_hex = "0000ff"
+    vm_role   = false
+  }
+  "K8s Control Plane" = {
+    color_hex = "ffa500"
+    vm_role   = true
+  }
+  "K8s Worker" = {
+    color_hex = "800000"
+    vm_role   = true
+  }
 }
 
 manufacturers = [
@@ -52,7 +52,7 @@ manufacturers = [
 
 # tenancy
 tenant_groups = [
-{
+  {
     name = "customers"
   },
   {
@@ -94,20 +94,20 @@ contact_groups = [
 # ]
 
 contacts = [
-    {
-        name       = "John Doe"
-        email      = "john.doe@example.com"
-        phone      = "123-123123"
-        group_name = "Platform Team Contacts"
-        # role_name  = "Primary Contact"
-    },
-    {
-        name       = "Jane Smith"
-        email      = "jane.smith@example.com"
-        phone      = "456-456456"
-        group_name = "Customer Contacts"
-        # role_name  = "Secondary Contact"
-    }
+  {
+    name       = "John Doe"
+    email      = "john.doe@example.com"
+    phone      = "123-123123"
+    group_name = "Platform Team Contacts"
+    # role_name  = "Primary Contact"
+  },
+  {
+    name       = "Jane Smith"
+    email      = "jane.smith@example.com"
+    phone      = "456-456456"
+    group_name = "Customer Contacts"
+    # role_name  = "Secondary Contact"
+  }
 ]
 
 # virtualization
