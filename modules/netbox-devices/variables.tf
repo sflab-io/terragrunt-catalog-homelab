@@ -7,11 +7,3 @@ variable "device_roles" {
   }))
   default = {}
 }
-
-# variable "manufacturers" {
-#   description = "A list of manufacturers to create in NetBox, where each manufacturer is an object with attributes (e.g., name)."
-#   type = list(object({
-#     name = string
-#   }))
-#   default = []
-# }
