@@ -64,8 +64,26 @@ inputs = {
 
   manufacturers = [
     {
-      name = "GeeekPi"
+      name = "Minisforum"
     }
   ]
 
+  device_types = [
+    {
+      model             = "MS-01 Work Station"
+      manufacturer_name = "Minisforum"
+      u_height          = "1"
+    }
+  ]
+
+  devices = [
+    {
+      name        = "SFLAB-HYPERVISOR-01"
+      device_type = "MS-01 Work Station"
+      role_name   = "Hypervisor"
+      site_name   = "SFLAB Homelab Site"
+      tenant_name = "Platform Team"
+      rack_name   = "Rack 1"
+    }
+  ]
 }
