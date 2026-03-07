@@ -14,7 +14,7 @@ inputs = {
   # Required inputs
   env                 = values.env
   app                 = values.app
-  ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
+  ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")
 
   # Optional inputs
   memory    = try(values.memory, 2048)

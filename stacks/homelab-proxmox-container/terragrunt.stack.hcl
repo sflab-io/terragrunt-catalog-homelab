@@ -1,39 +1,17 @@
 locals {
-  pool_id = values.pool_id != "" ? values.pool_id : ""
-
-  env      = values.env
-  app      = values.app
+  env     = values.env
+  app     = values.app
+  pool_id = try(values.pool_id, "")
 
   memory = try(values.memory, 2048)
   cores  = try(values.cores, 2)
 
-  # SSH public key path for SSH access
-  ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
+  ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")
 
-  # Network configuration (DHCP by default, can override with static IP)
-  # Example static IP configuration:
-  # network_config = {
-  #   type        = "static"
-  #   ip_address  = "192.168.1.100"
-  #   cidr        = 24
-  #   gateway     = "192.168.1.1"
-  #   dns_servers = ["8.8.8.8", "8.8.4.4"]  # Optional
-  # }
   network_config = try(values.network_config, { type = "dhcp" })
 
-  zone = try(values.dns_zone, "home.sflab.io.")
-}
-
-unit "proxmox_pool" {
-  source = "git::git@github.com:sflab-io/terragrunt-infrastructure-catalog-homelab.git//units/proxmox-pool?ref=${values.version}"
-
-  path = "proxmox-pool"
-
-  values = {
-    version = values.version
-
-    pool_id = local.pool_id
-  }
+  zone         = try(values.dns_zone, "home.sflab.io.")
+  record_types = try(values.record_types, { normal = true, wildcard = false })
 }
 
 unit "proxmox_lxc" {
@@ -42,8 +20,7 @@ unit "proxmox_lxc" {
   path = "proxmox-lxc"
 
   values = {
-    version = values.version
-
+    version             = values.version
     env                 = local.env
     app                 = local.app
     memory              = local.memory
@@ -60,11 +37,11 @@ unit "dns" {
   path = "dns"
 
   values = {
-    version = values.version
-
-    name = "${local.env}-${local.app}"
-    zone = local.zone
-
+    version      = values.version
+    env          = local.env
+    app          = local.app
+    zone         = local.zone
+    record_types = local.record_types
     compute_path = "../proxmox-lxc"
   }
 }
