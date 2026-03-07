@@ -3,7 +3,7 @@ include "root" {
 }
 
 locals {
-  netbox_config    = read_terragrunt_config(find_in_parent_folders("provider-netbox-config.hcl"))
+  netbox_config = read_terragrunt_config(find_in_parent_folders("provider-netbox-config.hcl"))
 
   server_url         = local.netbox_config.locals.netbox_server_url
   skip_version_check = local.netbox_config.locals.netbox_skip_version_check
@@ -26,6 +26,10 @@ terraform {
 }
 
 inputs = {
+  # Required by the rack_type_assignment workaround in the module.
+  # Passed explicitly because modules cannot read provider configuration directly.
+  netbox_url = local.server_url
+
   # Racks variables for NetBox racks module
   manufacturers = [
     {
@@ -49,6 +53,7 @@ inputs = {
       name      = "Rack 1"
       site_name = "SFLAB Homelab Site"
       status    = "active"
+      rack_type = "DeskPi RackMate T1"
     }
   ]
 }
