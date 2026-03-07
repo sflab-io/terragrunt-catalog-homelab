@@ -14,6 +14,16 @@ variable "clusters" {
   default = []
 }
 
+variable "virtual_machines" {
+  description = "A list of virtual machines to create in NetBox, where each virtual machine is an object with attributes (e.g., name, cluster_name)."
+  type = list(object({
+    name         = string
+    cluster_name = string
+    tenant_name  = optional(string)
+  }))
+  default = []
+}
+
 # -- Resources --
 
 resource "netbox_cluster_type" "this" {
@@ -26,4 +36,11 @@ resource "netbox_cluster" "this" {
   cluster_type_id  = lookup(netbox_cluster_type.this, each.value.cluster_type, null).id
   name             = each.value.name
   cluster_group_id = try(each.value.cluster_group_id, null)
+}
+
+resource "netbox_virtual_machine" "base_vm" {
+  for_each   = { for vm in var.virtual_machines : vm.name => vm }
+  name       = each.value.name
+  cluster_id = lookup(netbox_cluster.this, each.value.cluster_name, null).id
+  tenant_id  = try(lookup(netbox_tenant.this, each.value.tenant_name, null).id, null)
 }

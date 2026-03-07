@@ -34,20 +34,19 @@ device_roles = {
         color_hex = "0000ff"
         vm_role   = false
     }
+    "K8s Control Plane" = {
+        color_hex = "ffa500"
+        vm_role   = true
+    }
+    "K8s Worker" = {
+        color_hex = "800000"
+        vm_role   = true
+    }
 }
 
-# virtualization
-cluster_types = ["Kubernetes", "Proxmox"]
-
-clusters = [
+manufacturers = [
   {
-    name         = "k8s-cluster-01"
-    cluster_type = "Kubernetes"
-  },
-  {
-    name         = "proxmox-cluster-01"
-    cluster_type = "Proxmox"
-    # cluster_group_id = 1
+    name = "GeeekPi"
   }
 ]
 
@@ -111,8 +110,30 @@ contacts = [
     }
 ]
 
-# manufacturers = [
-#   {
-#     name = "VMware"
-#   }
-# ]
+# virtualization
+cluster_types = ["Kubernetes", "Proxmox"]
+
+clusters = [
+  {
+    name         = "k8s-cluster-mgm"
+    cluster_type = "Kubernetes"
+  },
+  {
+    name         = "proxmox-cluster-01"
+    cluster_type = "Proxmox"
+    # cluster_group_id = 1
+  }
+]
+
+virtual_machines = [
+  {
+    name         = "k8s-control-plane-1"
+    cluster_name = "k8s-cluster-mgm"
+    tenant_name  = "Platform Team"
+  },
+  {
+    name         = "k8s-worker-1"
+    cluster_name = "k8s-cluster-mgm"
+    tenant_name  = "Platform Team"
+  }
+]
