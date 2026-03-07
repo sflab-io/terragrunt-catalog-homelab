@@ -16,29 +16,29 @@ if [ "$usage_all" != "true" ] && [ "$usage_tofu" != "true" ] && [ "$usage_units"
 fi
 
 TOFUS=(
-  # naming
-  # proxmox-pool
-  # proxmox-vm
-  # proxmox-lxc
-  # dns
+  naming
+  proxmox-pool
+  proxmox-vm
+  proxmox-lxc
+  dns
   netbox
 )
 
 UNITS=(
-  # naming
-  # proxmox-pool
-  # proxmox-vm
-  # proxmox-lxc
-  # dns
-  # dns-wildcard
+  naming
+  proxmox-pool
+  proxmox-vm
+  proxmox-lxc
+  dns
+  dns-wildcard
   netbox
 )
 
 STACKS=(
-  # homelab-proxmox-pool
-  # homelab-proxmox-container
-  # homelab-proxmox-vm
-  # homelab-wildcard-dns
+  homelab-proxmox-pool
+  homelab-proxmox-vm
+  homelab-proxmox-container
+  homelab-wildcard-dns
   homelab-netbox
 )
 
@@ -57,7 +57,7 @@ function run_tofu_tests() {
 
   for (( idx=${#TOFUS[@]}-1 ; idx>=0 ; idx-- )); do
     TOFU="${TOFUS[idx]}"
-    # mise run tofu:destroy $TOFU -a
+    mise run tofu:destroy $TOFU -a
     sleep 1
   done
 }
@@ -65,8 +65,6 @@ function run_tofu_tests() {
 # === TERRAGRUNT UNITS ===
 function run_terragrunt_unit_tests() {
   for UNIT in "${UNITS[@]}"; do
-    # mise run terragrunt:unit:plan $UNIT
-    # sleep 1
     mise run terragrunt:unit:apply $UNIT
     sleep 1
   done
@@ -90,8 +88,6 @@ function run_terragrunt_stack_tests() {
   # fi
 
   for STACK in "${STACKS[@]}"; do
-    # mise run terragrunt:stack:plan $STACK
-    # sleep 1
     mise run terragrunt:stack:apply $STACK -a
     sleep 1
   done
