@@ -19,90 +19,21 @@ locals {
   ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
 }
 
-unit "proxmox_vm_1" {
-  source = "../../../../units/proxmox-vm"
+unit "homelab_proxmox_vm" {
+  source = "git::git@github.com:sflab-io/terragrunt-infrastructure-catalog-homelab.git//stacks/homelab-proxmox-vm?ref=${values.version}"
 
-  path = "proxmox-vm-1"
+  app = local.app
 
-  values = {
-    version = local.version
+  memory    = local.memory
+  cores     = local.cores
+  disk_size = local.disk_size
 
-    env     = local.env
-    app     = "${local.app}-1"
-    pool_id = local.pool_id
+  network_config = local.network_config
 
-    # SSH key path
-    ssh_public_key_path = local.ssh_public_key_path
+  record_types = local.record_types
+  zone         = "home.sflab.io."
 
-    # Optional: Customize VM resources
-    # memory = try(local.memory, 2048)
-    # cores  = try(local.cores, 2)
-    network_config = {
-      type        = "static"
-      ip_address  = "192.168.1.33"
-      cidr        = 24
-      gateway     = "192.168.1.1"
-      # dns_servers = ["8.8.8.8", "8.8.4.4"]  # Optional
-    }
-  }
-}
+  # pool_id = try(values.pool_id, "")
 
-unit "proxmox_vm_2" {
-  source = "../../../../units/proxmox-vm"
-
-  path = "proxmox-vm-2"
-
-  values = {
-    version = local.version
-
-    env     = local.env
-    app     = "${local.app}-2"
-    pool_id = local.pool_id
-
-    # SSH key path
-    ssh_public_key_path = local.ssh_public_key_path
-
-    # Optional: Customize VM resources
-    # memory = try(local.memory, 2048)
-    # cores  = try(local.cores, 2)
-    network_config = {
-      type        = "static"
-      ip_address  = "192.168.1.34"
-      cidr        = 24
-      gateway     = "192.168.1.1"
-      # dns_servers = ["8.8.8.8", "8.8.4.4"]  # Optional
-    }
-  }
-}
-
-unit "dns_1" {
-  source = "../../../../units/dns"
-
-  path = "dns-1"
-
-  values = {
-    version = local.version
-
-    env  = local.env
-    app  = "${local.app}-1"
-    zone = local.zone
-
-    compute_path = "../proxmox-vm-1"
-  }
-}
-
-unit "dns_2" {
-  source = "../../../../units/dns"
-
-  path = "dns-2"
-
-  values = {
-    version = local.version
-
-    env  = local.env
-    app  = "${local.app}-2"
-    zone = local.zone
-
-    compute_path = "../proxmox-vm-2"
-  }
+  # ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")
 }
