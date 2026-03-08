@@ -1,7 +1,5 @@
 locals {
-  # env     = values.env
-  env = read_terragrunt_config(find_in_parent_folders("environment.hcl")).locals
-
+  env = values.env
   app = values.app
 
   memory    = try(values.memory, 2048)

@@ -1,17 +1,17 @@
 locals {
   env     = values.env
   app     = values.app
-  pool_id = try(values.pool_id, "")
 
   memory = try(values.memory, 2048)
   cores  = try(values.cores, 2)
 
-  ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")
-
   network_config = try(values.network_config, { type = "dhcp" })
 
-  zone         = try(values.dns_zone, "home.sflab.io.")
   record_types = try(values.record_types, { normal = true, wildcard = false })
+  zone         = try(values.dns_zone, "home.sflab.io.")
+
+  pool_id = try(values.pool_id, "")
+  ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")
 }
 
 unit "proxmox_lxc" {
