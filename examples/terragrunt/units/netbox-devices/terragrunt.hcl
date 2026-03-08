@@ -52,12 +52,20 @@ inputs = {
       color_hex = "0000ff"
       vm_role   = false
     }
-    "K8s Control Plane" = {
+    "VM" = {
       color_hex = "ffa500"
       vm_role   = true
     }
-    "K8s Worker" = {
+    "LXC" = {
       color_hex = "800000"
+      vm_role   = true
+    }
+    "K8s Control Plane" = {
+      color_hex = "ff0000"
+      vm_role   = true
+    }
+    "K8s Worker" = {
+      color_hex = "008080"
       vm_role   = true
     }
   }
@@ -71,7 +79,6 @@ inputs = {
     },
     {
       name = "Protectli"
-    }
     },
     {
       name = "Raspberry Pi Foundation"
@@ -194,7 +201,7 @@ inputs = {
     {
       name        = "SFLAB-DNS-01"
       device_type = "PI5-4GB"
-      role_name   = "DNS"
+      role_name   = "Server"
       site_name   = "SFLAB Homelab Site"
       tenant_name = "Platform Team"
       rack_name   = "Rack 1"
@@ -205,7 +212,7 @@ inputs = {
           ip_addresses = [
             {
               address  = "192.168.1.13/32"
-              # dns_name = "ap.home.sflab.io"
+              # dns_name = "dns.home.sflab.io"
               status   = "active"
             }
           ]
