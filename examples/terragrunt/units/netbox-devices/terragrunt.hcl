@@ -72,6 +72,10 @@ inputs = {
     {
       name = "Protectli"
     }
+    },
+    {
+      name = "Raspberry Pi Foundation"
+    }
   ]
 
   device_types = [
@@ -93,6 +97,11 @@ inputs = {
     {
       model             = "WAX210"
       manufacturer_name = "Netgear"
+      u_height          = "1"
+    },
+    {
+      model             = "PI5-4GB"
+      manufacturer_name = "Raspberry Pi Foundation"
       u_height          = "1"
     }
   ]
@@ -176,6 +185,27 @@ inputs = {
             {
               address  = "192.168.1.11/32"
               dns_name = "ap.home.sflab.io"
+              status   = "active"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name        = "SFLAB-DNS-01"
+      device_type = "PI5-4GB"
+      role_name   = "DNS"
+      site_name   = "SFLAB Homelab Site"
+      tenant_name = "Platform Team"
+      rack_name   = "Rack 1"
+      interfaces  = [
+        {
+          name = "eth0"
+          type = "1000base-t"
+          ip_addresses = [
+            {
+              address  = "192.168.1.13/32"
+              # dns_name = "ap.home.sflab.io"
               status   = "active"
             }
           ]
