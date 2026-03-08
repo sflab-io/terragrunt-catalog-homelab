@@ -31,10 +31,10 @@ resource "netbox_contact_group" "this" {
   name     = each.value.name
 }
 
-# resource "netbox_contact_role" "this" {
-#   for_each = { for contact_role in var.contact_roles : contact_role.name => contact_role }
-#   name     = each.value.name
-# }
+resource "netbox_contact_role" "this" {
+  for_each = { for contact_role in var.contact_roles : contact_role.name => contact_role }
+  name     = each.value.name
+}
 
 resource "netbox_contact" "this" {
   for_each = { for contact in var.contacts : contact.name => contact }

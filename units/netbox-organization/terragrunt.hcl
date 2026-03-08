@@ -23,65 +23,13 @@ terraform {
 }
 
 inputs = {
-  # Required inputs
+  # Required values for NetBox organization module
   regions = values.regions
+  sites   = values.sites
 
-  # Sites and regions variables for NetBox organization module
-  # regions = [
-  #   {
-  #     name        = "SFLAB Homelab Region"
-  #     description = "SFLAB Homelab Region Description"
-  #   }
-  # ]
-
-  # sites = [
-  #   {
-  #     name        = "SFLAB Homelab Site"
-  #     facility    = "SFLAB Homelab Facility"
-  #     latitude    = "48.7844"
-  #     longitude   = "9.2078"
-  #     timezone    = "Europe/Berlin"
-  #     region_name = "SFLAB Homelab Region"
-  #   }
-  # ]
-
-  # # Tenant and contact variables for NetBox organization module
-  # tenant_groups = [
-  #   {
-  #     name = "internal"
-  #   }
-  # ]
-
-  # tenants = [
-  #   {
-  #     name       = "Platform Team"
-  #     group_name = "internal"
-  #   }
-  # ]
-
-  # contact_groups = [
-  #   {
-  #     name = "Platform Team Contacts"
-  #   }
-  # ]
-
-  # contact_roles = [
-  #   {
-  #     name = "Business Contact"
-  #   },
-  #   {
-  #     name = "Private Contact"
-  #   }
-  # ]
-
-
-  # contacts = [
-  #   {
-  #     name       = "Sebastian Freund"
-  #     email      = "abes140377@web.de"
-  #     phone      = "123-123123"
-  #     group_name = "Platform Team Contacts"
-  #     role_name  = "Business Contact"
-  #   }
-  # ]
+  tenant_groups  = try(values.tenant_groups, [])
+  tenants        = try(values.tenants, [])
+  contact_groups = try(values.contact_groups, [])
+  contact_roles  = try(values.contact_roles, [])
+  contacts       = try(values.contacts, [])
 }
