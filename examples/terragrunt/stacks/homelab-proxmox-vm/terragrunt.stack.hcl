@@ -1,5 +1,5 @@
 locals {
-  version = "main"
+  version = "feat/better_stacks"
 
   # pool configuration
   pool_id = "example-stack-pool"
@@ -8,10 +8,6 @@ locals {
   env = "dev"
   app = "example-vm"
 
-  # Optional: Customize VM resources
-  # memory = 4096  # Memory in MB (default: 2048)
-  # cores  = 4     # CPU cores (default: 2)
-
   # DNS configuration
   zone = "home.sflab.io."
 
@@ -19,21 +15,41 @@ locals {
   ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
 }
 
-unit "homelab_proxmox_vm" {
-  source = "git::git@github.com:sflab-io/terragrunt-infrastructure-catalog-homelab.git//stacks/homelab-proxmox-vm?ref=${values.version}"
+unit "proxmox_vm" {
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/proxmox-vm?ref=${local.version}"
 
-  app = local.app
+  path = "proxmox-vm"
 
-  memory    = local.memory
-  cores     = local.cores
-  disk_size = local.disk_size
+  values = {
+    version = local.version
 
-  network_config = local.network_config
+    env     = local.env
+    app     = local.app
+    pool_id = local.pool_id
 
-  record_types = local.record_types
-  zone         = "home.sflab.io."
+    # Optional: Customize VM resources
+    # memory    = 4096
+    # cores     = 4
+    # disk_size = 20
 
-  # pool_id = try(values.pool_id, "")
+    ssh_public_key_path = local.ssh_public_key_path
 
-  # ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")
+    network_config = { type = "dhcp" }
+  }
+}
+
+unit "dns" {
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/dns?ref=${local.version}"
+
+  path = "dns"
+
+  values = {
+    version = local.version
+
+    env  = local.env
+    app  = local.app
+    zone = local.zone
+
+    compute_path = "../proxmox-vm"
+  }
 }

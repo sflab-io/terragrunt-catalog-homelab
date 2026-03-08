@@ -19,7 +19,7 @@ locals {
 }
 
 unit "proxmox_vm" {
-  source = "git::git@github.com:sflab-io/terragrunt-infrastructure-catalog-homelab.git//units/proxmox-vm?ref=${values.version}"
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/proxmox-vm?ref=${values.version}"
 
   path = "proxmox-vm"
 
@@ -37,7 +37,7 @@ unit "proxmox_vm" {
 }
 
 unit "dns" {
-  source = "git::git@github.com:sflab-io/terragrunt-infrastructure-catalog-homelab.git//units/dns?ref=${values.version}"
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/dns?ref=${values.version}"
 
   path = "dns"
 
@@ -52,7 +52,7 @@ unit "dns" {
 }
 
 # unit "netbox_virtual_machine" {
-#   source = "git::git@github.com:sflab-io/terragrunt-infrastructure-catalog-homelab.git//units/netbox-virtual-machine?ref=${values.version}"
+#   source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/netbox-virtual-machine?ref=${values.version}"
 
 #   path = "netbox-virtual-machine"
 

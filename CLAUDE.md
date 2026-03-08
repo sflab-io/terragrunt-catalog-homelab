@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a Terragrunt infrastructure catalog for homelab Proxmox environments. It provides reusable infrastructure components (modules, units, and stacks) for managing Proxmox resources and DNS records using OpenTofu/Terraform and Terragrunt.
+This is a Terragrunt infrastructure catalog for homelab environments. It provides reusable infrastructure components (modules, units, and stacks) for managing Proxmox resources, DNS records, and NetBox DCIM/IPAM using OpenTofu/Terraform and Terragrunt.
 
 ### Tool Versions
 
@@ -55,6 +55,12 @@ Run `mise install` to install all required tools.
    - `proxmox-pool`: Creates Proxmox resource pools
    - `dns`: Manages DNS A records on BIND9 servers (supports both normal and wildcard records)
    - `naming`: Wrapper around the homelab provider for standardized resource naming
+   - `netbox-organization`: Manages NetBox regions, sites, tenants, and contacts
+   - `netbox-racks`: Manages NetBox rack types and racks
+   - `netbox-devices`: Manages NetBox device roles, manufacturers, device types, and devices
+   - `netbox-ipam`: Manages NetBox VLANs and IP prefixes
+   - `netbox-virtualization`: Manages NetBox cluster types and clusters
+   - `netbox-virtual-machine`: Manages NetBox virtual machines with interfaces and IPs
    - These are basic building blocks with no Terragrunt-specific logic
 
 2. **Units** (`units/`): Terragrunt wrappers around modules
@@ -81,11 +87,18 @@ The `examples/` directory contains working examples for local testing:
   - `dns`: DNS record management example (normal records only)
   - `dns-wildcard`: Wildcard DNS record example (wildcard records only)
   - `naming`: Naming convention example
+  - `netbox-organization`: NetBox organization resources example
+  - `netbox-racks`: NetBox rack management example
+  - `netbox-devices`: NetBox device management example
+  - `netbox-ipam`: NetBox IPAM (VLANs/prefixes) example
+  - `netbox-virtualization`: NetBox virtualization clusters example
+  - `netbox-virtual-machine`: NetBox virtual machine management example
 - `examples/terragrunt/stacks/`: Complete stack examples using local units
   - `homelab-proxmox-pool`: Proxmox resource pool only
   - `homelab-proxmox-container`: LXC container + pool + DNS
   - `homelab-proxmox-vm`: Virtual machine + pool + DNS (requires SSH key configuration)
   - `homelab-wildcard-dns`: LXC container with both regular and wildcard DNS records
+  - `homelab-netbox`: Full NetBox DCIM/IPAM stack (organization → racks → devices → IPAM → virtualization)
   - **Note**: Stack examples reference units via relative paths (`../../../../units/`) for local testing
 - Unit examples use relative paths to modules (e.g., `../../../.././/modules/proxmox-lxc`)
 - Stack examples use relative paths to units (e.g., `../../../../units/dns`) for easier testing
@@ -130,6 +143,13 @@ Units and stacks use Git URLs in their `source` field because they are designed 
 - Algorithm: `hmac-sha256`
 - Used by DNS units to configure the hashicorp/dns provider
 
+**NetBox Configuration** (`examples/terragrunt/provider-netbox-config.hcl`):
+
+- Centralized NetBox server configuration for all NetBox units
+- Server URL: `http://netbox.home.sflab.io`
+- `netbox_skip_version_check = true`
+- Used by all NetBox units to configure the NetBox provider
+
 ## Common Commands
 
 ### Environment Setup
@@ -145,6 +165,9 @@ export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # Set DNS TSIG key secret (required for DNS module)
 export TF_VAR_dns_key_secret="your-tsig-key-secret"
+
+# Set NetBox API token (required for NetBox modules)
+export TF_VAR_netbox_token="your-netbox-api-token"
 ```
 
 ### Mise Tasks
@@ -313,6 +336,14 @@ Examples:
 - `units/proxmox-pool/terragrunt.hcl`: Resource pool unit
 - `units/dns/terragrunt.hcl`: DNS record unit (supports both regular and wildcard DNS records via `record_types` parameter)
 - `units/naming/terragrunt.hcl`: Naming convention unit
+- `units/netbox-organization/terragrunt.hcl`: NetBox organization resources unit
+- `units/netbox-racks/terragrunt.hcl`: NetBox rack management unit
+- `units/netbox-devices/terragrunt.hcl`: NetBox device management unit
+- `units/netbox-ipam/terragrunt.hcl`: NetBox IPAM unit
+- `units/netbox-virtualization/terragrunt.hcl`: NetBox virtualization clusters unit
+- `units/netbox-virtual-machine/terragrunt.hcl`: NetBox virtual machine unit
+
+**NetBox Unit Pattern**: NetBox units include both `root` and `provider_netbox` configs. The `provider_netbox` include reads `provider-netbox-config.hcl` and generates a netbox provider block. NetBox units also accept `organization_path`, `racks_path`, etc. values to enable cross-unit dependencies.
 
 ### Adding New Stacks
 
@@ -336,6 +367,7 @@ Examples in `examples/terragrunt/stacks/` (local testing stacks):
 - `examples/terragrunt/stacks/homelab-proxmox-container/`: LXC container with pool and DNS
 - `examples/terragrunt/stacks/homelab-proxmox-vm/`: VM with pool and DNS
 - `examples/terragrunt/stacks/homelab-wildcard-dns/`: LXC container with both normal and wildcard DNS records
+- `examples/terragrunt/stacks/homelab-netbox/`: Full NetBox stack (organization → racks → devices → IPAM → virtualization)
 
 ### Working with Dependencies
 
@@ -779,6 +811,29 @@ Current modules support:
 
 **Note**: The homelab provider is published to the Terraform Registry and does not require local installation. All modules (proxmox-lxc, proxmox-vm, dns) use the naming module internally to generate standardized names from `env` and `app` inputs.
 
+**NetBox Resources:**
+
+- **NetBox Organization** (`modules/netbox-organization`): Manages organizational hierarchy in NetBox
+  - Required inputs: `regions` (list), `sites` (list with facility/lat/lon/timezone), `tenant_groups`, `tenants`, `contact_groups`, `contact_roles`, `contacts` (with email/phone)
+  - Sites can optionally reference a `region_name`; tenants can reference `group_name`
+
+- **NetBox Racks** (`modules/netbox-racks`): Manages physical rack infrastructure
+  - Required inputs: `netbox_url` (string), `manufacturers`, `rack_types` (with model/manufacturer/form_factor/width/u_height), `racks` (with name/site_name/status/rack_type)
+
+- **NetBox Devices** (`modules/netbox-devices`): Manages physical device definitions
+  - Required inputs: `device_roles` (map with color_hex), `manufacturers`, `device_types` (with model/manufacturer_name/u_height), `devices` (with name/device_type/role/site/tenant/rack and interfaces with IP addresses)
+
+- **NetBox IPAM** (`modules/netbox-ipam`): Manages IP address management
+  - Required inputs: `vlans` (list with name/vid/optional description/tags), `prefixes` (list with prefix/status/optional description/tags/vlan_id)
+
+- **NetBox Virtualization** (`modules/netbox-virtualization`): Manages virtual cluster infrastructure
+  - Required inputs: `cluster_types` (list with name), `netbox_clusters` (list with name/cluster_type_name/optional site_name/tenant_name)
+
+- **NetBox Virtual Machine** (`modules/netbox-virtual-machine`): Manages VM records in NetBox
+  - Required inputs: `virtual_machines` (list with name/cluster_name/optional description/tags/role_name/tenant_name/vcpus/memory_mb/disk_size_mb, and interfaces with name/address/status/dns_name)
+
+**NetBox Stack Deployment Order**: `netbox_organization` → `netbox_racks` → `netbox_devices` → `netbox_ipam` → `netbox_virtualization` (automatic via dependency paths)
+
 ### Provider Migration Notes
 
 This repository uses the **bpg/proxmox** provider (version >= 0.69.0), not the older telmate/proxmox provider. Key differences:
@@ -826,6 +881,7 @@ Sensitive credentials are stored in `.creds.env.yaml` (SOPS-encrypted):
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`: MinIO service account for Terragrunt backend
 - `PROXMOX_VE_API_TOKEN`: Proxmox API token for bpg/proxmox provider
 - `DNS_TSIG_KEY_SECRET`: TSIG key secret for DNS dynamic updates
+- `TF_VAR_netbox_token`: NetBox API token for NetBox provider
 
 To edit encrypted secrets:
 

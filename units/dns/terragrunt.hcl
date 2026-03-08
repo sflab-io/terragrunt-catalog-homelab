@@ -25,7 +25,7 @@ EOF
 }
 
 terraform {
-  source = "git::git@github.com:sflab-io/terragrunt-infrastructure-catalog-homelab.git//modules/dns?ref=${values.version}"
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//modules/dns?ref=${values.version}"
 }
 
 dependency "compute" {
