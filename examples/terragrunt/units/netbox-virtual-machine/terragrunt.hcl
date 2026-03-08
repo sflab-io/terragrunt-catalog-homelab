@@ -28,23 +28,6 @@ terraform {
 inputs = {
   # Variables for NetBox virtual machine module
   virtual_machines = [
-    # {
-    #   name         = "minio"
-    #   cluster_name = "Proxmox Production Cluster"
-    #   role_name    = "LXC"
-    #   tenant_name  = "Platform Team"
-    #   vcpus        = 2
-    #   memory_mb    = 2048
-    #   disk_size_mb = 8000
-    #   interfaces = [
-    #     {
-    #       name     = "eth0"
-    #       address  = "192.168.1.33"
-    #       status   = "active"
-    #       dns_name = "minio.home.sflab.local"
-    #     }
-    #   ]
-    # },
     {
       name         = "vault"
       cluster_name = "Proxmox Production Cluster"
@@ -96,5 +79,22 @@ inputs = {
         }
       ]
     },
+    # {
+    #   name         = "minio"
+    #   cluster_name = "Proxmox Production Cluster"
+    #   role_name    = "LXC"
+    #   tenant_name  = "Platform Team"
+    #   vcpus        = 2
+    #   memory_mb    = 2048
+    #   disk_size_mb = 8000
+    #   interfaces = [
+    #     {
+    #       name     = "eth0"
+    #       address  = "192.168.1.33"
+    #       status   = "active"
+    #       dns_name = "minio.home.sflab.local"
+    #     }
+    #   ]
+    # },
   ]
 }
