@@ -9,6 +9,6 @@ terraform {
 }
 
 provider "netbox" {
-  server_url         = "http://netbox.home.sflab.io"
+  server_url         = "http://netbox-staging.home.sflab.io"
   skip_version_check = true
 }
