@@ -22,13 +22,13 @@ terraform {
   source = "git::git@github.com:sflab-io/terragrunt-infrastructure-catalog-homelab.git//modules/netbox-racks?ref=${values.version}"
 }
 
-# dependency "netbox_organization" {
-#   config_path = "../netbox-organization"
+dependency "netbox_organization" {
+  config_path = values.organization_path
 
-#   # mock_outputs = {
-#   #   pool_id = "mock-pool"
-#   # }
-# }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs                            = {}
+  skip_outputs                            = true
+}
 
 inputs = {
   # Required values for NetBox organization module

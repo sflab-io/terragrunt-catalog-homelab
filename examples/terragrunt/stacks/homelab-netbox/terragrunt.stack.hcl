@@ -117,7 +117,9 @@ unit "netbox_racks" {
   path = "netbox_racks"
 
   values = {
-    version = local.version
+    version           = local.version
+
+    organization_path = "../netbox_organization"
 
     # netbox_url    = local.netbox_url
     manufacturers = local.manufacturers
