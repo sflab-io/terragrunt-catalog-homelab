@@ -3,7 +3,7 @@
 #MISE description "Destroy a Terragrunt unit"
 #USAGE arg "<target>" help="The target unit" default=""
 #USAGE flag "-d --dry-run" help="Show the commands without executing it"
-#USAGE flag "-a --auto-approve" help="Automatically approve the destroy action"
+#USAGE flag "-y --yes" help="Automatic yes to prompts" default="false"
 
 #MISE raw=true
 
@@ -27,8 +27,8 @@ cd "$UNITS_DIR/$selected_unit"
 
 CMD="terragrunt destroy"
 
-if [ "$usage_auto_approve" = "true" ]; then
-  CMD="$CMD -- -auto-approve"
+if [ "${usage_yes?}" = "true" ]; then
+  CMD+=" --non-interactive"
 fi
 
 echo ""
