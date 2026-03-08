@@ -1,6 +1,6 @@
 locals {
-  version = "feat/netbox_stack"
-  # version = "main"
+  env = read_terragrunt_config(find_in_parent_folders("environment.hcl")).locals
+  # version = "feat/netbox_stack"
 
   # Variables for NetBox organization module
   regions = [
@@ -374,7 +374,7 @@ unit "netbox_organization" {
   path = "netbox_organization"
 
   values = {
-    version = local.version
+    version = local.env.catalog_version
 
     regions        = local.regions
     sites          = local.sites
@@ -392,7 +392,7 @@ unit "netbox_racks" {
   path = "netbox_racks"
 
   values = {
-    version = local.version
+    version = local.env.catalog_version
 
     organization_path = "../netbox_organization"
 
@@ -408,7 +408,7 @@ unit "netbox_devices" {
   path = "netbox_devices"
 
   values = {
-    version = local.version
+    version = local.env.catalog_version
 
     racks_path = "../netbox_racks"
 
@@ -425,7 +425,7 @@ unit "netbox_ipam" {
   path = "netbox_ipam"
 
   values = {
-    version = local.version
+    version = local.env.catalog_version
 
     devices_path = "../netbox_devices"
 
@@ -440,7 +440,7 @@ unit "netbox_virtualization" {
   path = "netbox_virtualization"
 
   values = {
-    version = local.version
+    version = local.env.catalog_version
 
     ipam_path = "../netbox_ipam"
 

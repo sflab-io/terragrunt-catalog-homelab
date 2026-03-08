@@ -1,37 +1,38 @@
 locals {
-  version = "main"
-  pool_id = "example-stack-pool"
-  env     = "dev"
+  env = read_terragrunt_config(find_in_parent_folders("environment.hcl")).locals
+
   app     = "wc-test"
-  zone    = "home.sflab.io."
+
+  record_types = {
+    normal   = true
+    wildcard = true
+  }
 }
 
 unit "proxmox_lxc" {
   source = "../../../../units/proxmox-lxc"
+
   path   = "proxmox-lxc"
 
   values = {
-    version  = local.version
-    env      = local.env
+    version  = local.env.catalog_version
+    env      = local.env.environment_name
     app      = local.app
-    pool_id  = local.pool_id
+    pool_id  = local.env.pool_id
   }
 }
 
-# DNS records - creates both normal and wildcard records
 unit "dns" {
   source = "../../../../units/dns"
+
   path   = "dns"
 
   values = {
-    version      = local.version
-    env          = local.env
+    version      = local.env.catalog_version
+    env          = local.env.environment_name
     app          = local.app
-    zone         = local.zone
-    record_types = {
-      normal   = true
-      wildcard = true
-    }
+    zone         = local.env.zone
+    record_types = local.record_types
     compute_path = "../proxmox-lxc"
   }
 }

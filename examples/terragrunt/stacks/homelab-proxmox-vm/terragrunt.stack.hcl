@@ -1,55 +1,40 @@
 locals {
-  version = "feat/better_stacks"
+  env = read_terragrunt_config(find_in_parent_folders("environment.hcl")).locals
 
-  # pool configuration
-  pool_id = "example-stack-pool"
+  app       = "example-vm"
+  memory    = 2048
+  disk_size = 8
 
-  # VM naming configuration
-  env = "dev"
-  app = "example-vm"
+  network_config = {
+    type = "dhcp"
+  }
 
-  # DNS configuration
-  zone = "home.sflab.io."
-
-  # SSH key configuration - use absolute path for stack deployments
-  ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
-}
-
-unit "proxmox_vm" {
-  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/proxmox-vm?ref=${local.version}"
-
-  path = "proxmox-vm"
-
-  values = {
-    version = local.version
-
-    env     = local.env
-    app     = local.app
-    pool_id = local.pool_id
-
-    # Optional: Customize VM resources
-    # memory    = 4096
-    # cores     = 4
-    # disk_size = 20
-
-    ssh_public_key_path = local.ssh_public_key_path
-
-    network_config = { type = "dhcp" }
+  record_types = {
+    normal   = true
+    wildcard = true
   }
 }
 
-unit "dns" {
-  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/dns?ref=${local.version}"
-
-  path = "dns"
+stack "homelab_proxmox_vm" {
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//stacks/homelab-proxmox-vm?ref=${local.env.catalog_version}"
+  path   = "homelab-proxmox-vm"
 
   values = {
-    version = local.version
+    version = local.env.catalog_version
 
-    env  = local.env
-    app  = local.app
-    zone = local.zone
+    app = local.app
+    env = local.env.environment_name
 
-    compute_path = "../proxmox-vm"
+    memory    = local.memory
+    disk_size = local.disk_size
+
+    network_config = local.network_config
+
+    record_types = local.record_types
+
+    dns_zone = local.env.zone
+
+    pool_id             = local.env.pool_id
+    ssh_public_key_path = local.env.admin_ssh_public_key_path
   }
 }

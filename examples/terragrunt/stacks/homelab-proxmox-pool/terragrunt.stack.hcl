@@ -1,8 +1,9 @@
 locals {
-  version = "main"
+  env = read_terragrunt_config(find_in_parent_folders("environment.hcl")).locals
+  # version = "main"
 
   # pool configuration
-  pool_id = "example-stack-pool"
+  # pool_id = "example-stack-pool"
 }
 
 unit "proxmox_pool" {
@@ -11,8 +12,8 @@ unit "proxmox_pool" {
   path = "proxmox-pool"
 
   values = {
-    version = local.version
+    version = local.env.catalog_version
 
-    pool_id = local.pool_id
+    pool_id = local.env.pool_id
   }
 }

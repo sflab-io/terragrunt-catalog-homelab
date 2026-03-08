@@ -1,107 +1,35 @@
 locals {
-  version = "main"
+  env = read_terragrunt_config(find_in_parent_folders("environment.hcl")).locals
 
-  # pool configuration
-  pool_id = "example-stack-pool"
+  app = "example-lxc"
 
-  # container configuration
-  env      = "dev"
-  app      = "example-lxc"
+  network_config = {
+    type = "dhcp"
+  }
 
-  # Optional: Customize VM resources
-  # memory = 4096  # Memory in MB (default: 2048)
-  # cores  = 4     # CPU cores (default: 2)
-
-  zone = "home.sflab.io."
-
-  # SSH key configuration - use absolute path for stack deployments
-  ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
-}
-
-unit "proxmox_lxc_1" {
-  source = "../../../../units/proxmox-lxc"
-
-  path = "proxmox-lxc-1"
-
-  values = {
-    version = local.version
-
-    env      = local.env
-    app      = "${local.app}-1"
-    pool_id  = local.pool_id
-
-    # SSH key path
-    ssh_public_key_path = local.ssh_public_key_path
-
-    # Optional: Customize VM resources
-    # memory = try(local.memory, 2048)
-    # cores  = try(local.cores, 2)
-    network_config = {
-      type        = "static"
-      ip_address  = "192.168.1.99"
-      cidr        = 24
-      gateway     = "192.168.1.1"
-      # dns_servers = ["8.8.8.8", "8.8.4.4"]  # Optional
-    }
+  record_types = {
+    normal   = true
+    wildcard = false
   }
 }
 
-unit "proxmox_lxc_2" {
-  source = "../../../../units/proxmox-lxc"
-
-  path = "proxmox-lxc-2"
-
-  values = {
-    version = local.version
-
-    env      = local.env
-    app      = "${local.app}-2"
-    pool_id  = local.pool_id
-
-    # SSH key path
-    ssh_public_key_path = local.ssh_public_key_path
-
-    # Optional: Customize VM resources
-    # memory = try(local.memory, 2048)
-    # cores  = try(local.cores, 2)
-    network_config = {
-      type        = "static"
-      ip_address  = "192.168.1.100"
-      cidr        = 24
-      gateway     = "192.168.1.1"
-      # dns_servers = ["8.8.8.8", "8.8.4.4"]  # Optional
-    }
-  }
-}
-
-unit "dns_1" {
-  source = "../../../../units/dns"
-
-  path = "dns-1"
+stack "homelab_proxmox_lxc" {
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//stacks/homelab-proxmox-lxc?ref=${local.env.catalog_version}"
+  path   = "homelab-proxmox-lxc"
 
   values = {
-    version = local.version
+    version = local.env.catalog_version
 
-    env  = local.env
-    app  = "${local.app}-1"
-    zone = local.zone
+    app = local.app
+    env = local.env.environment_name
 
-    compute_path = "../proxmox-lxc-1"
-  }
-}
+    network_config = local.network_config
 
-unit "dns_2" {
-  source = "../../../../units/dns"
+    record_types = local.record_types
 
-  path = "dns-2"
+    dns_zone = local.env.zone
 
-  values = {
-    version = local.version
-
-    env  = local.env
-    app  = "${local.app}-2"
-    zone = local.zone
-
-    compute_path = "../proxmox-lxc-2"
+    pool_id             = local.env.pool_id
+    ssh_public_key_path = local.env.admin_ssh_public_key_path
   }
 }
