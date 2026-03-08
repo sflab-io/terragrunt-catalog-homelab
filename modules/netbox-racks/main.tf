@@ -23,6 +23,10 @@ resource "netbox_rack" "this" {
   name     = each.value.name
   site_id  = data.netbox_site.this[each.value.site_name].id
   status   = each.value.status
+
+  # Ensure racks are destroyed before rack_types on `tofu destroy`.
+  # NetBox rejects deleting a rack_type that still has racks referencing it.
+  depends_on = [netbox_rack_type.this]
 }
 
 # The e-breuninger/netbox provider does not support setting rack_type on
