@@ -44,3 +44,19 @@ resource "netbox_device" "this" {
   tenant_id      = data.netbox_tenant.this[each.value.tenant_name].id
   rack_id        = each.value.rack_name != null ? data.netbox_racks.this[each.value.rack_name].racks[0].id : null
 }
+
+resource "netbox_device_interface" "this" {
+  for_each  = { for device in var.devices : device.name => device }
+  name      = each.value.interfaces[0].name
+  device_id = netbox_device.this[each.value.name].id
+  type      = each.value.interfaces[0].type
+}
+
+resource "netbox_ip_address" "this" {
+  for_each     = { for device in var.devices : device.name => device }
+  ip_address   = each.value.interfaces[0].ip_addresses[0].address
+  dns_name     = try(each.value.interfaces[0].ip_addresses[0].dns_name, null)
+  status       = try(each.value.interfaces[0].ip_addresses[0].status, null)
+  interface_id = netbox_device_interface.this[each.value.name].id
+  object_type  = "dcim.interface"
+}

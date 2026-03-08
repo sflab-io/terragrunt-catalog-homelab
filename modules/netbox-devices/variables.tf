@@ -35,6 +35,15 @@ variable "devices" {
     site_name   = string
     tenant_name = string
     rack_name   = optional(string)
+    interfaces = optional(list(object({
+      name = string
+      type = string
+      ip_addresses = optional(list(object({
+        address  = string
+        dns_name = optional(string)
+        status   = optional(string)
+      })), [])
+    })), [])
   }))
   default = []
 }
