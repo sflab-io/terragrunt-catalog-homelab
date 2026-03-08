@@ -33,7 +33,7 @@ dependency "netbox_organization" {
 inputs = {
   # Required values for NetBox organization module
   netbox_url    = include.provider_netbox.locals.netbox_server_url
-  manufacturers = values.manufacturers
-  rack_types    = values.rack_types
+  manufacturers = try(values.manufacturers, [])
+  rack_types    = try(values.rack_types, [])
   racks         = try(values.racks, [])
 }
