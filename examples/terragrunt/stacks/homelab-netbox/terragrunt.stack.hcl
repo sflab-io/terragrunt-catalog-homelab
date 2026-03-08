@@ -66,7 +66,7 @@ locals {
   netbox_url = local.server_url
 
   # Racks variables for NetBox racks module
-  manufacturers = [
+  manufacturers_racks = [
     {
       name = "GeeekPi"
     }
@@ -89,6 +89,65 @@ locals {
       site_name = "SFLAB Homelab Site"
       status    = "active"
       rack_type = "DeskPi RackMate T1"
+    }
+  ]
+
+  # Variables for NetBox devices module
+  device_roles = {
+    "Hypervisor" = {
+      color_hex = "8a2be2"
+      vm_role   = false
+    }
+    "Server" = {
+      color_hex = "ffff00"
+      vm_role   = true
+    }
+    "Router" = {
+      color_hex = "00ffff"
+      vm_role   = false
+    }
+    "Firewall" = {
+      color_hex = "ff00ff"
+      vm_role   = false
+    }
+    "Switch" = {
+      color_hex = "00ff00"
+      vm_role   = false
+    }
+    "AP" = {
+      color_hex = "0000ff"
+      vm_role   = false
+    }
+    "VM" = {
+      color_hex = "ffa500"
+      vm_role   = true
+    }
+    "LXC" = {
+      color_hex = "800000"
+      vm_role   = true
+    }
+    "K8s Control Plane" = {
+      color_hex = "ff0000"
+      vm_role   = true
+    }
+    "K8s Worker" = {
+      color_hex = "008080"
+      vm_role   = true
+    }
+  }
+
+  manufacturers_devices = [
+    {
+      name = "Minisforum"
+    },
+    {
+      name = "Netgear"
+    },
+    {
+      name = "Protectli"
+    },
+    {
+      name = "Raspberry Pi Foundation"
     }
   ]
 }
@@ -121,9 +180,23 @@ unit "netbox_racks" {
 
     organization_path = "../netbox_organization"
 
-    # netbox_url    = local.netbox_url
-    manufacturers = local.manufacturers
+    manufacturers = local.manufacturers_racks
     rack_types    = local.rack_types
     racks         = local.racks
+  }
+}
+
+unit "netbox_devices" {
+  source = "../../../../units/netbox-devices"
+
+  path = "netbox_devices"
+
+  values = {
+    version           = local.version
+
+    racks_path = "../netbox_racks"
+
+    device_roles  = local.device_roles
+    manufacturers = local.manufacturers_devices
   }
 }
