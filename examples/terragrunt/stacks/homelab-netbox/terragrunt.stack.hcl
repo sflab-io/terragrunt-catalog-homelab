@@ -150,6 +150,142 @@ locals {
       name = "Raspberry Pi Foundation"
     }
   ]
+
+  device_types = [
+    {
+      model             = "MS-01 Work Station"
+      manufacturer_name = "Minisforum"
+      u_height          = "1"
+    },
+    {
+      model             = "FW4C-0-8-120"
+      manufacturer_name = "Protectli"
+      u_height          = "1"
+    },
+    {
+      model             = "GS108Ev4"
+      manufacturer_name = "Netgear"
+      u_height          = "1"
+    },
+    {
+      model             = "WAX210"
+      manufacturer_name = "Netgear"
+      u_height          = "1"
+    },
+    {
+      model             = "PI5-4GB"
+      manufacturer_name = "Raspberry Pi Foundation"
+      u_height          = "1"
+    }
+  ]
+
+  devices = [
+    {
+      name        = "SFLAB-HYPERVISOR-01"
+      device_type = "MS-01 Work Station"
+      role_name   = "Hypervisor"
+      site_name   = "SFLAB Homelab Site"
+      tenant_name = "Platform Team"
+      rack_name   = "Rack 1"
+      interfaces  = [
+        {
+          name = "eth0"
+          type = "1000base-t"
+          ip_addresses = [
+            {
+              address  = "192.168.1.12/32"
+              dns_name = "netbox.home.sflab.io"
+              status   = "active"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name        = "SFLAB-FIREWALL-01"
+      device_type = "FW4C-0-8-120"
+      role_name   = "Firewall"
+      site_name   = "SFLAB Homelab Site"
+      tenant_name = "Platform Team"
+      rack_name   = "Rack 1"
+      interfaces  = [
+        {
+          name = "eth0"
+          type = "1000base-t"
+          ip_addresses = [
+            {
+              address  = "192.168.1.1/32"
+              dns_name = "opnsense.home.sflab.io"
+              status   = "active"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name        = "SFLAB-SWITCH-01"
+      device_type = "GS108Ev4"
+      role_name   = "Router"
+      site_name   = "SFLAB Homelab Site"
+      tenant_name = "Platform Team"
+      rack_name   = "Rack 1"
+      interfaces  = [
+        {
+          name = "eth0"
+          type = "1000base-t"
+          ip_addresses = [
+            {
+              address  = "192.168.1.10/32"
+              dns_name = "switch.home.sflab.io"
+              status   = "active"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name        = "SFLAB-AP-01"
+      device_type = "WAX210"
+      role_name   = "AP"
+      site_name   = "SFLAB Homelab Site"
+      tenant_name = "Platform Team"
+      rack_name   = "Rack 1"
+      interfaces  = [
+        {
+          name = "eth0"
+          type = "1000base-t"
+          ip_addresses = [
+            {
+              address  = "192.168.1.11/32"
+              dns_name = "ap.home.sflab.io"
+              status   = "active"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name        = "SFLAB-DNS-01"
+      device_type = "PI5-4GB"
+      role_name   = "Server"
+      site_name   = "SFLAB Homelab Site"
+      tenant_name = "Platform Team"
+      rack_name   = "Rack 1"
+      interfaces  = [
+        {
+          name = "eth0"
+          type = "1000base-t"
+          ip_addresses = [
+            {
+              address  = "192.168.1.13/32"
+              # dns_name = "dns.home.sflab.io"
+              status   = "active"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
 
 unit "netbox_organization" {
@@ -198,5 +334,7 @@ unit "netbox_devices" {
 
     device_roles  = local.device_roles
     manufacturers = local.manufacturers_devices
+    device_types  = local.device_types
+    devices       = local.devices
   }
 }

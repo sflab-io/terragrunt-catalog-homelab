@@ -34,6 +34,6 @@ inputs = {
   # Required values for NetBox Devices module
   device_roles  = try(values.device_roles, [])
   manufacturers = try(values.manufacturers, [])
-  # rack_types    = try(values.rack_types, [])
-  # racks         = try(values.racks, [])
+  device_types  = try(values.device_types, [])
+  devices       = try(values.devices, [])
 }
