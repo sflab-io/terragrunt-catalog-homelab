@@ -39,9 +39,10 @@ variable "devices" {
       name = string
       type = string
       ip_addresses = optional(list(object({
-        address  = string
-        dns_name = optional(string)
-        status   = optional(string)
+        address     = string
+        dns_name    = optional(string)
+        status      = optional(string)
+        description = optional(string)
       })), [])
     })), [])
   }))

@@ -31,9 +31,6 @@ dependency "netbox_devices" {
 }
 
 inputs = {
-  # Required values for NetBox ipam module
-  # device_roles  = try(values.device_roles, [])
-  # manufacturers = try(values.manufacturers, [])
-  # device_types  = try(values.device_types, [])
-  # devices       = try(values.devices, [])
+  vlans    = try(values.vlans, [])
+  prefixes = try(values.prefixes, [])
 }

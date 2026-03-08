@@ -280,6 +280,7 @@ locals {
               address  = "192.168.1.13/32"
               # dns_name = "dns.home.sflab.io"
               status   = "active"
+              description = "DNS Primary Server"
             }
           ]
         }
@@ -308,6 +309,33 @@ locals {
       name        = "GUEST"
       vid         = 30
       description = "Guest VLAN"
+    }
+  ]
+
+  prefixes = [
+    {
+      prefix      = "192.168.1.0/24"
+      status      = "active"
+      description = "Default prefix"
+      vlan_id     = 1
+    },
+    {
+      prefix      = "192.168.10.0/24"
+      status      = "active"
+      description = "User VLAN prefix"
+      vlan_id     = 10
+    },
+    {
+      prefix      = "192.168.20.0/24"
+      status      = "active"
+      description = "IoT VLAN prefix"
+      vlan_id     = 20
+    },
+    {
+      prefix      = "192.168.30.0/24"
+      status      = "active"
+      description = "Guest VLAN prefix"
+      vlan_id     = 30
     }
   ]
 }
@@ -373,9 +401,7 @@ unit "netbox_ipam" {
 
     devices_path = "../netbox_devices"
 
-    vlans = local.vlans
-    # manufacturers = local.manufacturers_devices
-    # device_types  = local.device_types
-    # devices       = local.devices
+    vlans    = local.vlans
+    prefixes = local.prefixes
   }
 }

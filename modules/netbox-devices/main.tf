@@ -57,6 +57,7 @@ resource "netbox_ip_address" "this" {
   ip_address   = each.value.interfaces[0].ip_addresses[0].address
   dns_name     = try(each.value.interfaces[0].ip_addresses[0].dns_name, null)
   status       = try(each.value.interfaces[0].ip_addresses[0].status, null)
+  description  = try(each.value.interfaces[0].ip_addresses[0].description, null)
   interface_id = netbox_device_interface.this[each.value.name].id
   object_type  = "dcim.interface"
 }
