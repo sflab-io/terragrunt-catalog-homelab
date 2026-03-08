@@ -1,6 +1,6 @@
 locals {
-  # version = "feat/netbox_stack"
-  version = "main"
+  version = "feat/netbox_stack"
+  # version = "main"
 
   # Variables for NetBox organization module
   regions = [
@@ -193,9 +193,10 @@ locals {
           type = "1000base-t"
           ip_addresses = [
             {
-              address  = "192.168.1.12/32"
-              dns_name = "netbox.home.sflab.io"
-              status   = "active"
+              address     = "192.168.1.12/32"
+              dns_name    = "netbox.home.sflab.io"
+              status      = "active"
+              description = "Hypervisor management ipv4 address"
             }
           ]
         }
@@ -214,9 +215,10 @@ locals {
           type = "1000base-t"
           ip_addresses = [
             {
-              address  = "192.168.1.1/32"
-              dns_name = "opnsense.home.sflab.io"
-              status   = "active"
+              address     = "192.168.1.1/32"
+              dns_name    = "opnsense.home.sflab.io"
+              status      = "active"
+              description = "Firewall management ipv4 address"
             }
           ]
         }
@@ -235,9 +237,10 @@ locals {
           type = "1000base-t"
           ip_addresses = [
             {
-              address  = "192.168.1.10/32"
-              dns_name = "switch.home.sflab.io"
-              status   = "active"
+              address     = "192.168.1.10/32"
+              dns_name    = "switch.home.sflab.io"
+              status      = "active"
+              description = "Core switch management ipv4 address"
             }
           ]
         }
@@ -256,9 +259,10 @@ locals {
           type = "1000base-t"
           ip_addresses = [
             {
-              address  = "192.168.1.11/32"
-              dns_name = "ap.home.sflab.io"
-              status   = "active"
+              address     = "192.168.1.11/32"
+              dns_name    = "ap.home.sflab.io"
+              status      = "active"
+              description = "Wireless access point management ipv4 address"
             }
           ]
         }
@@ -277,10 +281,9 @@ locals {
           type = "1000base-t"
           ip_addresses = [
             {
-              address  = "192.168.1.13/32"
-              # dns_name = "dns.home.sflab.io"
-              status   = "active"
-              description = "DNS Primary Server"
+              address     = "192.168.1.13/32"
+              status      = "active"
+              description = "DNS Primary Server ipv4 address"
             }
           ]
         }
@@ -336,6 +339,31 @@ locals {
       status      = "active"
       description = "Guest VLAN prefix"
       vlan_id     = 30
+    }
+  ]
+
+  # Variables for NetBox virtualization module
+  cluster_types = [
+    {
+      name = "Proxmox VE Cluster"
+    },
+    {
+      name = "Kubernetes K3s Cluster"
+    }
+  ]
+
+  netbox_clusters = [
+    {
+      name              = "Proxmox Cluster Production"
+      cluster_type_name = "Proxmox VE Cluster"
+      site_name         = "SFLAB Homelab Site"
+      tenant_name       = "Platform Team"
+    },
+    {
+      name              = "Proxmox Cluster Staging"
+      cluster_type_name = "Proxmox VE Cluster"
+      site_name         = "SFLAB Homelab Site"
+      tenant_name       = "Platform Team"
     }
   ]
 }
@@ -403,5 +431,20 @@ unit "netbox_ipam" {
 
     vlans    = local.vlans
     prefixes = local.prefixes
+  }
+}
+
+unit "netbox_virtualization" {
+  source = "../../../../units/netbox-virtualization"
+
+  path = "netbox_virtualization"
+
+  values = {
+    version = local.version
+
+    ipam_path = "../netbox_ipam"
+
+    cluster_types   = local.cluster_types
+    netbox_clusters = local.netbox_clusters
   }
 }
