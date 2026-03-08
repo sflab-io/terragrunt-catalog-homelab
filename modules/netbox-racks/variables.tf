@@ -6,7 +6,6 @@
 variable "netbox_url" {
   description = "NetBox server URL (e.g. http://netbox.home.sflab.io). Required when any rack has rack_type set."
   type        = string
-  # default     = ""
 }
 
 variable "manufacturers" {
