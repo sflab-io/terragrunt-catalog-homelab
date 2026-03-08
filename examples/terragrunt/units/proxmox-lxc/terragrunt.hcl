@@ -3,6 +3,7 @@ include "root" {
 }
 
 locals {
+  environment     = read_terragrunt_config(find_in_parent_folders("environment.hcl"))
   provider_config = read_terragrunt_config(find_in_parent_folders("provider-proxmox-config.hcl"))
 
   proxmox_endpoint = "https://${local.provider_config.locals.proxmox_host}:${local.provider_config.locals.proxmox_port}/"
@@ -44,7 +45,7 @@ inputs = {
   env = "dev"
   app = "terragrunt-lxc"
 
-  ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
+  ssh_public_key_path = local.environment.locals.admin_ssh_public_key_path
 
   network_config = {
     type        = "static"

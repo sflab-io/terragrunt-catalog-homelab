@@ -3,7 +3,8 @@ include "root" {
 }
 
 locals {
-  dns_config = read_terragrunt_config(find_in_parent_folders("provider-dns-config.hcl"))
+  environment = read_terragrunt_config(find_in_parent_folders("environment.hcl"))
+  dns_config  = read_terragrunt_config(find_in_parent_folders("provider-dns-config.hcl"))
 
   dns_server    = "${local.dns_config.locals.dns_server}"
   dns_port      = "${local.dns_config.locals.dns_port}"
@@ -35,7 +36,7 @@ terraform {
 inputs = {
   env       = "dev"
   app       = "example"
-  zone      = "home.sflab.io."
+  zone      = local.environment.locals.zone
   addresses = ["192.168.1.100"]
   ttl       = 300
   # record_types uses default: { normal = true, wildcard = false }

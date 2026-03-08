@@ -3,6 +3,7 @@ include "root" {
 }
 
 locals {
+  environment     = read_terragrunt_config(find_in_parent_folders("environment.hcl"))
   provider_config = read_terragrunt_config(find_in_parent_folders("provider-proxmox-config.hcl"))
 
   proxmox_endpoint = "https://${local.provider_config.locals.proxmox_host}:${local.provider_config.locals.proxmox_port}/"
@@ -31,5 +32,5 @@ terraform {
 
 inputs = {
   # Required inputs
-  pool_id = "example-pool"
+  pool_id = local.environment.locals.pool_id
 }
