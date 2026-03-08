@@ -71,7 +71,7 @@ unit "netbox_organization" {
     tenant_groups = local.tenant_groups
     tenants = local.tenants
     contact_groups = local.contact_groups
-    # contact_roles = local.contact_roles
+    contact_roles = local.contact_roles
     contacts = local.contacts
   }
 }
