@@ -286,6 +286,30 @@ locals {
       ]
     }
   ]
+
+  # Variables for NetBox ipam module
+  vlans = [
+    {
+      name        = "Default"
+      vid         = 1
+      description = "Default VLAN"
+    },
+    {
+      name        = "USER"
+      vid         = 10
+      description = "User VLAN"
+    },
+    {
+      name        = "IOT"
+      vid         = 20
+      description = "IoT VLAN"
+    },
+    {
+      name        = "GUEST"
+      vid         = 30
+      description = "Guest VLAN"
+    }
+  ]
 }
 
 unit "netbox_organization" {
@@ -296,13 +320,13 @@ unit "netbox_organization" {
   values = {
     version = local.version
 
-    regions = local.regions
-    sites   = local.sites
-    tenant_groups = local.tenant_groups
-    tenants = local.tenants
+    regions        = local.regions
+    sites          = local.sites
+    tenant_groups  = local.tenant_groups
+    tenants        = local.tenants
     contact_groups = local.contact_groups
-    contact_roles = local.contact_roles
-    contacts = local.contacts
+    contact_roles  = local.contact_roles
+    contacts       = local.contacts
   }
 }
 
@@ -312,7 +336,7 @@ unit "netbox_racks" {
   path = "netbox_racks"
 
   values = {
-    version           = local.version
+    version = local.version
 
     organization_path = "../netbox_organization"
 
@@ -328,7 +352,7 @@ unit "netbox_devices" {
   path = "netbox_devices"
 
   values = {
-    version           = local.version
+    version = local.version
 
     racks_path = "../netbox_racks"
 
@@ -336,5 +360,22 @@ unit "netbox_devices" {
     manufacturers = local.manufacturers_devices
     device_types  = local.device_types
     devices       = local.devices
+  }
+}
+
+unit "netbox_ipam" {
+  source = "../../../../units/netbox-ipam"
+
+  path = "netbox_ipam"
+
+  values = {
+    version = local.version
+
+    devices_path = "../netbox_devices"
+
+    vlans = local.vlans
+    # manufacturers = local.manufacturers_devices
+    # device_types  = local.device_types
+    # devices       = local.devices
   }
 }
