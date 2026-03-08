@@ -1,6 +1,6 @@
 locals {
-  version = "feat/netbox_stack"
-  # version = "main"
+  # version = "feat/netbox_stack"
+  version = "main"
 
   # Variables for NetBox organization module
   regions = [
