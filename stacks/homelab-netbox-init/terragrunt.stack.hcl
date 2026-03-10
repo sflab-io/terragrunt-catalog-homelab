@@ -11,7 +11,7 @@ unit "netbox_organization" {
   path = "netbox_organization"
 
   values = {
-    version = local.env.catalog_version
+    version = values.version
 
     regions        = local.regions
     sites          = local.sites

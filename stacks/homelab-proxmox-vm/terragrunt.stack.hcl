@@ -23,6 +23,7 @@ unit "proxmox_vm" {
 
   values = {
     version             = values.version
+
     env                 = local.env
     app                 = local.app
     memory              = local.memory
@@ -41,6 +42,7 @@ unit "dns" {
 
   values = {
     version      = values.version
+
     env          = local.env
     app          = local.app
     zone         = local.zone
