@@ -31,7 +31,8 @@ dependency "netbox_organization" {
 }
 
 inputs = {
-  # Required values for NetBox organization module
+  # Required by the rack_type_assignment workaround in the module.
+  # Passed explicitly because modules cannot read provider configuration directly.
   netbox_url    = include.provider_netbox.locals.netbox_server_url
   manufacturers = try(values.manufacturers, [])
   rack_types    = try(values.rack_types, [])

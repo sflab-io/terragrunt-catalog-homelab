@@ -58,38 +58,33 @@ locals {
     }
   ]
 
-#   # Variables for NetBox racks module
+  # Variables for NetBox racks module
+  # Racks variables for NetBox racks module
+  rack_manufacturers = [
+    {
+      name = "GeeekPi"
+    }
+  ]
 
-#   # Required by the rack_type_assignment workaround in the module.
-#   # Passed explicitly because modules cannot read provider configuration directly.
-#   netbox_url = local.server_url
+  rack_types = [
+    {
+      model         = "DeskPi RackMate T1"
+      manufacturer  = "GeeekPi"
+      form_factor   = "4-post-cabinet"
+      width         = 10
+      u_height      = 8
+      starting_unit = 1
+    }
+  ]
 
-#   # Racks variables for NetBox racks module
-#   manufacturers_racks = [
-#     {
-#       name = "GeeekPi"
-#     }
-#   ]
-
-#   rack_types = [
-#     {
-#       model         = "DeskPi RackMate T1"
-#       manufacturer  = "GeeekPi"
-#       form_factor   = "4-post-cabinet"
-#       width         = 10
-#       u_height      = 8
-#       starting_unit = 1
-#     }
-#   ]
-
-#   racks = [
-#     {
-#       name      = "Rack 1"
-#       site_name = "SFLAB Homelab Site"
-#       status    = "active"
-#       rack_type = "DeskPi RackMate T1"
-#     }
-#   ]
+  racks = [
+    {
+      name      = "Rack 1"
+      site_name = "SFLAB Homelab Site"
+      status    = "active"
+      rack_type = "DeskPi RackMate T1"
+    }
+  ]
 
 #   # Variables for NetBox devices module
 #   device_roles = {
@@ -375,6 +370,7 @@ stack "netbox_organization" {
   values = {
     version = local.env.catalog_version
 
+    # Required values for NetBox organization module
     regions        = local.regions
     sites          = local.sites
     tenant_groups  = local.tenant_groups
@@ -382,68 +378,10 @@ stack "netbox_organization" {
     contact_groups = local.contact_groups
     contact_roles  = local.contact_roles
     contacts       = local.contacts
+
+    # Variables for NetBox racks module
+    manufacturers = local.rack_manufacturers
+    rack_types    = local.rack_types
+    racks         = local.racks
   }
 }
-
-# unit "netbox_racks" {
-#   source = "../../../../units/netbox-racks"
-
-#   path = "netbox_racks"
-
-#   values = {
-#     version = local.env.catalog_version
-
-#     organization_path = "../netbox_organization"
-
-#     manufacturers = local.manufacturers_racks
-#     rack_types    = local.rack_types
-#     racks         = local.racks
-#   }
-# }
-
-# unit "netbox_devices" {
-#   source = "../../../../units/netbox-devices"
-
-#   path = "netbox_devices"
-
-#   values = {
-#     version = local.env.catalog_version
-
-#     racks_path = "../netbox_racks"
-
-#     device_roles  = local.device_roles
-#     manufacturers = local.manufacturers_devices
-#     device_types  = local.device_types
-#     devices       = local.devices
-#   }
-# }
-
-# unit "netbox_ipam" {
-#   source = "../../../../units/netbox-ipam"
-
-#   path = "netbox_ipam"
-
-#   values = {
-#     version = local.env.catalog_version
-
-#     devices_path = "../netbox_devices"
-
-#     vlans    = local.vlans
-#     prefixes = local.prefixes
-#   }
-# }
-
-# unit "netbox_virtualization" {
-#   source = "../../../../units/netbox-virtualization"
-
-#   path = "netbox_virtualization"
-
-#   values = {
-#     version = local.env.catalog_version
-
-#     ipam_path = "../netbox_ipam"
-
-#     cluster_types   = local.cluster_types
-#     netbox_clusters = local.netbox_clusters
-#   }
-# }
