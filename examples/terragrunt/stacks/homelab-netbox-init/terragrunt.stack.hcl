@@ -365,10 +365,10 @@ locals {
 #       tenant_name       = "Platform Team"
 #     }
 #   ]
-# }
+}
 
 unit "netbox_organization" {
-  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//stacks/netbox-organization?ref=${local.env.catalog_version}"
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//stacks/homelab-netbox-init?ref=${local.env.catalog_version}"
 
   path = "netbox_organization"
 

@@ -1,5 +1,5 @@
 locals {
-  env = read_terragrunt_config(find_in_parent_folders("environment.hcl")).locals
+  env = values.env
 
   regions = values.regions
   sites   = values.sites
