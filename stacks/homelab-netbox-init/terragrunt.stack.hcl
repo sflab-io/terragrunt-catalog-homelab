@@ -1,5 +1,5 @@
 locals {
-  env = values.env
+  # env = values.env
 
   regions = values.regions
   sites   = values.sites
