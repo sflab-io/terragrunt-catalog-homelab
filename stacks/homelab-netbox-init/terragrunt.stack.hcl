@@ -22,6 +22,10 @@ locals {
   # Variables for NetBox IPAM module
   vlans    = values.vlans
   prefixes = values.prefixes
+
+  # Variables for NetBox virtualization module
+  cluster_types = values.cluster_types
+  clusters      = values.clusters
 }
 
 unit "netbox_organization" {
@@ -90,17 +94,17 @@ unit "netbox_ipam" {
   }
 }
 
-# unit "netbox_virtualization" {
-#   source = "../../../../units/netbox-virtualization"
+unit "netbox_virtualization" {
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/netbox-virtualization?ref=${values.version}"
 
-#   path = "netbox_virtualization"
+  path = "netbox_virtualization"
 
-#   values = {
-#     version = local.env.catalog_version
+  values = {
+    version = values.version
 
-#     ipam_path = "../netbox_ipam"
+    ipam_path = "../netbox_ipam"
 
-#     cluster_types   = local.cluster_types
-#     netbox_clusters = local.netbox_clusters
-#   }
-# }
+    cluster_types = local.cluster_types
+    clusters      = local.clusters
+  }
+}

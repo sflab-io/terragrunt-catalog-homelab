@@ -654,7 +654,7 @@ Manages virtual cluster infrastructure in NetBox.
 
 **Required Inputs:**
 - `cluster_types` (list): List of cluster type objects with name
-- `netbox_clusters` (list): List of cluster objects with name, type, and optional site and tenant
+- `clusters` (list): List of cluster objects with name, type, and optional site and tenant
 
 ### netbox-virtual-machine
 

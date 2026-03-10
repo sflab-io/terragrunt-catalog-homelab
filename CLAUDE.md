@@ -849,7 +849,7 @@ Current modules support:
   - Required inputs: `vlans` (list with name/vid/optional description/tags), `prefixes` (list with prefix/status/optional description/tags/vlan_id)
 
 - **NetBox Virtualization** (`modules/netbox-virtualization`): Manages virtual cluster infrastructure
-  - Required inputs: `cluster_types` (list with name), `netbox_clusters` (list with name/cluster_type_name/optional site_name/tenant_name)
+  - Required inputs: `cluster_types` (list with name), `clusters` (list with name/cluster_type_name/optional site_name/tenant_name)
 
 - **NetBox Virtual Machine** (`modules/netbox-virtual-machine`): Manages VM records in NetBox
   - Required inputs: `virtual_machines` (list with name/cluster_name/optional description/tags/role_name/tenant_name/vcpus/memory_mb/disk_size_mb, and interfaces with name/address/status/dns_name)

@@ -336,36 +336,36 @@ locals {
     }
   ]
 
-#   # Variables for NetBox virtualization module
-#   cluster_types = [
-#     {
-#       name = "Proxmox VE Cluster"
-#     },
-#     {
-#       name = "Kubernetes K3s Cluster"
-#     }
-#   ]
+  # Variables for NetBox virtualization module
+  cluster_types = [
+    {
+      name = "Proxmox VE Cluster"
+    },
+    {
+      name = "Kubernetes K3s Cluster"
+    }
+  ]
 
-#   netbox_clusters = [
-#     {
-#       name              = "Proxmox Cluster Production"
-#       cluster_type_name = "Proxmox VE Cluster"
-#       site_name         = "SFLAB Homelab Site"
-#       tenant_name       = "Platform Team"
-#     },
-#     {
-#       name              = "Proxmox Cluster Staging"
-#       cluster_type_name = "Proxmox VE Cluster"
-#       site_name         = "SFLAB Homelab Site"
-#       tenant_name       = "Platform Team"
-#     }
-#   ]
+  clusters = [
+    {
+      name              = "Proxmox Cluster Production"
+      cluster_type_name = "Proxmox VE Cluster"
+      site_name         = "SFLAB Homelab Site"
+      tenant_name       = "Platform Team"
+    },
+    {
+      name              = "Proxmox Cluster Staging"
+      cluster_type_name = "Proxmox VE Cluster"
+      site_name         = "SFLAB Homelab Site"
+      tenant_name       = "Platform Team"
+    }
+  ]
 }
 
-stack "netbox_organization" {
+stack "netbox_init" {
   source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//stacks/homelab-netbox-init?ref=${local.env.catalog_version}"
 
-  path = "netbox_organization"
+  path = "netbox_init"
 
   values = {
     version = local.env.catalog_version
