@@ -11,8 +11,6 @@ unit "netbox_virtual_machine" {
   values = {
     version = values.version
 
-    virtualization_path = "../netbox_virtualization"
-
     virtual_machines = local.virtual_machines
   }
 }

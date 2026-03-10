@@ -22,14 +22,6 @@ terraform {
   source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//modules/netbox-virtual-machine?ref=${values.version}"
 }
 
-dependency "netbox_virtualization" {
-  config_path = values.virtualization_path
-
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
-  mock_outputs                            = {}
-  skip_outputs                            = true
-}
-
 inputs = {
   virtual_machines = values.virtual_machines
 }
