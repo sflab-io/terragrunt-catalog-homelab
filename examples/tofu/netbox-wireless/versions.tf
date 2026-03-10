@@ -1,5 +1,7 @@
 terraform {
   required_providers {
+    # Pinned to ~> 2.0 (SDKv2) to avoid a plan-time validation bug in v3.0.
+    # See modules/netbox-wireless/versions.tf for details.
     restapi = {
       source  = "Mastercard/restapi"
       version = "~> 2.0"
