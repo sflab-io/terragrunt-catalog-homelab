@@ -25,3 +25,19 @@ unit "netbox_organization" {
     contacts       = local.contacts
   }
 }
+
+unit "netbox_racks" {
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/netbox-racks?ref=${values.version}"
+
+  path = "netbox_racks"
+
+  values = {
+    version = values.version
+
+    organization_path = "../netbox_organization"
+
+    # manufacturers = local.manufacturers_racks
+    # rack_types    = local.rack_types
+    # racks         = local.racks
+  }
+}
