@@ -5,7 +5,7 @@ locals {
   virtual_machines = [
     {
       name              = "Example VM"
-      cluster_name      = "Proxmox Production Cluster"
+      cluster_name      = "Proxmox Cluster Production"
       role_name         = "VM"
       tenant_name       = "Platform Team"
       vcpus             = 2
