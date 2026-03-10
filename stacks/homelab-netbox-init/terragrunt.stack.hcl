@@ -9,7 +9,7 @@ locals {
   contacts       = values.contacts
 
   # Variables for NetBox racks module
-  manufacturers = values.manufacturers_racks
+  manufacturers = values.manufacturers
   rack_types    = values.rack_types
   racks         = values.racks
 }
