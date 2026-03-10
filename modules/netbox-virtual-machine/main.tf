@@ -42,6 +42,7 @@ resource "netbox_virtual_machine" "this" {
 }
 
 resource "netbox_primary_ip" "this" {
-  ip_address_id      = netbox_ip_address.this.id
-  virtual_machine_id = netbox_virtual_machine.this.id
+  for_each           = { for vm in var.virtual_machines : vm.name => vm }
+  ip_address_id      = netbox_ip_address.this[each.value.name].id
+  virtual_machine_id = netbox_virtual_machine.this[each.value.name].id
 }
