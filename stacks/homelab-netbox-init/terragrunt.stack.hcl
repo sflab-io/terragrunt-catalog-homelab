@@ -12,12 +12,12 @@ unit "netbox_organization" {
   values = {
     version = values.version
 
-    regions       = local.regions
-    sites         = local.sites
-    tenant_groups = local.tenant_groups
-    # tenants        = local.tenants
-    # contact_groups = local.contact_groups
-    # contact_roles  = local.contact_roles
-    # contacts       = local.contacts
+    regions        = local.regions
+    sites          = local.sites
+    tenant_groups  = local.tenant_groups
+    tenants        = local.tenants
+    contact_groups = local.contact_groups
+    contact_roles  = local.contact_roles
+    contacts       = local.contacts
   }
 }

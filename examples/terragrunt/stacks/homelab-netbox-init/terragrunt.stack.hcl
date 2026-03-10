@@ -26,37 +26,37 @@ locals {
     }
   ]
 
-#   tenants = [
-#     {
-#       name       = "Platform Team"
-#       group_name = "internal"
-#     }
-#   ]
+  tenants = [
+    {
+      name       = "Platform Team"
+      group_name = "internal"
+    }
+  ]
 
-#   contact_groups = [
-#     {
-#       name = "Platform Team Contacts"
-#     }
-#   ]
+  contact_groups = [
+    {
+      name = "Platform Team Contacts"
+    }
+  ]
 
-#   contact_roles = [
-#     {
-#       name = "Business Contact"
-#     },
-#     {
-#       name = "Private Contact"
-#     }
-#   ]
+  contact_roles = [
+    {
+      name = "Business Contact"
+    },
+    {
+      name = "Private Contact"
+    }
+  ]
 
-#   contacts = [
-#     {
-#       name       = "Sebastian Freund"
-#       email      = "abes140377@web.de"
-#       phone      = "123-123123"
-#       group_name = "Platform Team Contacts"
-#       role_name  = "Business Contact"
-#     }
-#   ]
+  contacts = [
+    {
+      name       = "Sebastian Freund"
+      email      = "abes140377@web.de"
+      phone      = "123-123123"
+      group_name = "Platform Team Contacts"
+      role_name  = "Business Contact"
+    }
+  ]
 
 #   # Variables for NetBox racks module
 
