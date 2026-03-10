@@ -367,7 +367,7 @@ locals {
 #   ]
 }
 
-unit "netbox_organization" {
+stack "netbox_organization" {
   source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//stacks/homelab-netbox-init?ref=${local.env.catalog_version}"
 
   path = "netbox_organization"
