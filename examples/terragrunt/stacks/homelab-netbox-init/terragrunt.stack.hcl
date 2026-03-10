@@ -393,5 +393,9 @@ stack "netbox_init" {
     # Variables for NetBox IPAM module
     vlans    = local.vlans
     prefixes = local.prefixes
+
+    # Variables for NetBox virtualization module
+    cluster_types = local.cluster_types
+    clusters      = local.clusters
   }
 }
