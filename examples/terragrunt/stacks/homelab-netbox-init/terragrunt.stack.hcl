@@ -86,204 +86,204 @@ locals {
     }
   ]
 
-#   # Variables for NetBox devices module
-#   device_roles = {
-#     "Hypervisor" = {
-#       color_hex = "8a2be2"
-#       vm_role   = false
-#     }
-#     "Server" = {
-#       color_hex = "ffff00"
-#       vm_role   = true
-#     }
-#     "Router" = {
-#       color_hex = "00ffff"
-#       vm_role   = false
-#     }
-#     "Firewall" = {
-#       color_hex = "ff00ff"
-#       vm_role   = false
-#     }
-#     "Switch" = {
-#       color_hex = "00ff00"
-#       vm_role   = false
-#     }
-#     "AP" = {
-#       color_hex = "0000ff"
-#       vm_role   = false
-#     }
-#     "VM" = {
-#       color_hex = "ffa500"
-#       vm_role   = true
-#     }
-#     "LXC" = {
-#       color_hex = "800000"
-#       vm_role   = true
-#     }
-#     "K8s Control Plane" = {
-#       color_hex = "ff0000"
-#       vm_role   = true
-#     }
-#     "K8s Worker" = {
-#       color_hex = "008080"
-#       vm_role   = true
-#     }
-#   }
+  # Variables for NetBox devices module
+  device_roles = {
+    "Hypervisor" = {
+      color_hex = "8a2be2"
+      vm_role   = false
+    }
+    "Server" = {
+      color_hex = "ffff00"
+      vm_role   = true
+    }
+    "Router" = {
+      color_hex = "00ffff"
+      vm_role   = false
+    }
+    "Firewall" = {
+      color_hex = "ff00ff"
+      vm_role   = false
+    }
+    "Switch" = {
+      color_hex = "00ff00"
+      vm_role   = false
+    }
+    "AP" = {
+      color_hex = "0000ff"
+      vm_role   = false
+    }
+    "VM" = {
+      color_hex = "ffa500"
+      vm_role   = true
+    }
+    "LXC" = {
+      color_hex = "800000"
+      vm_role   = true
+    }
+    "K8s Control Plane" = {
+      color_hex = "ff0000"
+      vm_role   = true
+    }
+    "K8s Worker" = {
+      color_hex = "008080"
+      vm_role   = true
+    }
+  }
 
-#   manufacturers_devices = [
-#     {
-#       name = "Minisforum"
-#     },
-#     {
-#       name = "Netgear"
-#     },
-#     {
-#       name = "Protectli"
-#     },
-#     {
-#       name = "Raspberry Pi Foundation"
-#     }
-#   ]
+  device_manufacturers = [
+    {
+      name = "Minisforum"
+    },
+    {
+      name = "Netgear"
+    },
+    {
+      name = "Protectli"
+    },
+    {
+      name = "Raspberry Pi Foundation"
+    }
+  ]
 
-#   device_types = [
-#     {
-#       model             = "MS-01 Work Station"
-#       manufacturer_name = "Minisforum"
-#       u_height          = "1"
-#     },
-#     {
-#       model             = "FW4C-0-8-120"
-#       manufacturer_name = "Protectli"
-#       u_height          = "1"
-#     },
-#     {
-#       model             = "GS108Ev4"
-#       manufacturer_name = "Netgear"
-#       u_height          = "1"
-#     },
-#     {
-#       model             = "WAX210"
-#       manufacturer_name = "Netgear"
-#       u_height          = "1"
-#     },
-#     {
-#       model             = "PI5-4GB"
-#       manufacturer_name = "Raspberry Pi Foundation"
-#       u_height          = "1"
-#     }
-#   ]
+  device_types = [
+    {
+      model             = "MS-01 Work Station"
+      manufacturer_name = "Minisforum"
+      u_height          = "1"
+    },
+    {
+      model             = "FW4C-0-8-120"
+      manufacturer_name = "Protectli"
+      u_height          = "1"
+    },
+    {
+      model             = "GS108Ev4"
+      manufacturer_name = "Netgear"
+      u_height          = "1"
+    },
+    {
+      model             = "WAX210"
+      manufacturer_name = "Netgear"
+      u_height          = "1"
+    },
+    {
+      model             = "PI5-4GB"
+      manufacturer_name = "Raspberry Pi Foundation"
+      u_height          = "1"
+    }
+  ]
 
-#   devices = [
-#     {
-#       name        = "SFLAB-HYPERVISOR-01"
-#       device_type = "MS-01 Work Station"
-#       role_name   = "Hypervisor"
-#       site_name   = "SFLAB Homelab Site"
-#       tenant_name = "Platform Team"
-#       rack_name   = "Rack 1"
-#       interfaces  = [
-#         {
-#           name = "eth0"
-#           type = "1000base-t"
-#           ip_addresses = [
-#             {
-#               address     = "192.168.1.12/32"
-#               dns_name    = "netbox.home.sflab.io"
-#               status      = "active"
-#               description = "Hypervisor management ipv4 address"
-#             }
-#           ]
-#         }
-#       ]
-#     },
-#     {
-#       name        = "SFLAB-FIREWALL-01"
-#       device_type = "FW4C-0-8-120"
-#       role_name   = "Firewall"
-#       site_name   = "SFLAB Homelab Site"
-#       tenant_name = "Platform Team"
-#       rack_name   = "Rack 1"
-#       interfaces  = [
-#         {
-#           name = "eth0"
-#           type = "1000base-t"
-#           ip_addresses = [
-#             {
-#               address     = "192.168.1.1/32"
-#               dns_name    = "opnsense.home.sflab.io"
-#               status      = "active"
-#               description = "Firewall management ipv4 address"
-#             }
-#           ]
-#         }
-#       ]
-#     },
-#     {
-#       name        = "SFLAB-SWITCH-01"
-#       device_type = "GS108Ev4"
-#       role_name   = "Router"
-#       site_name   = "SFLAB Homelab Site"
-#       tenant_name = "Platform Team"
-#       rack_name   = "Rack 1"
-#       interfaces  = [
-#         {
-#           name = "eth0"
-#           type = "1000base-t"
-#           ip_addresses = [
-#             {
-#               address     = "192.168.1.10/32"
-#               dns_name    = "switch.home.sflab.io"
-#               status      = "active"
-#               description = "Core switch management ipv4 address"
-#             }
-#           ]
-#         }
-#       ]
-#     },
-#     {
-#       name        = "SFLAB-AP-01"
-#       device_type = "WAX210"
-#       role_name   = "AP"
-#       site_name   = "SFLAB Homelab Site"
-#       tenant_name = "Platform Team"
-#       rack_name   = "Rack 1"
-#       interfaces  = [
-#         {
-#           name = "eth0"
-#           type = "1000base-t"
-#           ip_addresses = [
-#             {
-#               address     = "192.168.1.11/32"
-#               dns_name    = "ap.home.sflab.io"
-#               status      = "active"
-#               description = "Wireless access point management ipv4 address"
-#             }
-#           ]
-#         }
-#       ]
-#     },
-#     {
-#       name        = "SFLAB-DNS-01"
-#       device_type = "PI5-4GB"
-#       role_name   = "Server"
-#       site_name   = "SFLAB Homelab Site"
-#       tenant_name = "Platform Team"
-#       rack_name   = "Rack 1"
-#       interfaces  = [
-#         {
-#           name = "eth0"
-#           type = "1000base-t"
-#           ip_addresses = [
-#             {
-#               address     = "192.168.1.13/32"
-#               status      = "active"
-#               description = "DNS Primary Server ipv4 address"
-#             }
-#           ]
-#         }
-#       ]
-#     }
-#   ]
+  devices = [
+    {
+      name        = "SFLAB-HYPERVISOR-01"
+      device_type = "MS-01 Work Station"
+      role_name   = "Hypervisor"
+      site_name   = "SFLAB Homelab Site"
+      tenant_name = "Platform Team"
+      rack_name   = "Rack 1"
+      interfaces  = [
+        {
+          name = "eth0"
+          type = "1000base-t"
+          ip_addresses = [
+            {
+              address     = "192.168.1.12/32"
+              dns_name    = "netbox.home.sflab.io"
+              status      = "active"
+              description = "Hypervisor management ipv4 address"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name        = "SFLAB-FIREWALL-01"
+      device_type = "FW4C-0-8-120"
+      role_name   = "Firewall"
+      site_name   = "SFLAB Homelab Site"
+      tenant_name = "Platform Team"
+      rack_name   = "Rack 1"
+      interfaces  = [
+        {
+          name = "eth0"
+          type = "1000base-t"
+          ip_addresses = [
+            {
+              address     = "192.168.1.1/32"
+              dns_name    = "opnsense.home.sflab.io"
+              status      = "active"
+              description = "Firewall management ipv4 address"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name        = "SFLAB-SWITCH-01"
+      device_type = "GS108Ev4"
+      role_name   = "Router"
+      site_name   = "SFLAB Homelab Site"
+      tenant_name = "Platform Team"
+      rack_name   = "Rack 1"
+      interfaces  = [
+        {
+          name = "eth0"
+          type = "1000base-t"
+          ip_addresses = [
+            {
+              address     = "192.168.1.10/32"
+              dns_name    = "switch.home.sflab.io"
+              status      = "active"
+              description = "Core switch management ipv4 address"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name        = "SFLAB-AP-01"
+      device_type = "WAX210"
+      role_name   = "AP"
+      site_name   = "SFLAB Homelab Site"
+      tenant_name = "Platform Team"
+      rack_name   = "Rack 1"
+      interfaces  = [
+        {
+          name = "eth0"
+          type = "1000base-t"
+          ip_addresses = [
+            {
+              address     = "192.168.1.11/32"
+              dns_name    = "ap.home.sflab.io"
+              status      = "active"
+              description = "Wireless access point management ipv4 address"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name        = "SFLAB-DNS-01"
+      device_type = "PI5-4GB"
+      role_name   = "Server"
+      site_name   = "SFLAB Homelab Site"
+      tenant_name = "Platform Team"
+      rack_name   = "Rack 1"
+      interfaces  = [
+        {
+          name = "eth0"
+          type = "1000base-t"
+          ip_addresses = [
+            {
+              address     = "192.168.1.13/32"
+              status      = "active"
+              description = "DNS Primary Server ipv4 address"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 
 #   # Variables for NetBox ipam module
 #   vlans = [
@@ -380,8 +380,14 @@ stack "netbox_organization" {
     contacts       = local.contacts
 
     # Variables for NetBox racks module
-    manufacturers = local.rack_manufacturers
-    rack_types    = local.rack_types
-    racks         = local.racks
+    rack_manufacturers = local.rack_manufacturers
+    rack_types         = local.rack_types
+    racks              = local.racks
+
+    # Variables for NetBox devices module
+    device_roles         = local.device_roles
+    device_manufacturers = local.device_manufacturers
+    device_types         = local.device_types
+    devices              = local.devices
   }
 }
