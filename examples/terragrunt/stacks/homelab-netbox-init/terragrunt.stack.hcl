@@ -285,56 +285,56 @@ locals {
     }
   ]
 
-#   # Variables for NetBox ipam module
-#   vlans = [
-#     {
-#       name        = "Default"
-#       vid         = 1
-#       description = "Default VLAN"
-#     },
-#     {
-#       name        = "USER"
-#       vid         = 10
-#       description = "User VLAN"
-#     },
-#     {
-#       name        = "IOT"
-#       vid         = 20
-#       description = "IoT VLAN"
-#     },
-#     {
-#       name        = "GUEST"
-#       vid         = 30
-#       description = "Guest VLAN"
-#     }
-#   ]
+  # Variables for NetBox ipam module
+  vlans = [
+    {
+      name        = "Default"
+      vid         = 1
+      description = "Default VLAN"
+    },
+    {
+      name        = "USER"
+      vid         = 10
+      description = "User VLAN"
+    },
+    {
+      name        = "IOT"
+      vid         = 20
+      description = "IoT VLAN"
+    },
+    {
+      name        = "GUEST"
+      vid         = 30
+      description = "Guest VLAN"
+    }
+  ]
 
-#   prefixes = [
-#     {
-#       prefix      = "192.168.1.0/24"
-#       status      = "active"
-#       description = "Default prefix"
-#       vlan_id     = 1
-#     },
-#     {
-#       prefix      = "192.168.10.0/24"
-#       status      = "active"
-#       description = "User VLAN prefix"
-#       vlan_id     = 10
-#     },
-#     {
-#       prefix      = "192.168.20.0/24"
-#       status      = "active"
-#       description = "IoT VLAN prefix"
-#       vlan_id     = 20
-#     },
-#     {
-#       prefix      = "192.168.30.0/24"
-#       status      = "active"
-#       description = "Guest VLAN prefix"
-#       vlan_id     = 30
-#     }
-#   ]
+  prefixes = [
+    {
+      prefix      = "192.168.1.0/24"
+      status      = "active"
+      description = "Default prefix"
+      vlan_id     = 1
+    },
+    {
+      prefix      = "192.168.10.0/24"
+      status      = "active"
+      description = "User VLAN prefix"
+      vlan_id     = 10
+    },
+    {
+      prefix      = "192.168.20.0/24"
+      status      = "active"
+      description = "IoT VLAN prefix"
+      vlan_id     = 20
+    },
+    {
+      prefix      = "192.168.30.0/24"
+      status      = "active"
+      description = "Guest VLAN prefix"
+      vlan_id     = 30
+    }
+  ]
 
 #   # Variables for NetBox virtualization module
 #   cluster_types = [
@@ -389,5 +389,9 @@ stack "netbox_organization" {
     device_manufacturers = local.device_manufacturers
     device_types         = local.device_types
     devices              = local.devices
+
+    # Variables for NetBox IPAM module
+    vlans    = local.vlans
+    prefixes = local.prefixes
   }
 }

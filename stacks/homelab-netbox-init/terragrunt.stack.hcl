@@ -18,6 +18,10 @@ locals {
   device_manufacturers = values.device_manufacturers
   device_types         = values.device_types
   devices              = values.devices
+
+  # Variables for NetBox IPAM module
+  vlans    = values.vlans
+  prefixes = values.prefixes
 }
 
 unit "netbox_organization" {
@@ -71,20 +75,20 @@ unit "netbox_devices" {
   }
 }
 
-# unit "netbox_ipam" {
-#   source = "../../../../units/netbox-ipam"
+unit "netbox_ipam" {
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/netbox-ipam?ref=${values.version}"
 
-#   path = "netbox_ipam"
+  path = "netbox_ipam"
 
-#   values = {
-#     version = local.env.catalog_version
+  values = {
+    version = values.version
 
-#     devices_path = "../netbox_devices"
+    devices_path = "../netbox_devices"
 
-#     vlans    = local.vlans
-#     prefixes = local.prefixes
-#   }
-# }
+    vlans    = local.vlans
+    prefixes = local.prefixes
+  }
+}
 
 # unit "netbox_virtualization" {
 #   source = "../../../../units/netbox-virtualization"
