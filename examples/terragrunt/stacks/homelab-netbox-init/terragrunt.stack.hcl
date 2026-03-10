@@ -354,6 +354,23 @@ locals {
       tenant_name       = "Platform Team"
     }
   ]
+
+  # Variables for NetBox wireless module
+  wireless_lans = [
+    {
+      ssid        = "HomeNet"
+      description = "Primary home network"
+      status      = "active"
+      auth_type   = "wpa-personal"
+      auth_cipher = "aes"
+      auth_psk    = "super-secret-passphrase"
+      # tags        = ["homelab"]
+    },
+    {
+      ssid   = "HomeNet-Guest"
+      status = "active"
+    },
+  ]
 }
 
 stack "netbox_init" {
@@ -391,5 +408,8 @@ stack "netbox_init" {
     # Variables for NetBox virtualization module
     cluster_types = local.cluster_types
     clusters      = local.clusters
+
+    # Variables for NetBox wireless module
+    wireless_lans = local.wireless_lans
   }
 }

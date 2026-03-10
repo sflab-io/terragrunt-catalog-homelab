@@ -26,6 +26,9 @@ locals {
   # Variables for NetBox virtualization module
   cluster_types = values.cluster_types
   clusters      = values.clusters
+
+  # Variables for NetBox wireless module
+  wireless_lans = values.wireless_lans
 }
 
 unit "netbox_organization" {
@@ -106,5 +109,17 @@ unit "netbox_virtualization" {
 
     cluster_types = local.cluster_types
     clusters      = local.clusters
+  }
+}
+
+unit "netbox_wireless" {
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/netbox-wireless?ref=${values.version}"
+
+  path = "netbox_wireless"
+
+  values = {
+    version = values.version
+
+    wireless_lans = local.wireless_lans
   }
 }
