@@ -1,6 +1,6 @@
 # Terragrunt Catalog Homelab
 
-A Terragrunt infrastructure catalog for managing Proxmox homelab environments. This project provides reusable infrastructure components (modules, units, and stacks) for deploying LXC containers, virtual machines, and DNS records using OpenTofu/Terraform and Terragrunt.
+A Terragrunt infrastructure catalog for managing Proxmox homelab environments. This project provides reusable infrastructure components (modules, units, and stacks) for deploying LXC containers, virtual machines, DNS records, and NetBox DCIM/IPAM resources using OpenTofu/Terraform and Terragrunt.
 
 ## Table of Contents
 
@@ -14,6 +14,7 @@ A Terragrunt infrastructure catalog for managing Proxmox homelab environments. T
   - [Working with Units](#working-with-units)
   - [Working with Stacks](#working-with-stacks)
   - [Working with VMs](#working-with-vms)
+  - [Working with NetBox](#working-with-netbox)
 - [Available Modules](#available-modules)
 - [Available Commands](#available-commands)
 - [Configuration](#configuration)
@@ -33,6 +34,7 @@ This repository provides a three-layer architecture for managing infrastructure 
 - LXC container deployment on Proxmox
 - Virtual machine deployment via template cloning
 - Automated DNS record management (including wildcard records)
+- NetBox DCIM/IPAM management (organization, racks, devices, IPAM, virtualization, virtual machines)
 - Standardized resource naming conventions
 - S3-compatible state management with MinIO
 - Pre-commit hooks for code quality
@@ -45,7 +47,7 @@ This repository provides a three-layer architecture for managing infrastructure 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                        Stacks                           │
-│  (Complete deployments: VM/Container + Pool + DNS)      │
+│  (Complete deployments: VM/Container + DNS, NetBox)     │
 └────────────────────┬────────────────────────────────────┘
                      │
 ┌────────────────────┴────────────────────────────────────┐
@@ -61,11 +63,20 @@ This repository provides a three-layer architecture for managing infrastructure 
 
 ### Available Infrastructure Components
 
+**Proxmox & DNS:**
 - **proxmox-lxc**: Deploy Ubuntu 24.04 LXC containers
 - **proxmox-vm**: Deploy virtual machines via template cloning
 - **proxmox-pool**: Create and manage Proxmox resource pools
 - **dns**: Manage DNS A records (normal and wildcard)
 - **naming**: Standardized resource naming (format: `{env}-{app}`)
+
+**NetBox DCIM/IPAM:**
+- **netbox-organization**: Manage regions, sites, tenants, and contacts
+- **netbox-racks**: Manage rack types and physical racks
+- **netbox-devices**: Manage device roles, manufacturers, device types, and devices
+- **netbox-ipam**: Manage VLANs and IP prefixes
+- **netbox-virtualization**: Manage cluster types and clusters
+- **netbox-virtual-machine**: Manage virtual machine records with interfaces and IPs
 
 ## Prerequisites
 
@@ -74,8 +85,8 @@ This repository provides a three-layer architecture for managing infrastructure 
 All tools are managed via [mise](https://mise.jdx.dev/):
 
 - Go 1.24.2
-- OpenTofu 1.9.0
-- Terragrunt 0.78.0
+- OpenTofu 1.11.5
+- Terragrunt 0.99.4
 - MinIO Client (mc) - latest
 
 ### Required Services
@@ -83,6 +94,7 @@ All tools are managed via [mise](https://mise.jdx.dev/):
 - **Proxmox VE**: Version 8.x (configured with API access)
 - **MinIO**: S3-compatible storage for Terragrunt state
 - **BIND9 DNS Server**: For dynamic DNS updates (optional)
+- **NetBox**: DCIM/IPAM platform (optional, for NetBox modules)
 
 ### SSH Keys for VMs
 
@@ -121,6 +133,9 @@ export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # Set DNS TSIG key secret (if using DNS module)
 export TF_VAR_dns_key_secret="your-tsig-key-secret"
+
+# Set NetBox API token (if using NetBox modules)
+export TF_VAR_netbox_token="your-netbox-api-token"
 ```
 
 ### 4. Deploy Your First Container
@@ -143,7 +158,7 @@ terragrunt apply
 
 ```bash
 # Navigate to stack example
-cd examples/terragrunt/stacks/homelab-proxmox-container
+cd examples/terragrunt/stacks/homelab-proxmox-lxc
 
 # Generate stack
 terragrunt stack generate
@@ -162,24 +177,43 @@ terragrunt stack run apply
 ├── modules/              # Raw OpenTofu/Terraform modules
 │   ├── dns/             # DNS A record management
 │   ├── naming/          # Resource naming conventions
+│   ├── netbox-devices/  # NetBox device management
+│   ├── netbox-ipam/     # NetBox IPAM (VLANs/prefixes)
+│   ├── netbox-organization/  # NetBox org hierarchy
+│   ├── netbox-racks/    # NetBox rack management
+│   ├── netbox-virtual-machine/  # NetBox VM records
+│   ├── netbox-virtualization/   # NetBox cluster management
 │   ├── proxmox-lxc/     # LXC container deployment
 │   ├── proxmox-pool/    # Proxmox resource pools
 │   └── proxmox-vm/      # Virtual machine deployment
 ├── units/               # Terragrunt wrappers (production)
 │   ├── dns/
 │   ├── naming/
+│   ├── netbox-devices/
+│   ├── netbox-ipam/
+│   ├── netbox-organization/
+│   ├── netbox-racks/
+│   ├── netbox-virtual-machine/
+│   ├── netbox-virtualization/
 │   ├── proxmox-lxc/
 │   ├── proxmox-pool/
 │   └── proxmox-vm/
 ├── stacks/              # Stack compositions (production)
-│   ├── homelab-proxmox-container/
+│   ├── homelab-proxmox-lxc/
 │   └── homelab-proxmox-vm/
 ├── examples/            # Local testing examples
 │   ├── terragrunt/     # Terragrunt examples
+│   │   ├── environment.hcl      # Shared environment config
+│   │   ├── root.hcl             # Root Terragrunt config
+│   │   ├── backend-config.hcl   # MinIO backend config
+│   │   ├── provider-proxmox-config.hcl
+│   │   ├── provider-dns-config.hcl
+│   │   ├── provider-netbox-config.hcl
 │   │   ├── units/      # Individual unit examples
 │   │   └── stacks/     # Stack examples
 │   └── tofu/           # Direct OpenTofu examples
 ├── keys/                # SSH public keys for VMs
+│   └── admin_id_ecdsa.pub
 ├── openspec/            # OpenSpec change management
 └── mise.toml           # Tool version management
 ```
@@ -195,11 +229,14 @@ terragrunt stack run apply
 export AWS_ACCESS_KEY_ID="your-minio-access-key"
 export AWS_SECRET_ACCESS_KEY="your-minio-secret-key"
 
-# Proxmox Provider (required for all operations)
+# Proxmox Provider (required for Proxmox operations)
 export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # DNS TSIG Key (required only when using DNS module)
 export TF_VAR_dns_key_secret="your-tsig-key-secret"
+
+# NetBox API Token (required only when using NetBox modules)
+export TF_VAR_netbox_token="your-netbox-api-token"
 ```
 
 #### Optional: Edit Encrypted Secrets
@@ -266,17 +303,23 @@ mise run terragrunt:unit:destroy
 
 Stacks combine multiple units into coordinated deployments.
 
-#### Available Stack Examples
+#### Available Production Stacks (`stacks/`)
+
+- **homelab-proxmox-lxc**: LXC container + DNS
+- **homelab-proxmox-vm**: Virtual machine + DNS
+
+#### Available Example Stacks (`examples/terragrunt/stacks/`)
 
 - **homelab-proxmox-pool**: Proxmox resource pool only
-- **homelab-proxmox-container**: LXC container + pool + DNS
-- **homelab-proxmox-vm**: Virtual machine + pool + DNS
+- **homelab-proxmox-lxc**: LXC container + DNS (uses production stack via Git reference)
+- **homelab-proxmox-vm**: Virtual machine + DNS (uses production stack via Git reference)
 - **homelab-wildcard-dns**: Container with normal + wildcard DNS records
+- **homelab-netbox**: Full NetBox DCIM/IPAM stack (organization → racks → devices → IPAM → virtualization)
 
 #### Deploy a Stack
 
 ```bash
-cd examples/terragrunt/stacks/homelab-proxmox-container
+cd examples/terragrunt/stacks/homelab-proxmox-lxc
 
 # Generate stack (creates .terragrunt-stack directory)
 terragrunt stack generate
@@ -442,6 +485,45 @@ dig dev-web.home.sflab.io @192.168.1.13
 dig api.dev-web.home.sflab.io @192.168.1.13
 ```
 
+### Working with NetBox
+
+NetBox units manage DCIM (Data Center Infrastructure Management) and IPAM (IP Address Management) resources.
+
+#### NetBox Deployment Order
+
+NetBox units have dependencies on each other and must be deployed in order:
+
+```
+netbox-organization → netbox-racks → netbox-devices → netbox-ipam → netbox-virtualization
+```
+
+The `homelab-netbox` example stack manages all these dependencies automatically.
+
+#### Deploy the NetBox Stack
+
+```bash
+cd examples/terragrunt/stacks/homelab-netbox
+
+# Set NetBox credentials
+export TF_VAR_netbox_token="your-netbox-api-token"
+
+# Generate and deploy
+terragrunt stack generate
+terragrunt stack run apply
+```
+
+#### Deploy Individual NetBox Units
+
+```bash
+# Example: deploy NetBox organization resources
+cd examples/terragrunt/units/netbox-organization
+terragrunt apply
+
+# Example: deploy NetBox IPAM resources
+cd examples/terragrunt/units/netbox-ipam
+terragrunt apply
+```
+
 ## Available Modules
 
 ### proxmox-lxc
@@ -471,6 +553,7 @@ Deploy virtual machines via template cloning.
 **Optional Inputs:**
 - `memory` (number, default: 2048): Memory in MB
 - `cores` (number, default: 2): CPU cores
+- `disk_size` (number, default: 8): Disk size in GB
 - `pool_id` (string): Proxmox pool ID
 - `network_config` (object): Network configuration (DHCP or static)
 - `username` (string, default: "admin"): SSH username
@@ -525,6 +608,61 @@ Standardized resource naming using the homelab provider.
 **Outputs:**
 - `generated_name`: Generated name (format: `{env}-{app}`)
 
+### netbox-organization
+
+Manages organizational hierarchy in NetBox (regions, sites, tenants, contacts).
+
+**Required Inputs:**
+- `regions` (list): List of region objects with name and description
+- `sites` (list): List of site objects with facility, coordinates, timezone, and optional region
+- `tenant_groups` (list): List of tenant group objects
+- `tenants` (list): List of tenant objects with optional group reference
+- `contact_groups` (list): List of contact group objects
+- `contact_roles` (list): List of contact role objects
+- `contacts` (list): List of contact objects with email, phone, group, and role
+
+### netbox-racks
+
+Manages physical rack infrastructure in NetBox.
+
+**Required Inputs:**
+- `manufacturers` (list): List of manufacturer objects
+- `rack_types` (list): List of rack type objects with model, manufacturer, form factor, width, and height
+- `racks` (list): List of rack objects with name, site, status, and rack type
+
+### netbox-devices
+
+Manages physical device definitions in NetBox.
+
+**Required Inputs:**
+- `device_roles` (map): Map of device roles with color hex and VM role flag
+- `manufacturers` (list): List of manufacturer objects
+- `device_types` (list): List of device type objects with model, manufacturer, and height
+- `devices` (list): List of device objects with name, type, role, site, tenant, rack, and interfaces
+
+### netbox-ipam
+
+Manages IP address management resources in NetBox.
+
+**Required Inputs:**
+- `vlans` (list): List of VLAN objects with name, VID, and optional description
+- `prefixes` (list): List of prefix objects with prefix, status, and optional VLAN reference
+
+### netbox-virtualization
+
+Manages virtual cluster infrastructure in NetBox.
+
+**Required Inputs:**
+- `cluster_types` (list): List of cluster type objects with name
+- `netbox_clusters` (list): List of cluster objects with name, type, and optional site and tenant
+
+### netbox-virtual-machine
+
+Manages virtual machine records in NetBox.
+
+**Required Inputs:**
+- `virtual_machines` (list): List of VM objects with name, cluster, optional description/role/tenant/resources, and interfaces with IP addresses
+
 ## Available Commands
 
 ### Mise Tasks
@@ -559,14 +697,14 @@ mise run terragrunt:stack:destroy   # Quick destroy for stacks
 mise run terragrunt:stack:generate  # Generate stack locally
 
 # Testing
-mise run test:all                   # Run all tests
 mise run test:all -- -t             # Run only tofu module tests
 mise run test:all -- -u             # Run only terragrunt unit tests
 mise run test:all -- -s             # Run only terragrunt stack tests
 mise run test:all -- -a             # Run all tests
 
-# Direct OpenTofu Operations (Interactive)
+# Direct OpenTofu Operations (Interactive or with target)
 mise run tofu:init                  # Initialize OpenTofu modules
+mise run tofu:init naming           # Initialize specific module
 mise run tofu:plan                  # Plan OpenTofu changes
 mise run tofu:apply                 # Apply OpenTofu changes
 mise run tofu:output                # Show OpenTofu outputs
@@ -615,6 +753,20 @@ mise run terragrunt:cleanup
 
 ## Configuration
 
+### Environment Configuration
+
+The shared environment configuration is in `examples/terragrunt/environment.hcl`. This file defines environment-wide variables used by all stack examples:
+
+```hcl
+locals {
+  environment_name = "staging"
+  pool_id          = "example-stack-pool"
+  catalog_version  = "main"
+  zone             = "home.sflab.io."
+  admin_ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
+}
+```
+
 ### Backend Configuration
 
 State is stored in MinIO (S3-compatible storage).
@@ -623,10 +775,10 @@ Configuration file: `examples/terragrunt/backend-config.hcl`
 
 ```hcl
 endpoint = "http://minio.home.sflab.io:9000"
-bucket   = "homelab-tfstates"
+bucket   = "examples-terragrunt-tfstates"
 ```
 
-### Provider Configuration
+### Proxmox Provider Configuration
 
 Uses the bpg/proxmox provider (>= 0.69.0).
 
@@ -647,6 +799,17 @@ server    = "192.168.1.13"
 port      = 53
 key_name  = "ddnskey."
 algorithm = "hmac-sha256"
+```
+
+### NetBox Configuration
+
+Centralized NetBox server configuration.
+
+Configuration file: `examples/terragrunt/provider-netbox-config.hcl`
+
+```hcl
+netbox_server_url         = "http://netbox-staging.home.sflab.io"
+netbox_skip_version_check = true
 ```
 
 ## Development
