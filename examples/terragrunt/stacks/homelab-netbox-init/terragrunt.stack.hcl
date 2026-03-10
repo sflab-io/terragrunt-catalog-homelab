@@ -352,12 +352,6 @@ locals {
       cluster_type_name = "Proxmox VE Cluster"
       site_name         = "SFLAB Homelab Site"
       tenant_name       = "Platform Team"
-    },
-    {
-      name              = "Proxmox Cluster Staging"
-      cluster_type_name = "Proxmox VE Cluster"
-      site_name         = "SFLAB Homelab Site"
-      tenant_name       = "Platform Team"
     }
   ]
 }
