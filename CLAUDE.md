@@ -74,7 +74,7 @@ Run `mise install` to install all required tools.
    - Define multiple units that work together
    - Use `terragrunt.stack.hcl` files
    - Each unit must specify a `path` attribute for deployment location
-   - Example: `stacks/homelab-proxmox-container/` combines proxmox-pool, proxmox-lxc, and dns units
+   - Example: `stacks/homelab-proxmox-lxc/` combines proxmox-lxc and dns units
 
 **Examples Directory:**
 The `examples/` directory contains working examples for local testing:
@@ -93,19 +93,19 @@ The `examples/` directory contains working examples for local testing:
   - `netbox-ipam`: NetBox IPAM (VLANs/prefixes) example
   - `netbox-virtualization`: NetBox virtualization clusters example
   - `netbox-virtual-machine`: NetBox virtual machine management example
-- `examples/terragrunt/stacks/`: Complete stack examples using local units
-  - `homelab-proxmox-pool`: Proxmox resource pool only
-  - `homelab-proxmox-container`: LXC container + pool + DNS
-  - `homelab-proxmox-vm`: Virtual machine + pool + DNS (requires SSH key configuration)
+- `examples/terragrunt/stacks/`: Complete stack examples using catalog stacks
+  - `homelab-proxmox-pool`: Proxmox resource pool only (uses local `unit` block)
+  - `homelab-proxmox-lxc`: LXC container + DNS (uses `stack` block referencing `stacks/homelab-proxmox-lxc`)
+  - `homelab-proxmox-vm`: Virtual machine + DNS (uses `stack` block referencing `stacks/homelab-proxmox-vm`)
   - `homelab-wildcard-dns`: LXC container with both regular and wildcard DNS records
   - `homelab-netbox`: Full NetBox DCIM/IPAM stack (organization → racks → devices → IPAM → virtualization)
-  - **Note**: Stack examples reference units via relative paths (`../../../../units/`) for local testing
+  - **Note**: Stack examples that use `stack` blocks reference catalog stacks via Git URLs with `catalog_version` from `environment.hcl`
 - Unit examples use relative paths to modules (e.g., `../../../.././/modules/proxmox-lxc`)
 - Stack examples use relative paths to units (e.g., `../../../../units/dns`) for easier testing
 
 **Direct OpenTofu Examples** (`examples/tofu/`):
 - Direct module usage without Terragrunt wrappers
-- Available examples: `proxmox-lxc`, `proxmox-vm`, `proxmox-pool`, `dns`, `naming`
+- Available examples: `proxmox-lxc`, `proxmox-vm`, `proxmox-pool`, `dns`, `naming`, `netbox`
 - Useful for testing modules independently
 - Use relative paths to reference modules (e.g., `../../../modules/proxmox-lxc`)
 
@@ -146,9 +146,19 @@ Units and stacks use Git URLs in their `source` field because they are designed 
 **NetBox Configuration** (`examples/terragrunt/provider-netbox-config.hcl`):
 
 - Centralized NetBox server configuration for all NetBox units
-- Server URL: `http://netbox.home.sflab.io`
+- Server URL: `http://netbox-staging.home.sflab.io`
 - `netbox_skip_version_check = true`
 - Used by all NetBox units to configure the NetBox provider
+
+**Environment Configuration** (`examples/terragrunt/environment.hcl`):
+
+- Defines environment-wide shared variables for all stacks and units in the examples directory
+- `environment_name`: Environment label (e.g., "staging")
+- `pool_id`: Shared Proxmox pool ID for examples (e.g., "example-stack-pool")
+- `catalog_version`: Version ref for catalog units/stacks (default: "main")
+- `zone`: DNS zone for records (e.g., "home.sflab.io.")
+- `admin_ssh_public_key_path`: Absolute path to admin SSH public key (`${get_repo_root()}/keys/admin_id_ecdsa.pub`)
+- `ansible_ssh_public_key_path`: Absolute path to Ansible SSH public key (`${get_repo_root()}/keys/ansible_id_ecdsa.pub`)
 
 ## Common Commands
 
@@ -260,7 +270,7 @@ terragrunt plan
 terragrunt apply
 
 # Working with stacks
-cd examples/terragrunt/stacks/homelab-proxmox-container
+cd examples/terragrunt/stacks/homelab-proxmox-lxc
 
 # Generate stack (creates .terragrunt-stack directory)
 terragrunt stack generate
@@ -331,8 +341,8 @@ pre-commit run --all-files
    - Direct `inputs` block with concrete values or dependency outputs
 
 Examples:
-- `units/proxmox-lxc/terragrunt.hcl`: LXC container unit
-- `units/proxmox-vm/terragrunt.hcl`: Virtual machine unit (requires `ssh_public_key_path`)
+- `units/proxmox-lxc/terragrunt.hcl`: LXC container unit (requires `ssh_public_key_path`; defaults to `keys/admin_id_ecdsa.pub`)
+- `units/proxmox-vm/terragrunt.hcl`: Virtual machine unit (requires `ssh_public_key_path`; defaults to `keys/admin_id_ecdsa.pub`)
 - `units/proxmox-pool/terragrunt.hcl`: Resource pool unit
 - `units/dns/terragrunt.hcl`: DNS record unit (supports both regular and wildcard DNS records via `record_types` parameter)
 - `units/naming/terragrunt.hcl`: Naming convention unit
@@ -359,13 +369,13 @@ Examples:
    - Concrete values in `locals` block
 
 Examples in `stacks/` (production stacks using Git URLs):
-- `stacks/homelab-proxmox-container/`: LXC container stack with pool and DNS
-- `stacks/homelab-proxmox-vm/`: Virtual machine stack with pool and DNS (requires SSH key path configuration)
+- `stacks/homelab-proxmox-lxc/`: LXC container stack with DNS (no pool unit - pool_id is passed as a value)
+- `stacks/homelab-proxmox-vm/`: Virtual machine stack with DNS (no pool unit - pool_id is passed as a value)
 
-Examples in `examples/terragrunt/stacks/` (local testing stacks):
-- `examples/terragrunt/stacks/homelab-proxmox-pool/`: Proxmox resource pool only
-- `examples/terragrunt/stacks/homelab-proxmox-container/`: LXC container with pool and DNS
-- `examples/terragrunt/stacks/homelab-proxmox-vm/`: VM with pool and DNS
+Examples in `examples/terragrunt/stacks/` (testing stacks referencing catalog):
+- `examples/terragrunt/stacks/homelab-proxmox-pool/`: Proxmox resource pool only (uses direct `unit` block)
+- `examples/terragrunt/stacks/homelab-proxmox-lxc/`: References `stacks/homelab-proxmox-lxc` via `stack` block
+- `examples/terragrunt/stacks/homelab-proxmox-vm/`: References `stacks/homelab-proxmox-vm` via `stack` block
 - `examples/terragrunt/stacks/homelab-wildcard-dns/`: LXC container with both normal and wildcard DNS records
 - `examples/terragrunt/stacks/homelab-netbox/`: Full NetBox stack (organization → racks → devices → IPAM → virtualization)
 
@@ -410,21 +420,18 @@ inputs = {
 Stacks allow you to deploy multiple units together as a coordinated group. Here's an example stack structure with DNS integration:
 
 ```hcl
-# stacks/homelab-proxmox-container/terragrunt.stack.hcl
+# stacks/homelab-proxmox-lxc/terragrunt.stack.hcl
 locals {
-  pool_id  = values.pool_id
-  env      = values.env
-  app      = values.app
-  password = values.password
-}
+  env    = values.env
+  app    = values.app
+  memory = try(values.memory, 2048)
+  cores  = try(values.cores, 2)
 
-unit "proxmox_pool" {
-  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/proxmox-pool?ref=${values.version}"
-  path   = "proxmox-pool"  # REQUIRED: deployment path within .terragrunt-stack
-
-  values = {
-    pool_id = local.pool_id
-  }
+  network_config      = try(values.network_config, { type = "dhcp" })
+  record_types        = try(values.record_types, { normal = true, wildcard = false })
+  zone                = try(values.dns_zone, "home.sflab.io.")
+  pool_id             = try(values.pool_id, "")
+  ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")
 }
 
 unit "proxmox_lxc" {
@@ -432,10 +439,14 @@ unit "proxmox_lxc" {
   path   = "proxmox-lxc"  # REQUIRED: deployment path within .terragrunt-stack
 
   values = {
-    env      = local.env
-    app      = local.app
-    password = local.password
-    pool_id  = local.pool_id
+    version             = values.version
+    env                 = local.env
+    app                 = local.app
+    memory              = local.memory
+    cores               = local.cores
+    pool_id             = local.pool_id
+    ssh_public_key_path = local.ssh_public_key_path
+    network_config      = local.network_config
   }
 }
 
@@ -444,10 +455,12 @@ unit "dns" {
   path   = "dns"  # REQUIRED: deployment path within .terragrunt-stack
 
   values = {
-    env           = local.env
-    app           = local.app
-    zone          = "home.sflab.io."
-    compute_path  = "../proxmox-lxc"  # Enables dependency on LXC container IP
+    version      = values.version
+    env          = local.env
+    app          = local.app
+    zone         = local.zone
+    record_types = local.record_types
+    compute_path = "../proxmox-lxc"  # Enables dependency on LXC container IP
   }
 }
 ```
@@ -460,13 +473,14 @@ unit "dns" {
 4. Use `terragrunt stack run <command>` to operate on the entire stack
 5. Stack generates units into `.terragrunt-stack/` directory (gitignored)
 6. All infrastructure resources use standardized naming: `<env>-<app>` pattern via the naming module
+7. Pool management is separate from LXC/VM stacks - pass `pool_id` as a value; create the pool separately using `examples/terragrunt/stacks/homelab-proxmox-pool`
 
 **DNS Stack Integration:**
 
 - The `dns` unit registers the container/VM IP address in DNS after creation
 - Set `TF_VAR_dns_key_secret` environment variable before deploying the stack
 - The DNS unit uses `compute_path` to create a dependency on the LXC or VM unit
-- Execution order: `proxmox_pool` → `proxmox_lxc`/`proxmox_vm` → `dns` (automatic via dependencies)
+- Execution order: `proxmox_lxc`/`proxmox_vm` → `dns` (automatic via dependencies)
 - After deployment, resources are resolvable at `${env}-${app}.home.sflab.io`
 
 **Deploying a Stack with DNS:**
@@ -479,15 +493,15 @@ export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx"
 export TF_VAR_dns_key_secret="your-tsig-key-secret"
 
 # Navigate to stack directory
-cd examples/terragrunt/stacks/homelab-proxmox-container
+cd examples/terragrunt/stacks/homelab-proxmox-lxc
 
 # Generate and deploy stack
 terragrunt stack generate
 terragrunt stack run apply
 
 # Verify DNS resolution (note: DNS server runs on port 53)
-# Example: If env=dev and app=example, the FQDN will be dev-example.home.sflab.io
-dig dev-example.home.sflab.io @192.168.1.13
+# Example: If env=staging and app=example-lxc, the FQDN will be staging-example-lxc.home.sflab.io
+dig staging-example-lxc.home.sflab.io @192.168.1.13
 ```
 
 **Deploying Multiple VMs or Containers:**
@@ -609,6 +623,7 @@ unit "proxmox_vm" {
 
 **Available SSH Keys** (in `keys/` directory):
 - `admin_id_ecdsa.pub`: ECDSA public key for admin user SSH access
+- `ansible_id_ecdsa.pub`: ECDSA public key for Ansible user SSH access (referenced in `environment.hcl` but must be provisioned separately if needed)
 
 ### Wildcard DNS Records
 
@@ -736,10 +751,15 @@ Current modules support:
   - Required inputs:
     - `env` (string): Environment name (e.g., "dev", "staging", "prod")
     - `app` (string): Application name (e.g., "web", "db", "api")
-    - `password` (string, sensitive): Root password for the container
-  - Optional inputs: `pool_id` (string, default: "") - Assigns container to pool via pool_membership resource
-  - Network interface: `veth0` on `vmbr0` bridge with DHCP
-  - Disk: 8GB on `local-lvm` datastore
+    - `ssh_public_key_path` (string, required): Path to the SSH public key file for SSH access
+  - Optional inputs:
+    - `memory` (number, default: 2048) - Memory allocation in MB
+    - `cores` (number, default: 2) - CPU cores
+    - `pool_id` (string, default: "") - Assigns container to pool via pool_membership resource
+    - `network_config` (object, default: DHCP) - Network configuration supporting both DHCP and static IP (same structure as proxmox-vm)
+    - `network_bridge` (string, default: "vmbr0") - Network bridge to connect to
+  - Network interface: `veth0` on `vmbr0` bridge (DHCP by default, static IP supported)
+  - Disk: 8GB on `local-lvm` datastore (fixed size)
   - Unprivileged containers by default
   - Hostname: Automatically generated as `<env>-<app>` via naming module
   - Outputs: `ipv4` (container IP address)
@@ -752,18 +772,20 @@ Current modules support:
   - Required inputs:
     - `env` (string): Environment name (e.g., "dev", "staging", "prod")
     - `app` (string): Application name (e.g., "web", "db", "api")
+    - `ssh_public_key_path` (string, required): SSH public key for admin user access (no default)
   - Optional inputs:
     - `memory` (number, default: 2048) - Memory allocation in MB
     - `cores` (number, default: 2) - CPU cores
+    - `disk_size` (number, default: 8) - Disk size in GB
     - `pool_id` (string, default: "") - Assigns VM to pool via pool_membership resource
     - `network_config` (object, default: DHCP) - Network configuration supporting both DHCP and static IP
-    - `ssh_public_key_path` (string, required) - SSH public key for admin user access (no default)
     - `username` (string, default: "admin") - Username for SSH access
+    - `network_bridge` (string, default: "vmbr0") - Network bridge to connect to
   - Configuration: Clones from template VM 9002 on `pve1` node
   - Network: Supports both DHCP (default) and static IP configuration
   - Agent: QEMU guest agent enabled for IP address retrieval
   - VM name: Automatically generated as `<env>-<app>` via naming module
-  - Outputs: `ipv4` (VM IP address), `vm_id` (Proxmox VM ID), `vm_name` (VM name)
+  - Outputs: `ipv4` (VM IP address), `vm_id` (Proxmox VM ID), `vm_name` (VM name), `disk` (disk size in GB)
   - **Note**: Pool assignment uses `proxmox_virtual_environment_pool_membership` resource (not deprecated `pool_id` attribute)
 - **Resource Pools** (`modules/proxmox-pool`): For organizing Proxmox resources
   - Resource: `proxmox_virtual_environment_pool`
@@ -852,8 +874,9 @@ This repository uses the **bpg/proxmox** provider (version >= 0.69.0), not the o
 
 - Attributes wrapped in nested blocks: `initialization`, `disk`, `network_interface`, `operating_system`
 - Network interface name: `veth0` (was `eth0`)
-- IP config: `initialization.ip_config.ipv4.address = "dhcp"`
-- Password now required as variable (was previously hardcoded)
+- IP config: `initialization.ip_config.ipv4.address = "dhcp"` (or static IP)
+- SSH public key now used for access (password authentication removed); pass via `ssh_public_key_path`
+- Supports both DHCP and static IP via `network_config` variable (same structure as proxmox-vm)
 
 ## Code Quality
 
@@ -891,15 +914,15 @@ mise run secrets:edit
 
 **Module-specific variables** can be passed via:
 
-- `TF_VAR_*` environment variables (e.g., `TF_VAR_password`, `TF_VAR_dns_key_secret`)
-- CLI arguments (e.g., `-var="password=..."`)
+- `TF_VAR_*` environment variables (e.g., `TF_VAR_dns_key_secret`, `TF_VAR_netbox_token`)
+- CLI arguments (e.g., `-var="dns_key_secret=..."`)
 - Terragrunt `extra_arguments` block (see "Passing Variables to Modules" section)
 
 Example:
 
 ```bash
-export TF_VAR_password="your-secure-password"
 export TF_VAR_dns_key_secret="your-tsig-key-secret"
+export TF_VAR_netbox_token="your-netbox-api-token"
 terragrunt apply
 ```
 
