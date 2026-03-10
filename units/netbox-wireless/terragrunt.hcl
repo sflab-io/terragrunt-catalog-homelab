@@ -16,7 +16,7 @@ provider "restapi" {
   write_returns_object = true
 
   headers = {
-    Authorization = "Token ${env("NETBOX_API_TOKEN")}"
+    Authorization = "Token ${get_env("NETBOX_API_TOKEN")}"
     Content-Type  = "application/json"
   }
 }
