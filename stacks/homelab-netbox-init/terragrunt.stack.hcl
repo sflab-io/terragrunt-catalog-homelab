@@ -1,8 +1,7 @@
 locals {
-  # env = values.env
-
-  regions = values.regions
-  sites   = values.sites
+  regions       = values.regions
+  sites         = values.sites
+  tenant_groups = values.tenant_groups
 }
 
 unit "netbox_organization" {
@@ -13,9 +12,9 @@ unit "netbox_organization" {
   values = {
     version = values.version
 
-    regions        = local.regions
-    sites          = local.sites
-    # tenant_groups  = local.tenant_groups
+    regions       = local.regions
+    sites         = local.sites
+    tenant_groups = local.tenant_groups
     # tenants        = local.tenants
     # contact_groups = local.contact_groups
     # contact_roles  = local.contact_roles
