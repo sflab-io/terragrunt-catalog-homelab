@@ -77,6 +77,7 @@ This repository provides a three-layer architecture for managing infrastructure 
 - **netbox-ipam**: Manage VLANs and IP prefixes
 - **netbox-virtualization**: Manage cluster types and clusters
 - **netbox-virtual-machine**: Manage virtual machine records with interfaces and IPs
+- **netbox-wireless**: Manage wireless LANs in NetBox
 
 ## Prerequisites
 
@@ -183,6 +184,7 @@ terragrunt stack run apply
 │   ├── netbox-racks/    # NetBox rack management
 │   ├── netbox-virtual-machine/  # NetBox VM records
 │   ├── netbox-virtualization/   # NetBox cluster management
+│   ├── netbox-wireless/ # NetBox wireless LAN management
 │   ├── proxmox-lxc/     # LXC container deployment
 │   ├── proxmox-pool/    # Proxmox resource pools
 │   └── proxmox-vm/      # Virtual machine deployment
@@ -195,10 +197,13 @@ terragrunt stack run apply
 │   ├── netbox-racks/
 │   ├── netbox-virtual-machine/
 │   ├── netbox-virtualization/
+│   ├── netbox-wireless/
 │   ├── proxmox-lxc/
 │   ├── proxmox-pool/
 │   └── proxmox-vm/
 ├── stacks/              # Stack compositions (production)
+│   ├── homelab-netbox-init/
+│   ├── homelab-netbox-virtual-machine/
 │   ├── homelab-proxmox-lxc/
 │   └── homelab-proxmox-vm/
 ├── examples/            # Local testing examples
@@ -305,6 +310,8 @@ Stacks combine multiple units into coordinated deployments.
 
 #### Available Production Stacks (`stacks/`)
 
+- **homelab-netbox-init**: NetBox initialization stack (organization → racks → devices → IPAM → virtualization)
+- **homelab-netbox-virtual-machine**: NetBox virtual machine records stack
 - **homelab-proxmox-lxc**: LXC container + DNS
 - **homelab-proxmox-vm**: Virtual machine + DNS
 
@@ -314,7 +321,8 @@ Stacks combine multiple units into coordinated deployments.
 - **homelab-proxmox-lxc**: LXC container + DNS (uses production stack via Git reference)
 - **homelab-proxmox-vm**: Virtual machine + DNS (uses production stack via Git reference)
 - **homelab-wildcard-dns**: Container with normal + wildcard DNS records
-- **homelab-netbox**: Full NetBox DCIM/IPAM stack (organization → racks → devices → IPAM → virtualization)
+- **homelab-netbox-init**: NetBox DCIM/IPAM initialization stack (organization → racks → devices → IPAM → virtualization)
+- **homelab-netbox-virtual-machine**: NetBox virtual machine records stack
 
 #### Deploy a Stack
 
@@ -499,10 +507,23 @@ netbox-organization → netbox-racks → netbox-devices → netbox-ipam → netb
 
 The `homelab-netbox` example stack manages all these dependencies automatically.
 
-#### Deploy the NetBox Stack
+#### Deploy the NetBox Initialization Stack
 
 ```bash
-cd examples/terragrunt/stacks/homelab-netbox
+cd examples/terragrunt/stacks/homelab-netbox-init
+
+# Set NetBox credentials
+export TF_VAR_netbox_token="your-netbox-api-token"
+
+# Generate and deploy
+terragrunt stack generate
+terragrunt stack run apply
+```
+
+#### Deploy the NetBox Virtual Machine Stack
+
+```bash
+cd examples/terragrunt/stacks/homelab-netbox-virtual-machine
 
 # Set NetBox credentials
 export TF_VAR_netbox_token="your-netbox-api-token"
@@ -533,10 +554,14 @@ Deploy Ubuntu 24.04 LXC containers on Proxmox.
 **Required Inputs:**
 - `env` (string): Environment name (e.g., "dev", "staging", "prod")
 - `app` (string): Application name (e.g., "web", "db", "api")
-- `password` (string, sensitive): Root password for the container
+- `ssh_public_key_path` (string): Path to the SSH public key file for SSH access
 
 **Optional Inputs:**
+- `memory` (number, default: 2048): Memory in MB
+- `cores` (number, default: 2): CPU cores
 - `pool_id` (string): Proxmox pool ID for resource organization
+- `network_config` (object): Network configuration (DHCP or static)
+- `network_bridge` (string, default: "vmbr0"): Network bridge to connect to
 
 **Outputs:**
 - `ipv4`: Container IP address
@@ -662,6 +687,14 @@ Manages virtual machine records in NetBox.
 
 **Required Inputs:**
 - `virtual_machines` (list): List of VM objects with name, cluster, optional description/role/tenant/resources, and interfaces with IP addresses
+
+### netbox-wireless
+
+Manages wireless LAN records in NetBox.
+
+**Required Inputs:**
+- `netbox_url` (string): Base URL of the NetBox instance
+- `wireless_lans` (list): List of wireless LAN objects with SSID, optional description, status, auth settings (type/cipher/psk), VLAN, group, and tenant
 
 ## Available Commands
 

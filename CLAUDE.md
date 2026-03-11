@@ -61,6 +61,7 @@ Run `mise install` to install all required tools.
    - `netbox-ipam`: Manages NetBox VLANs and IP prefixes
    - `netbox-virtualization`: Manages NetBox cluster types and clusters
    - `netbox-virtual-machine`: Manages NetBox virtual machines with interfaces and IPs
+   - `netbox-wireless`: Manages NetBox wireless LANs
    - These are basic building blocks with no Terragrunt-specific logic
 
 2. **Units** (`units/`): Terragrunt wrappers around modules
@@ -93,19 +94,21 @@ The `examples/` directory contains working examples for local testing:
   - `netbox-ipam`: NetBox IPAM (VLANs/prefixes) example
   - `netbox-virtualization`: NetBox virtualization clusters example
   - `netbox-virtual-machine`: NetBox virtual machine management example
+  - `netbox-wireless`: NetBox wireless LANs example
 - `examples/terragrunt/stacks/`: Complete stack examples using catalog stacks
   - `homelab-proxmox-pool`: Proxmox resource pool only (uses local `unit` block)
   - `homelab-proxmox-lxc`: LXC container + DNS (uses `stack` block referencing `stacks/homelab-proxmox-lxc`)
   - `homelab-proxmox-vm`: Virtual machine + DNS (uses `stack` block referencing `stacks/homelab-proxmox-vm`)
   - `homelab-wildcard-dns`: LXC container with both regular and wildcard DNS records
-  - `homelab-netbox`: Full NetBox DCIM/IPAM stack (organization → racks → devices → IPAM → virtualization)
+  - `homelab-netbox-init`: Full NetBox DCIM/IPAM + wireless init stack (organization → racks → devices → IPAM → virtualization → wireless)
+  - `homelab-netbox-virtual-machine`: NetBox virtual machine records stack
   - **Note**: Stack examples that use `stack` blocks reference catalog stacks via Git URLs with `catalog_version` from `environment.hcl`
 - Unit examples use relative paths to modules (e.g., `../../../.././/modules/proxmox-lxc`)
 - Stack examples use relative paths to units (e.g., `../../../../units/dns`) for easier testing
 
 **Direct OpenTofu Examples** (`examples/tofu/`):
 - Direct module usage without Terragrunt wrappers
-- Available examples: `proxmox-lxc`, `proxmox-vm`, `proxmox-pool`, `dns`, `naming`, `netbox`
+- Available examples: `proxmox-lxc`, `proxmox-vm`, `proxmox-pool`, `dns`, `naming`, `netbox`, `netbox-wireless`
 - Useful for testing modules independently
 - Use relative paths to reference modules (e.g., `../../../modules/proxmox-lxc`)
 
@@ -177,7 +180,7 @@ export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 export TF_VAR_dns_key_secret="your-tsig-key-secret"
 
 # Set NetBox API token (required for NetBox modules)
-export TF_VAR_netbox_token="your-netbox-api-token"
+export NETBOX_API_TOKEN="your-netbox-api-token"
 ```
 
 ### Mise Tasks
@@ -352,6 +355,7 @@ Examples:
 - `units/netbox-ipam/terragrunt.hcl`: NetBox IPAM unit
 - `units/netbox-virtualization/terragrunt.hcl`: NetBox virtualization clusters unit
 - `units/netbox-virtual-machine/terragrunt.hcl`: NetBox virtual machine unit
+- `units/netbox-wireless/terragrunt.hcl`: NetBox wireless LANs unit (depends on `ipam_path`)
 
 **NetBox Unit Pattern**: NetBox units include both `root` and `provider_netbox` configs. The `provider_netbox` include reads `provider-netbox-config.hcl` and generates a netbox provider block. NetBox units also accept `organization_path`, `racks_path`, etc. values to enable cross-unit dependencies.
 
@@ -371,13 +375,16 @@ Examples:
 Examples in `stacks/` (production stacks using Git URLs):
 - `stacks/homelab-proxmox-lxc/`: LXC container stack with DNS (no pool unit - pool_id is passed as a value)
 - `stacks/homelab-proxmox-vm/`: Virtual machine stack with DNS (no pool unit - pool_id is passed as a value)
+- `stacks/homelab-netbox-init/`: Full NetBox init stack (organization → racks → devices → IPAM → virtualization → wireless)
+- `stacks/homelab-netbox-virtual-machine/`: NetBox virtual machine records stack
 
 Examples in `examples/terragrunt/stacks/` (testing stacks referencing catalog):
 - `examples/terragrunt/stacks/homelab-proxmox-pool/`: Proxmox resource pool only (uses direct `unit` block)
 - `examples/terragrunt/stacks/homelab-proxmox-lxc/`: References `stacks/homelab-proxmox-lxc` via `stack` block
 - `examples/terragrunt/stacks/homelab-proxmox-vm/`: References `stacks/homelab-proxmox-vm` via `stack` block
 - `examples/terragrunt/stacks/homelab-wildcard-dns/`: LXC container with both normal and wildcard DNS records
-- `examples/terragrunt/stacks/homelab-netbox/`: Full NetBox stack (organization → racks → devices → IPAM → virtualization)
+- `examples/terragrunt/stacks/homelab-netbox-init/`: Full NetBox init stack (organization → racks → devices → IPAM → virtualization → wireless)
+- `examples/terragrunt/stacks/homelab-netbox-virtual-machine/`: NetBox virtual machine records stack
 
 ### Working with Dependencies
 
@@ -854,7 +861,12 @@ Current modules support:
 - **NetBox Virtual Machine** (`modules/netbox-virtual-machine`): Manages VM records in NetBox
   - Required inputs: `virtual_machines` (list with name/cluster_name/optional description/tags/role_name/tenant_name/vcpus/memory_mb/disk_size_mb, and interfaces with name/address/status/dns_name)
 
-**NetBox Stack Deployment Order**: `netbox_organization` → `netbox_racks` → `netbox_devices` → `netbox_ipam` → `netbox_virtualization` (automatic via dependency paths)
+- **NetBox Wireless** (`modules/netbox-wireless`): Manages NetBox wireless LANs via the REST API
+  - Required inputs: `netbox_url` (string), `wireless_lans` (list with ssid/optional description/status/auth_type/auth_cipher/auth_psk/vlan_name/group_id/tenant_name/tags)
+  - Uses `restapi` provider alongside `netbox` provider (wireless LAN API not covered by the netbox provider)
+  - Outputs: `wireless_lans` (map of created wireless LANs keyed by SSID, with id and url)
+
+**NetBox Stack Deployment Order**: `netbox_organization` → `netbox_racks` → `netbox_devices` → `netbox_ipam` → `netbox_virtualization` + `netbox_wireless` (automatic via dependency paths)
 
 ### Provider Migration Notes
 
@@ -904,7 +916,7 @@ Sensitive credentials are stored in `.creds.env.yaml` (SOPS-encrypted):
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`: MinIO service account for Terragrunt backend
 - `PROXMOX_VE_API_TOKEN`: Proxmox API token for bpg/proxmox provider
 - `DNS_TSIG_KEY_SECRET`: TSIG key secret for DNS dynamic updates
-- `TF_VAR_netbox_token`: NetBox API token for NetBox provider
+- `NETBOX_API_TOKEN`: NetBox API token for NetBox provider
 
 To edit encrypted secrets:
 
@@ -914,7 +926,8 @@ mise run secrets:edit
 
 **Module-specific variables** can be passed via:
 
-- `TF_VAR_*` environment variables (e.g., `TF_VAR_dns_key_secret`, `TF_VAR_netbox_token`)
+- `TF_VAR_*` environment variables (e.g., `TF_VAR_dns_key_secret`)
+- `NETBOX_API_TOKEN` environment variable (for NetBox provider authentication)
 - CLI arguments (e.g., `-var="dns_key_secret=..."`)
 - Terragrunt `extra_arguments` block (see "Passing Variables to Modules" section)
 
@@ -922,7 +935,7 @@ Example:
 
 ```bash
 export TF_VAR_dns_key_secret="your-tsig-key-secret"
-export TF_VAR_netbox_token="your-netbox-api-token"
+export NETBOX_API_TOKEN="your-netbox-api-token"
 terragrunt apply
 ```
 
