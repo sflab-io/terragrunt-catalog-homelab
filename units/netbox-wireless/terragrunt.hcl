@@ -20,6 +20,11 @@ provider "restapi" {
     Content-Type  = "application/json"
   }
 }
+
+provider "netbox" {
+  server_url         = "${include.provider_netbox.locals.netbox_server_url}"
+  skip_version_check = ${include.provider_netbox.locals.netbox_skip_version_check}
+}
 EOF
 }
 
