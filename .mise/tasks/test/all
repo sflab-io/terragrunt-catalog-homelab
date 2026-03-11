@@ -21,7 +21,7 @@ TOFUS=(
   proxmox-vm
   proxmox-lxc
   dns
-  netbox
+  # netbox
 )
 
 UNITS=(
@@ -39,8 +39,8 @@ STACKS=(
   homelab-proxmox-vm
   homelab-proxmox-lxc
   homelab-wildcard-dns
-  # homelab-netbox-init
-  # homelab-netbox-virtual-machine
+  homelab-netbox-init
+  homelab-netbox-virtual-machine
 )
 
 mise run terragrunt:cleanup
@@ -58,7 +58,7 @@ function run_tofu_tests() {
 
   for (( idx=${#TOFUS[@]}-1 ; idx>=0 ; idx-- )); do
     TOFU="${TOFUS[idx]}"
-    mise run tofu:destroy $TOFU -a
+    mise run tofu:destroy $TOFU -y
     sleep 1
   done
 }
@@ -73,7 +73,7 @@ function run_terragrunt_unit_tests() {
   # Destroy in reverse order
   for (( idx=${#UNITS[@]}-1 ; idx>=0 ; idx-- )); do
     UNIT="${UNITS[idx]}"
-    mise run terragrunt:unit:destroy $UNIT -a
+    mise run terragrunt:unit:destroy $UNIT -y
     sleep 1
   done
 }
@@ -81,14 +81,14 @@ function run_terragrunt_unit_tests() {
 # === TERRAGRUNT STACKS ===
 function run_terragrunt_stack_tests() {
   for STACK in "${STACKS[@]}"; do
-    mise run terragrunt:stack:apply $STACK -a
+    mise run terragrunt:stack:apply $STACK -y
     sleep 1
   done
 
   # Destroy in reverse order
   for (( idx=${#STACKS[@]}-1 ; idx>=0 ; idx-- )); do
     STACK="${STACKS[idx]}"
-    mise run terragrunt:stack:destroy $STACK -a
+    mise run terragrunt:stack:destroy $STACK -y
     sleep 1
   done
 }
