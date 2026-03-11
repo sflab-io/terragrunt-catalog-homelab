@@ -31,6 +31,7 @@ resource "restapi_object" "this" {
   for_each = local.wireless_lans
 
   path         = "/api/wireless/wireless-lans/"
+  destroy_path = "/api/wireless/wireless-lans/{id}/"
   data         = jsonencode(each.value)
   id_attribute = "id"
 }
