@@ -6,6 +6,10 @@ terraform {
       source  = "Mastercard/restapi"
       version = "~> 2.0"
     }
+    netbox = {
+      source  = "e-breuninger/netbox"
+      version = "~> 5.1.0"
+    }
   }
   required_version = ">= 1.9.0"
 }
@@ -18,4 +22,9 @@ provider "restapi" {
     Authorization = "Token ${var.netbox_token}"
     Content-Type  = "application/json"
   }
+}
+
+provider "netbox" {
+  server_url         = "http://netbox-staging.home.sflab.io"
+  skip_version_check = true
 }

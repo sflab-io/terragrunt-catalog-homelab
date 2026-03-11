@@ -10,10 +10,21 @@ locals {
       wlan.auth_type != null ? { auth_type = wlan.auth_type } : {},
       wlan.auth_cipher != null ? { auth_cipher = wlan.auth_cipher } : {},
       wlan.auth_psk != null ? { auth_psk = wlan.auth_psk } : {},
-      wlan.vlan_id != null ? { vlan = wlan.vlan_id } : {},
+      wlan.vlan_name != null ? { vlan = tonumber(data.netbox_vlan.this[wlan.vlan_name].id) } : {},
       wlan.group_id != null ? { group = wlan.group_id } : {},
+      wlan.tenant_name != null ? { tenant = tonumber(data.netbox_tenant.this[wlan.tenant_name].id) } : {},
     )
   }
+}
+
+data "netbox_vlan" "this" {
+  for_each = toset([for wlan in var.wireless_lans : wlan.vlan_name if wlan.vlan_name != null])
+  name     = each.value
+}
+
+data "netbox_tenant" "this" {
+  for_each = toset([for wlan in var.wireless_lans : wlan.tenant_name if wlan.tenant_name != null])
+  name     = each.value
 }
 
 resource "restapi_object" "this" {

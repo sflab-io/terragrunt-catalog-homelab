@@ -13,7 +13,8 @@ variable "wireless_lans" {
     auth_type   = optional(string, "wpa-personal")
     auth_cipher = optional(string, "aes")
     auth_psk    = optional(string)
-    vlan_id     = optional(number)
+    vlan_name   = optional(string)
+    tenant_name = optional(string)
     tags        = optional(list(string), [])
   }))
   default = []

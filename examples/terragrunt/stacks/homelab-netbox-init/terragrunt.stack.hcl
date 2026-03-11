@@ -358,18 +358,32 @@ locals {
   # Variables for NetBox wireless module
   wireless_lans = [
     {
-      ssid        = "HomeNet"
+      ssid        = "LAN Solo"
       description = "Primary home network"
       status      = "active"
       auth_type   = "wpa-personal"
       auth_cipher = "aes"
-      auth_psk    = "super-secret-passphrase"
-      # tags        = ["homelab"]
+      vlan_name   = "USER"
+      tenant_name = "Platform Team"
     },
     {
-      ssid   = "HomeNet-Guest"
-      status = "active"
+      ssid        = "LAN Solo IoT"
+      description = "IoT devices network"
+      status      = "active"
+      auth_type   = "wpa-personal"
+      auth_cipher = "aes"
+      vlan_name   = "IOT"
+      tenant_name = "Platform Team"
     },
+    {
+      ssid        = "LAN Solo Guest"
+      description = "Guest network"
+      status      = "active"
+      auth_type   = "wpa-personal"
+      auth_cipher = "aes"
+      vlan_name   = "GUEST"
+      tenant_name = "Platform Team"
+    }
   ]
 }
 

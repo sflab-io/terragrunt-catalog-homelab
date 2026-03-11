@@ -14,6 +14,10 @@ generate "provider" {
   path      = "provider.tf"
   if_exists = "overwrite_terragrunt"
   contents  = <<EOF
+provider "netbox" {
+  server_url         = "${local.server_url}"
+  skip_version_check = true
+}
 provider "restapi" {
   uri                  = "${local.server_url}"
   write_returns_object = true
@@ -42,6 +46,8 @@ inputs = {
       auth_type   = "wpa-personal"
       auth_cipher = "aes"
       auth_psk    = "super-secret-passphrase"
+      vlan_name   = "Default"
+      tenant_name = "Platform Team"
       # tags        = ["homelab"]
     },
     {

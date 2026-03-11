@@ -12,8 +12,9 @@ variable "wireless_lans" {
     auth_type   = optional(string)
     auth_cipher = optional(string)
     auth_psk    = optional(string)
-    vlan_id     = optional(number)
+    vlan_name   = optional(string)
     group_id    = optional(number)
+    tenant_name = optional(string)
     tags        = optional(list(string), [])
   }))
   default = []
