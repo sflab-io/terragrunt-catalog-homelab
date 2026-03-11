@@ -120,6 +120,8 @@ unit "netbox_wireless" {
   values = {
     version = values.version
 
+    ipam_path     = "../netbox_ipam"
+
     wireless_lans = local.wireless_lans
   }
 }

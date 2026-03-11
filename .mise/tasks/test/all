@@ -39,7 +39,8 @@ STACKS=(
   homelab-proxmox-vm
   homelab-proxmox-lxc
   homelab-wildcard-dns
-  homelab-netbox
+  # homelab-netbox-init
+  # homelab-netbox-virtual-machine
 )
 
 mise run terragrunt:cleanup

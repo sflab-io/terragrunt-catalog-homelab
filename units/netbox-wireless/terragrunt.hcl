@@ -32,6 +32,14 @@ terraform {
   source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//modules/netbox-wireless?ref=${values.version}"
 }
 
+dependency "netbox_ipam" {
+  config_path = values.ipam_path
+
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs                            = {}
+  skip_outputs                            = true
+}
+
 inputs = {
   # Required values for NetBox wireless module
   netbox_url    = include.provider_netbox.locals.netbox_server_url
