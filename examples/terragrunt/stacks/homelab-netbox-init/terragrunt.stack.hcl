@@ -1,6 +1,5 @@
 locals {
   env = read_terragrunt_config(find_in_parent_folders("environment.hcl")).locals
-  # version = "feat/netbox_stack"
 
   # Variables for NetBox organization module
   regions = [
@@ -60,13 +59,8 @@ locals {
   ]
 
   # Variables for NetBox racks module
-
-  # Required by the rack_type_assignment workaround in the module.
-  # Passed explicitly because modules cannot read provider configuration directly.
-  netbox_url = local.server_url
-
   # Racks variables for NetBox racks module
-  manufacturers_racks = [
+  rack_manufacturers = [
     {
       name = "GeeekPi"
     }
@@ -136,7 +130,7 @@ locals {
     }
   }
 
-  manufacturers_devices = [
+  device_manufacturers = [
     {
       name = "Minisforum"
     },
@@ -352,30 +346,56 @@ locals {
     }
   ]
 
-  netbox_clusters = [
+  clusters = [
     {
       name              = "Proxmox Cluster Production"
       cluster_type_name = "Proxmox VE Cluster"
       site_name         = "SFLAB Homelab Site"
       tenant_name       = "Platform Team"
+    }
+  ]
+
+  # Variables for NetBox wireless module
+  wireless_lans = [
+    {
+      ssid        = "LAN Solo"
+      description = "Primary home network"
+      status      = "active"
+      auth_type   = "wpa-personal"
+      auth_cipher = "aes"
+      vlan_name   = "USER"
+      tenant_name = "Platform Team"
     },
     {
-      name              = "Proxmox Cluster Staging"
-      cluster_type_name = "Proxmox VE Cluster"
-      site_name         = "SFLAB Homelab Site"
-      tenant_name       = "Platform Team"
+      ssid        = "LAN Solo IoT"
+      description = "IoT devices network"
+      status      = "active"
+      auth_type   = "wpa-personal"
+      auth_cipher = "aes"
+      vlan_name   = "IOT"
+      tenant_name = "Platform Team"
+    },
+    {
+      ssid        = "LAN Solo Guest"
+      description = "Guest network"
+      status      = "active"
+      auth_type   = "wpa-personal"
+      auth_cipher = "aes"
+      vlan_name   = "GUEST"
+      tenant_name = "Platform Team"
     }
   ]
 }
 
-unit "netbox_organization" {
-  source = "../../../../units/netbox-organization"
+stack "netbox_init" {
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//stacks/homelab-netbox-init?ref=${local.env.catalog_version}"
 
-  path = "netbox_organization"
+  path = "netbox_init"
 
   values = {
     version = local.env.catalog_version
 
+    # Required values for NetBox organization module
     regions        = local.regions
     sites          = local.sites
     tenant_groups  = local.tenant_groups
@@ -383,68 +403,27 @@ unit "netbox_organization" {
     contact_groups = local.contact_groups
     contact_roles  = local.contact_roles
     contacts       = local.contacts
-  }
-}
 
-unit "netbox_racks" {
-  source = "../../../../units/netbox-racks"
+    # Variables for NetBox racks module
+    rack_manufacturers = local.rack_manufacturers
+    rack_types         = local.rack_types
+    racks              = local.racks
 
-  path = "netbox_racks"
+    # Variables for NetBox devices module
+    device_roles         = local.device_roles
+    device_manufacturers = local.device_manufacturers
+    device_types         = local.device_types
+    devices              = local.devices
 
-  values = {
-    version = local.env.catalog_version
-
-    organization_path = "../netbox_organization"
-
-    manufacturers = local.manufacturers_racks
-    rack_types    = local.rack_types
-    racks         = local.racks
-  }
-}
-
-unit "netbox_devices" {
-  source = "../../../../units/netbox-devices"
-
-  path = "netbox_devices"
-
-  values = {
-    version = local.env.catalog_version
-
-    racks_path = "../netbox_racks"
-
-    device_roles  = local.device_roles
-    manufacturers = local.manufacturers_devices
-    device_types  = local.device_types
-    devices       = local.devices
-  }
-}
-
-unit "netbox_ipam" {
-  source = "../../../../units/netbox-ipam"
-
-  path = "netbox_ipam"
-
-  values = {
-    version = local.env.catalog_version
-
-    devices_path = "../netbox_devices"
-
+    # Variables for NetBox IPAM module
     vlans    = local.vlans
     prefixes = local.prefixes
-  }
-}
 
-unit "netbox_virtualization" {
-  source = "../../../../units/netbox-virtualization"
+    # Variables for NetBox virtualization module
+    cluster_types = local.cluster_types
+    clusters      = local.clusters
 
-  path = "netbox_virtualization"
-
-  values = {
-    version = local.env.catalog_version
-
-    ipam_path = "../netbox_ipam"
-
-    cluster_types   = local.cluster_types
-    netbox_clusters = local.netbox_clusters
+    # Variables for NetBox wireless module
+    wireless_lans = local.wireless_lans
   }
 }

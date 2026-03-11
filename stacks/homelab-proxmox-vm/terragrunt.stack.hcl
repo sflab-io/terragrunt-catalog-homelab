@@ -23,6 +23,7 @@ unit "proxmox_vm" {
 
   values = {
     version             = values.version
+
     env                 = local.env
     app                 = local.app
     memory              = local.memory
@@ -41,6 +42,7 @@ unit "dns" {
 
   values = {
     version      = values.version
+
     env          = local.env
     app          = local.app
     zone         = local.zone
@@ -48,39 +50,3 @@ unit "dns" {
     compute_path = "../proxmox-vm"
   }
 }
-
-# unit "netbox_virtual_machine" {
-#   source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/netbox-virtual-machine?ref=${values.version}"
-
-#   path = "netbox-virtual-machine"
-
-#   values = {
-#     version      = values.version
-
-#     virtual_machines = [
-#       {
-#         name         = "vault"
-#         cluster_name = "Proxmox Production Cluster"
-#         role_name    = "VM"
-#         tenant_name  = "Platform Team"
-#         vcpus        = 2
-#         memory_mb    = 4096
-#         disk_size_mb = 8000
-#         interfaces   = [
-#           {
-#             name     = "eth0"
-#             address  = "192.168.1.34/32"
-#             status   = "active"
-#             dns_name = "vault.home.sflab.local"
-#           }
-#         ]
-#       },
-#     ]
-
-#     # env          = local.env
-#     # app          = local.app
-#     # zone         = local.zone
-#     # record_types = local.record_types
-#     # compute_path = "../proxmox-vm"
-#   }
-# }

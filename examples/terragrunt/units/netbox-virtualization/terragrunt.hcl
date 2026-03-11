@@ -33,7 +33,7 @@ inputs = {
     }
   ]
 
-  netbox_clusters = [
+  clusters = [
     {
       name              = "Proxmox Production Cluster"
       cluster_type_name = "Proxmox VE Cluster"

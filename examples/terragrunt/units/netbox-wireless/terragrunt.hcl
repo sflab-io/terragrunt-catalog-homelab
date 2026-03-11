@@ -9,11 +9,15 @@ locals {
   skip_version_check = local.netbox_config.locals.netbox_skip_version_check
 }
 
-# Generate Netbox and restapi provider blocks
+# Generate Netbox provider block
 generate "provider" {
   path      = "provider.tf"
   if_exists = "overwrite_terragrunt"
   contents  = <<EOF
+provider "netbox" {
+  server_url         = "${local.server_url}"
+  skip_version_check = true
+}
 provider "restapi" {
   uri                  = "${local.server_url}"
   write_returns_object = true
@@ -23,43 +27,32 @@ provider "restapi" {
     Content-Type  = "application/json"
   }
 }
-
-provider "netbox" {
-  server_url         = "${local.server_url}"
-  skip_version_check = ${local.skip_version_check}
-}
 EOF
 }
 
 terraform {
-  source = "../../../.././/modules/netbox-racks"
+  source = "../../../.././/modules/netbox-wireless"
 }
 
 inputs = {
-  # Racks variables for NetBox racks module
-  manufacturers = [
-    {
-      name = "GeeekPi"
-    }
-  ]
+  # Required values for NetBox wireless module
+  netbox_url = local.server_url
 
-  rack_types = [
+  wireless_lans = [
     {
-      model         = "DeskPi RackMate T1"
-      manufacturer  = "GeeekPi"
-      form_factor   = "4-post-cabinet"
-      width         = 10
-      u_height      = 8
-      starting_unit = 1
-    }
-  ]
-
-  racks = [
+      ssid        = "HomeNet"
+      description = "Primary home network"
+      status      = "active"
+      auth_type   = "wpa-personal"
+      auth_cipher = "aes"
+      auth_psk    = "super-secret-passphrase"
+      vlan_name   = "Default"
+      tenant_name = "Platform Team"
+      # tags        = ["homelab"]
+    },
     {
-      name      = "Rack 1"
-      site_name = "SFLAB Homelab Site"
-      status    = "active"
-      rack_type = "DeskPi RackMate T1"
-    }
+      ssid   = "HomeNet-Guest"
+      status = "active"
+    },
   ]
 }

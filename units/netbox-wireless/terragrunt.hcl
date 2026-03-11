@@ -29,11 +29,11 @@ EOF
 }
 
 terraform {
-  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//modules/netbox-racks?ref=${values.version}"
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//modules/netbox-wireless?ref=${values.version}"
 }
 
-dependency "netbox_organization" {
-  config_path = values.organization_path
+dependency "netbox_ipam" {
+  config_path = values.ipam_path
 
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
   mock_outputs                            = {}
@@ -41,7 +41,7 @@ dependency "netbox_organization" {
 }
 
 inputs = {
-  manufacturers = try(values.manufacturers, [])
-  rack_types    = try(values.rack_types, [])
-  racks         = try(values.racks, [])
+  # Required values for NetBox wireless module
+  netbox_url    = include.provider_netbox.locals.netbox_server_url
+  wireless_lans = try(values.wireless_lans, [])
 }

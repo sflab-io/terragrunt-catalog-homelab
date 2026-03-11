@@ -40,3 +40,9 @@ resource "netbox_virtual_machine" "this" {
   memory_mb    = try(each.value.memory_mb, null)
   disk_size_mb = try(each.value.disk_size_mb, null)
 }
+
+resource "netbox_primary_ip" "this" {
+  for_each           = { for vm in var.virtual_machines : vm.name => vm }
+  ip_address_id      = netbox_ip_address.this[each.value.name].id
+  virtual_machine_id = netbox_virtual_machine.this[each.value.name].id
+}

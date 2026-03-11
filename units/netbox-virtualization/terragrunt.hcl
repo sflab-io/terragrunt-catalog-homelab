@@ -32,5 +32,5 @@ dependency "netbox_ipam" {
 
 inputs = {
   cluster_types   = try(values.cluster_types, [])
-  netbox_clusters = try(values.netbox_clusters, [])
+  clusters = try(values.clusters, [])
 }

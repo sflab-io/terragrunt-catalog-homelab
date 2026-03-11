@@ -30,33 +30,26 @@ resource "netbox_rack" "this" {
 }
 
 # The e-breuninger/netbox provider does not support setting rack_type on
-# netbox_rack resources. This workaround uses the NetBox REST API directly via
-# curl to PATCH the rack after creation.
-#
-# Prerequisites:
-#   - NETBOX_API_TOKEN environment variable must be set (same token used by the provider)
-#   - var.netbox_url must be set (e.g. "http://netbox.home.sflab.io")
-#   - curl must be available on the system running tofu
+# netbox_rack resources. This workaround uses the Mastercard/restapi provider to
+# PATCH the rack after creation via the NetBox REST API.
 #
 # Behaviour:
 #   - Only runs for racks where rack_type is set (non-null)
-#   - Re-runs automatically when the rack ID or rack type ID changes (triggers_replace)
-#   - Does NOT reset rack_type on destroy (rack is deleted entirely anyway)
-resource "terraform_data" "rack_type_assignment" {
+#   - Re-runs automatically when rack_type changes
+#   - Destroy is a no-op GET (rack is deleted entirely by netbox_rack.this anyway)
+resource "restapi_object" "rack_type_assignment" {
   for_each = { for rack in var.racks : rack.name => rack if rack.rack_type != null }
 
-  triggers_replace = [
-    netbox_rack.this[each.key].id,
-    netbox_rack_type.this[each.value.rack_type].id,
-  ]
+  path         = "/api/dcim/racks/"
+  create_path  = "/api/dcim/racks/${netbox_rack.this[each.key].id}/"
+  destroy_path = "/api/dcim/racks/${netbox_rack.this[each.key].id}/"
 
-  provisioner "local-exec" {
-    command = <<-EOT
-      curl -sf -X PATCH \
-        -H "Authorization: Token $NETBOX_API_TOKEN" \
-        -H "Content-Type: application/json" \
-        -d '{"rack_type": ${netbox_rack_type.this[each.value.rack_type].id}}' \
-        "${var.netbox_url}/api/dcim/racks/${netbox_rack.this[each.key].id}/"
-    EOT
-  }
+  create_method  = "PATCH"
+  update_method  = "PATCH"
+  destroy_method = "GET"
+
+  data         = jsonencode({ rack_type = netbox_rack_type.this[each.value.rack_type].id })
+  id_attribute = "id"
+
+  depends_on = [netbox_rack.this, netbox_rack_type.this]
 }
