@@ -28,7 +28,7 @@ cd "$UNITS_DIR/$selected_unit"
 CMD="terragrunt destroy"
 
 if [ "${usage_yes?}" = "true" ]; then
-  CMD+=" --non-interactive"
+  CMD+=" -auto-approve"
 fi
 
 echo ""
