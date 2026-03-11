@@ -1,13 +1,5 @@
 # Racks variables for NetBox racks module
 
-# Required by the rack_type_assignment workaround (see main.tf).
-# Must match the server URL configured in the netbox provider.
-# Authentication is taken from the NETBOX_API_TOKEN environment variable.
-variable "netbox_url" {
-  description = "Base URL of the NetBox instance (e.g. http://netbox.home.sflab.io). Required when any rack has rack_type set."
-  type        = string
-}
-
 variable "manufacturers" {
   description = "A list of manufacturers to create in NetBox, where each manufacturer is an object with attributes (e.g., name)."
   type = list(object({

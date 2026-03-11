@@ -9,11 +9,21 @@ locals {
   skip_version_check = local.netbox_config.locals.netbox_skip_version_check
 }
 
-# Generate Netbox provider block
+# Generate Netbox and restapi provider blocks
 generate "provider" {
   path      = "provider.tf"
   if_exists = "overwrite_terragrunt"
   contents  = <<EOF
+provider "restapi" {
+  uri                  = "${local.server_url}"
+  write_returns_object = true
+
+  headers = {
+    Authorization = "Token ${get_env("NETBOX_API_TOKEN")}"
+    Content-Type  = "application/json"
+  }
+}
+
 provider "netbox" {
   server_url         = "${local.server_url}"
   skip_version_check = ${local.skip_version_check}
@@ -26,10 +36,6 @@ terraform {
 }
 
 inputs = {
-  # Required by the rack_type_assignment workaround in the module.
-  # Passed explicitly because modules cannot read provider configuration directly.
-  netbox_url = local.server_url
-
   # Racks variables for NetBox racks module
   manufacturers = [
     {

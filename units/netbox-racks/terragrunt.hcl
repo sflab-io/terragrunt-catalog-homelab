@@ -11,6 +11,16 @@ generate "provider" {
   path      = "provider.tf"
   if_exists = "overwrite_terragrunt"
   contents  = <<EOF
+provider "restapi" {
+  uri                  = "${include.provider_netbox.locals.netbox_server_url}"
+  write_returns_object = true
+
+  headers = {
+    Authorization = "Token ${get_env("NETBOX_API_TOKEN")}"
+    Content-Type  = "application/json"
+  }
+}
+
 provider "netbox" {
   server_url         = "${include.provider_netbox.locals.netbox_server_url}"
   skip_version_check = ${include.provider_netbox.locals.netbox_skip_version_check}
@@ -31,9 +41,6 @@ dependency "netbox_organization" {
 }
 
 inputs = {
-  # Required by the rack_type_assignment workaround in the module.
-  # Passed explicitly because modules cannot read provider configuration directly.
-  netbox_url    = include.provider_netbox.locals.netbox_server_url
   manufacturers = try(values.manufacturers, [])
   rack_types    = try(values.rack_types, [])
   racks         = try(values.racks, [])
