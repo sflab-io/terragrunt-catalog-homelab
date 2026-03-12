@@ -79,5 +79,6 @@ unit "netbox_virtual_machine" {
         interfaces   = local.interfaces
       }
     ]
+    dns_path = "../dns"
   }
 }

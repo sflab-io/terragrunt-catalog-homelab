@@ -22,6 +22,16 @@ terraform {
   source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//modules/netbox-virtual-machine?ref=${values.version}"
 }
 
+dependency "dns" {
+  config_path = values.dns_path
+
+  # Mock outputs support single-VM pattern (both VM and LXC)
+  mock_outputs = {
+    addresses = ["192.168.1.99"]
+    fqdn      = "example-vm.home.sflab.io"
+  }
+}
+
 inputs = {
   virtual_machines = values.virtual_machines
 }
