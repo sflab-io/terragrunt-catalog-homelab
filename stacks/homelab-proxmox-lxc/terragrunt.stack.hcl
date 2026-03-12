@@ -16,7 +16,7 @@ locals {
 
   # Netbox-specific values
   cluster_name = try(values.cluster_name, "")
-  role_name    = try(values.role_name, "VM")
+  role_name    = try(values.role_name, "LXC")
   tenant_name  = try(values.tenant_name, "")
 }
 
