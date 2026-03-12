@@ -12,7 +12,6 @@ locals {
   zone         = try(values.dns_zone, "home.sflab.io.")
 
   pool_id = try(values.pool_id, "")
-
   ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")
 
   # Netbox-specific values
