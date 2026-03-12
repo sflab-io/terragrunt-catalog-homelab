@@ -11,6 +11,11 @@ locals {
     normal   = true
     wildcard = false
   }
+
+  #
+  cluster_name = "Proxmox Cluster Production"
+  role_name    = "LXC"
+  tenant_name  = "Platform Team"
 }
 
 stack "homelab_proxmox_lxc" {
