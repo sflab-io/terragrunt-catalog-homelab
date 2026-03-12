@@ -13,6 +13,19 @@ locals {
     normal   = true
     wildcard = true
   }
+
+  #
+  cluster_name = "Proxmox Cluster Production"
+  role_name    = "VM"
+  tenant_name  = "Platform Team"
+  interfaces   = [
+    {
+      name     = "eth0"
+      address  = "192.168.1.100/24"
+      status   = "active"
+      dns_name = "example-vm.home.sflab.io"
+    }
+  ]
 }
 
 stack "homelab_proxmox_vm" {

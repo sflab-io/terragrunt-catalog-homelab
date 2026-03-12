@@ -14,6 +14,12 @@ locals {
   pool_id = try(values.pool_id, "")
 
   ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")
+
+  # Netbox-specific values
+  cluster_name = try(values.netbox_cluster, "")
+  role_name    = try(values.netbox_role, "")
+  tenant_name  = try(values.netbox_tenant, "")
+  interfaces   = try(values.netbox_interfaces, [])
 }
 
 unit "proxmox_vm" {
@@ -48,5 +54,30 @@ unit "dns" {
     zone         = local.zone
     record_types = local.record_types
     compute_path = "../proxmox-vm"
+  }
+}
+
+unit "netbox_virtual_machine" {
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/netbox-virtual-machine?ref=${values.version}"
+
+  path = "netbox-virtual-machine"
+
+  values = {
+    version      = values.version
+
+    virtual_machines = [
+      {
+        name         = "${local.env}-${local.app}"
+        cluster_name = local.cluster_name
+        description  = "Virtual machine for ${local.app} in ${local.env} environment"
+        role_name    = local.role_name
+        tenant_name  = local.tenant_name
+        vcpus        = local.cores
+        memory_mb    = local.memory
+        disk_size_mb = local.disk_size
+        # tags         = [local.env, local.app]
+        interfaces   = local.interfaces
+      }
+    ]
   }
 }

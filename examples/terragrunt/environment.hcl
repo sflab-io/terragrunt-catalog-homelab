@@ -6,7 +6,7 @@ locals {
 
   # Shared catalog configuration
   # Tracks latest catalog changes. Promotes to production after validation.
-  catalog_version = "feat/netbox_stack_example"
+  catalog_version = "feat/netbox_vm_stack_example"
   zone            = "home.sflab.io."
 
   # SSH public key paths
