@@ -19,7 +19,6 @@ locals {
   cluster_name = try(values.cluster_name, "")
   role_name    = try(values.role_name, "")
   tenant_name  = try(values.tenant_name, "")
-  interfaces   = try(values.interfaces, [])
 }
 
 unit "proxmox_vm" {
@@ -63,7 +62,7 @@ unit "netbox_virtual_machine" {
   path = "netbox-virtual-machine"
 
   values = {
-    version      = values.version
+    version = values.version
 
     virtual_machines = [
       {
@@ -76,7 +75,6 @@ unit "netbox_virtual_machine" {
         memory_mb    = local.memory
         disk_size_mb = local.disk_size
         # tags         = [local.env, local.app]
-        interfaces   = local.interfaces
       }
     ]
     dns_path = "../dns"

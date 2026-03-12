@@ -22,6 +22,23 @@ terraform {
   source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//modules/netbox-virtual-machine?ref=${values.version}"
 }
 
+locals {
+  vm_interfaces = [
+    {
+      name     = "eth0"
+      address  = "${dependency.dns.outputs.addresses[0]}/32"
+      dns_name = dependency.dns.outputs.fqdn
+      status   = "active"
+    }
+  ]
+
+  virtual_machines_with_interfaces = [
+    for vm in values.virtual_machines : merge(vm, {
+      interfaces = local.vm_interfaces
+    })
+  ]
+}
+
 dependency "dns" {
   config_path = values.dns_path
 
@@ -33,5 +50,5 @@ dependency "dns" {
 }
 
 inputs = {
-  virtual_machines = values.virtual_machines
+  virtual_machines = local.virtual_machines_with_interfaces
 }
