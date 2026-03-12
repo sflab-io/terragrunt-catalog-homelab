@@ -16,7 +16,6 @@ locals {
 
   #
   cluster_name = "Proxmox Cluster Production"
-  # role_name    = "VM"
   tenant_name  = "Platform Team"
 }
 
@@ -45,7 +44,6 @@ stack "homelab_proxmox_vm" {
 
     #
     cluster_name = local.cluster_name
-    # role_name    = local.role_name
     tenant_name  = local.tenant_name
   }
 }

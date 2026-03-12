@@ -73,7 +73,6 @@ unit "netbox_virtual_machine" {
         vcpus        = local.cores
         memory_mb    = local.memory
         disk_size_mb = local.disk_size
-        # tags         = [local.env, local.app]
       }
     ]
     dns_path = "../dns"
