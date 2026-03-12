@@ -16,10 +16,10 @@ locals {
   ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")
 
   # Netbox-specific values
-  cluster_name = try(values.netbox_cluster, "")
-  role_name    = try(values.netbox_role, "")
-  tenant_name  = try(values.netbox_tenant, "")
-  interfaces   = try(values.netbox_interfaces, [])
+  cluster_name = try(values.cluster_name, "")
+  role_name    = try(values.role_name, "")
+  tenant_name  = try(values.tenant_name, "")
+  interfaces   = try(values.interfaces, [])
 }
 
 unit "proxmox_vm" {
