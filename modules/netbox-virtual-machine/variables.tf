@@ -14,8 +14,8 @@ variable "virtual_machines" {
     interfaces = list(object({
       name     = string
       address  = string
-      status   = string
       dns_name = string
+      status   = string
     }))
   }))
   default = []

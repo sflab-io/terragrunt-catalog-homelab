@@ -21,9 +21,9 @@ locals {
   interfaces   = [
     {
       name     = "eth0"
-      address  = "192.168.1.100/24"
+      address  = "192.168.1.134/32"
+      dns_name = "example-vm-staging.home.sflab.io"
       status   = "active"
-      dns_name = "example-vm.home.sflab.io"
     }
   ]
 }
