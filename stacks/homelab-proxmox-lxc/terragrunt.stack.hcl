@@ -2,8 +2,9 @@ locals {
   env     = values.env
   app     = values.app
 
-  memory = try(values.memory, 2048)
-  cores  = try(values.cores, 2)
+  memory    = try(values.memory, 2048)
+  cores     = try(values.cores, 2)
+  disk_size = try(values.disk_size, 8)
 
   network_config = try(values.network_config, { type = "dhcp" })
 
@@ -12,6 +13,11 @@ locals {
 
   pool_id = try(values.pool_id, "")
   ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")
+
+  # Netbox-specific values
+  cluster_name = try(values.cluster_name, "")
+  role_name    = try(values.role_name, "LXC")
+  tenant_name  = try(values.tenant_name, "")
 }
 
 unit "proxmox_lxc" {
@@ -43,5 +49,29 @@ unit "dns" {
     zone         = local.zone
     record_types = local.record_types
     compute_path = "../proxmox-lxc"
+  }
+}
+
+unit "netbox_virtual_machine" {
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/netbox-virtual-machine?ref=${values.version}"
+
+  path = "netbox-virtual-machine"
+
+  values = {
+    version = values.version
+
+    virtual_machines = [
+      {
+        name         = "${local.env}-${local.app}"
+        cluster_name = local.cluster_name
+        description  = "LXC container for ${local.app} in ${local.env} environment"
+        role_name    = local.role_name
+        tenant_name  = local.tenant_name
+        vcpus        = local.cores
+        memory_mb    = local.memory
+        disk_size_mb = local.disk_size
+      }
+    ]
+    dns_path = "../dns"
   }
 }

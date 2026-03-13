@@ -13,6 +13,10 @@ locals {
     normal   = true
     wildcard = true
   }
+
+  #
+  cluster_name = "Proxmox Cluster Production"
+  tenant_name  = "Platform Team"
 }
 
 stack "homelab_proxmox_vm" {
@@ -37,5 +41,9 @@ stack "homelab_proxmox_vm" {
 
     pool_id             = local.env.pool_id
     ssh_public_key_path = local.env.admin_ssh_public_key_path
+
+    #
+    cluster_name = local.cluster_name
+    tenant_name  = local.tenant_name
   }
 }
