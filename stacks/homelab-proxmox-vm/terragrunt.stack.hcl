@@ -18,6 +18,19 @@ locals {
   cluster_name = try(values.cluster_name, "")
   role_name    = try(values.role_name, "VM")
   tenant_name  = try(values.tenant_name, "")
+
+  virtual_machines = try(values.virtual_machines, [
+    {
+      name         = "${local.env}-${local.app}"
+      cluster_name = local.cluster_name
+      description  = "Virtual machine for ${local.app} in ${local.env} environment"
+      role_name    = local.role_name
+      tenant_name  = local.tenant_name
+      vcpus        = local.cores
+      memory_mb    = local.memory
+      disk_size_mb = local.disk_size
+    }
+  ])
 }
 
 unit "proxmox_vm" {
@@ -26,7 +39,7 @@ unit "proxmox_vm" {
   path = "proxmox-vm"
 
   values = {
-    version             = values.version
+    version = values.version
 
     env                 = local.env
     app                 = local.app
@@ -45,7 +58,7 @@ unit "dns" {
   path = "dns"
 
   values = {
-    version      = values.version
+    version = values.version
 
     env          = local.env
     app          = local.app
