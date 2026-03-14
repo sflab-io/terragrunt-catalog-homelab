@@ -29,7 +29,7 @@ module "dns_regular" {
 
   env       = "dev"
   app       = "test"
-  zone      = "home.sflab.io."
+  zone      = "home.sflab.io"
   addresses = ["192.168.1.88"]
   # record_types uses default: { normal = true, wildcard = false }
   # Creates: dev-test.home.sflab.io
@@ -41,7 +41,7 @@ module "dns_wildcard" {
 
   env       = "dev"
   app       = "wildcard"
-  zone      = "home.sflab.io."
+  zone      = "home.sflab.io"
   addresses = ["192.168.1.99"]
   record_types = {
     normal   = false
@@ -56,7 +56,7 @@ module "dns_both" {
 
   env       = "dev"
   app       = "dual"
-  zone      = "home.sflab.io."
+  zone      = "home.sflab.io"
   addresses = ["192.168.1.77"]
   record_types = {
     normal   = true

@@ -10,7 +10,6 @@ locals {
 
   record_types = try(values.record_types, { normal = true, wildcard = false })
   zone         = try(values.dns_zone, "home.sflab.io")
-  # zone         = try(values.dns_zone, "home.sflab.io.")
 
   pool_id = try(values.pool_id, "")
   ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")

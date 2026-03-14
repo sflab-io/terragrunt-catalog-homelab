@@ -7,7 +7,7 @@ locals {
   # Shared catalog configuration
   # Tracks latest catalog changes. Promotes to production after validation.
   catalog_version = "fix/dns_address_output"
-  zone            = "home.sflab.io."
+  zone            = "home.sflab.io"
 
   # SSH public key paths
   ansible_ssh_public_key_path = "${get_repo_root()}/keys/ansible_id_ecdsa.pub"
