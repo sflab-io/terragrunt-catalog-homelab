@@ -10,5 +10,5 @@ output "fqdn_wildcard" {
 
 output "addresses" {
   description = "IP addresses assigned to the DNS records."
-  value       = length(dns_a_record_set.normal) > 0 ? dns_a_record_set.normal[0].addresses : null
+  value       = length(dns_a_record_set.normal) > 0 ? dns_a_record_set.normal.addresses : null
 }
