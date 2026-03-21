@@ -31,7 +31,7 @@ UNITS=(
   proxmox-lxc
   dns
   dns-wildcard
-  # netbox
+  # netbox-virtual-machine
 )
 
 STACKS=(
@@ -39,8 +39,8 @@ STACKS=(
   homelab-proxmox-vm
   homelab-proxmox-lxc
   homelab-wildcard-dns
-  homelab-netbox-init
-  homelab-netbox-virtual-machine
+  # homelab-netbox-init
+  # homelab-netbox-virtual-machine
 )
 
 mise run terragrunt:cleanup
