@@ -4,9 +4,15 @@ data "netbox_cluster" "this" {
   name     = each.value
 }
 
-data "netbox_device_role" "this" {
+resource "netbox_device_role" "this" {
   for_each = toset([for vm in var.virtual_machines : vm.role_name])
   name     = each.value
+  color    = "9e9e9e"
+  vm_role  = true
+
+  lifecycle {
+    ignore_changes = [color, description]
+  }
 }
 
 data "netbox_tenant" "this" {
@@ -39,7 +45,7 @@ resource "netbox_virtual_machine" "this" {
   name         = each.value.name
   description  = try(each.value.description, null)
   cluster_id   = data.netbox_cluster.this[each.value.cluster_name].id
-  role_id      = data.netbox_device_role.this[each.value.role_name].id
+  role_id      = netbox_device_role.this[each.value.role_name].id
   tenant_id    = data.netbox_tenant.this[each.value.tenant_name].id
   site_id      = each.value.site_name != null ? data.netbox_site.this[each.value.site_name].id : null
   vcpus        = try(each.value.vcpus, null)
