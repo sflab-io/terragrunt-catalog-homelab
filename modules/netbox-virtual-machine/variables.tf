@@ -8,6 +8,7 @@ variable "virtual_machines" {
     tags         = optional(list(string), [])
     role_name    = string
     tenant_name  = string
+    site_name    = optional(string)
     vcpus        = optional(number)
     memory_mb    = optional(number)
     disk_size_mb = optional(number)

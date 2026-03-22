@@ -14,6 +14,11 @@ data "netbox_tenant" "this" {
   name     = each.value
 }
 
+data "netbox_site" "this" {
+  for_each = toset([for vm in var.virtual_machines : vm.site_name if vm.site_name != null])
+  name     = each.value
+}
+
 resource "netbox_interface" "this" {
   for_each           = { for vm in var.virtual_machines : vm.name => vm }
   name               = each.value.interfaces[0].name
@@ -36,6 +41,7 @@ resource "netbox_virtual_machine" "this" {
   cluster_id   = data.netbox_cluster.this[each.value.cluster_name].id
   role_id      = data.netbox_device_role.this[each.value.role_name].id
   tenant_id    = data.netbox_tenant.this[each.value.tenant_name].id
+  site_id      = each.value.site_name != null ? data.netbox_site.this[each.value.site_name].id : null
   vcpus        = try(each.value.vcpus, null)
   memory_mb    = try(each.value.memory_mb, null)
   disk_size_mb = try(each.value.disk_size_mb, null)
