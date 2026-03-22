@@ -55,13 +55,7 @@ Run `mise install` to install all required tools.
    - `proxmox-pool`: Creates Proxmox resource pools
    - `dns`: Manages DNS A records on BIND9 servers (supports both normal and wildcard records)
    - `naming`: Wrapper around the homelab provider for standardized resource naming
-   - `netbox-organization`: Manages NetBox regions, sites, tenants, and contacts
-   - `netbox-racks`: Manages NetBox rack types and racks
-   - `netbox-devices`: Manages NetBox device roles, manufacturers, device types, and devices
-   - `netbox-ipam`: Manages NetBox VLANs and IP prefixes
-   - `netbox-virtualization`: Manages NetBox cluster types and clusters
    - `netbox-virtual-machine`: Manages NetBox virtual machines with interfaces and IPs
-   - `netbox-wireless`: Manages NetBox wireless LANs
    - These are basic building blocks with no Terragrunt-specific logic
 
 2. **Units** (`units/`): Terragrunt wrappers around modules
@@ -75,7 +69,7 @@ Run `mise install` to install all required tools.
    - Define multiple units that work together
    - Use `terragrunt.stack.hcl` files
    - Each unit must specify a `path` attribute for deployment location
-   - Example: `stacks/homelab-proxmox-lxc/` combines proxmox-lxc and dns units
+   - Example: `stacks/homelab-proxmox-lxc/` combines proxmox-lxc, dns, and netbox-virtual-machine units
 
 **Examples Directory:**
 The `examples/` directory contains working examples for local testing:
@@ -88,27 +82,19 @@ The `examples/` directory contains working examples for local testing:
   - `dns`: DNS record management example (normal records only)
   - `dns-wildcard`: Wildcard DNS record example (wildcard records only)
   - `naming`: Naming convention example
-  - `netbox-organization`: NetBox organization resources example
-  - `netbox-racks`: NetBox rack management example
-  - `netbox-devices`: NetBox device management example
-  - `netbox-ipam`: NetBox IPAM (VLANs/prefixes) example
-  - `netbox-virtualization`: NetBox virtualization clusters example
   - `netbox-virtual-machine`: NetBox virtual machine management example
-  - `netbox-wireless`: NetBox wireless LANs example
 - `examples/terragrunt/stacks/`: Complete stack examples using catalog stacks
   - `homelab-proxmox-pool`: Proxmox resource pool only (uses local `unit` block)
-  - `homelab-proxmox-lxc`: LXC container + DNS (uses `stack` block referencing `stacks/homelab-proxmox-lxc`)
-  - `homelab-proxmox-vm`: Virtual machine + DNS (uses `stack` block referencing `stacks/homelab-proxmox-vm`)
+  - `homelab-proxmox-lxc`: LXC container + DNS + NetBox VM (uses `stack` block referencing `stacks/homelab-proxmox-lxc`)
+  - `homelab-proxmox-vm`: Virtual machine + DNS + NetBox VM (uses `stack` block referencing `stacks/homelab-proxmox-vm`)
   - `homelab-wildcard-dns`: LXC container with both regular and wildcard DNS records
-  - `homelab-netbox-init`: Full NetBox DCIM/IPAM + wireless init stack (organization → racks → devices → IPAM → virtualization → wireless)
-  - `homelab-netbox-virtual-machine`: NetBox virtual machine records stack
   - **Note**: Stack examples that use `stack` blocks reference catalog stacks via Git URLs with `catalog_version` from `environment.hcl`
 - Unit examples use relative paths to modules (e.g., `../../../.././/modules/proxmox-lxc`)
 - Stack examples use relative paths to units (e.g., `../../../../units/dns`) for easier testing
 
 **Direct OpenTofu Examples** (`examples/tofu/`):
 - Direct module usage without Terragrunt wrappers
-- Available examples: `proxmox-lxc`, `proxmox-vm`, `proxmox-pool`, `dns`, `naming`, `netbox`, `netbox-wireless`
+- Available examples: `proxmox-lxc`, `proxmox-vm`, `proxmox-pool`, `dns`, `naming`, `netbox`
 - Useful for testing modules independently
 - Use relative paths to reference modules (e.g., `../../../modules/proxmox-lxc`)
 
@@ -194,15 +180,6 @@ mise run minio:list
 
 # Setup Proxmox resources (creates role and user)
 mise run proxmox:setup
-
-# Configure network settings
-mise run network:configure
-
-# Print network configuration
-mise run network:status
-
-# Edit SOPS-encrypted secrets
-mise run secrets:edit
 
 # Clean up Terragrunt cache files
 mise run terragrunt:cleanup
@@ -349,15 +326,9 @@ Examples:
 - `units/proxmox-pool/terragrunt.hcl`: Resource pool unit
 - `units/dns/terragrunt.hcl`: DNS record unit (supports both regular and wildcard DNS records via `record_types` parameter)
 - `units/naming/terragrunt.hcl`: Naming convention unit
-- `units/netbox-organization/terragrunt.hcl`: NetBox organization resources unit
-- `units/netbox-racks/terragrunt.hcl`: NetBox rack management unit
-- `units/netbox-devices/terragrunt.hcl`: NetBox device management unit
-- `units/netbox-ipam/terragrunt.hcl`: NetBox IPAM unit
-- `units/netbox-virtualization/terragrunt.hcl`: NetBox virtualization clusters unit
-- `units/netbox-virtual-machine/terragrunt.hcl`: NetBox virtual machine unit
-- `units/netbox-wireless/terragrunt.hcl`: NetBox wireless LANs unit (depends on `ipam_path`)
+- `units/netbox-virtual-machine/terragrunt.hcl`: NetBox virtual machine unit (depends on `dns_path`)
 
-**NetBox Unit Pattern**: NetBox units include both `root` and `provider_netbox` configs. The `provider_netbox` include reads `provider-netbox-config.hcl` and generates a netbox provider block. NetBox units also accept `organization_path`, `racks_path`, etc. values to enable cross-unit dependencies.
+**NetBox Unit Pattern**: The `netbox-virtual-machine` unit includes both `root` and `provider_netbox` configs. The `provider_netbox` include reads `provider-netbox-config.hcl` and generates a netbox provider block. It accepts a `dns_path` value to create a dependency on the DNS unit for IP address retrieval.
 
 ### Adding New Stacks
 
@@ -373,18 +344,15 @@ Examples:
    - Concrete values in `locals` block
 
 Examples in `stacks/` (production stacks using Git URLs):
-- `stacks/homelab-proxmox-lxc/`: LXC container stack with DNS (no pool unit - pool_id is passed as a value)
-- `stacks/homelab-proxmox-vm/`: Virtual machine stack with DNS (no pool unit - pool_id is passed as a value)
-- `stacks/homelab-netbox-init/`: Full NetBox init stack (organization → racks → devices → IPAM → virtualization → wireless)
-- `stacks/homelab-netbox-virtual-machine/`: NetBox virtual machine records stack
+- `stacks/homelab-proxmox-lxc/`: LXC container + DNS + NetBox VM (3 units; pool_id is passed as a value)
+- `stacks/homelab-proxmox-vm/`: Virtual machine + DNS + NetBox VM (3 units; pool_id is passed as a value)
+- `stacks/homelab-netbox-virtual-machine/`: Standalone NetBox virtual machine records stack
 
 Examples in `examples/terragrunt/stacks/` (testing stacks referencing catalog):
 - `examples/terragrunt/stacks/homelab-proxmox-pool/`: Proxmox resource pool only (uses direct `unit` block)
 - `examples/terragrunt/stacks/homelab-proxmox-lxc/`: References `stacks/homelab-proxmox-lxc` via `stack` block
 - `examples/terragrunt/stacks/homelab-proxmox-vm/`: References `stacks/homelab-proxmox-vm` via `stack` block
 - `examples/terragrunt/stacks/homelab-wildcard-dns/`: LXC container with both normal and wildcard DNS records
-- `examples/terragrunt/stacks/homelab-netbox-init/`: Full NetBox init stack (organization → racks → devices → IPAM → virtualization → wireless)
-- `examples/terragrunt/stacks/homelab-netbox-virtual-machine/`: NetBox virtual machine records stack
 
 ### Working with Dependencies
 
@@ -429,16 +397,23 @@ Stacks allow you to deploy multiple units together as a coordinated group. Here'
 ```hcl
 # stacks/homelab-proxmox-lxc/terragrunt.stack.hcl
 locals {
-  env    = values.env
-  app    = values.app
-  memory = try(values.memory, 2048)
-  cores  = try(values.cores, 2)
+  env       = values.env
+  app       = values.app
+  memory    = try(values.memory, 2048)
+  cores     = try(values.cores, 2)
+  disk_size = try(values.disk_size, 8)
 
   network_config      = try(values.network_config, { type = "dhcp" })
   record_types        = try(values.record_types, { normal = true, wildcard = false })
-  zone                = try(values.dns_zone, "home.sflab.io.")
+  zone                = try(values.dns_zone, "home.sflab.io")
   pool_id             = try(values.pool_id, "")
   ssh_public_key_path = try(values.ssh_public_key_path, "${get_repo_root()}/keys/admin_id_ecdsa.pub")
+
+  # NetBox-specific values
+  cluster_name = try(values.cluster_name, "")
+  role_name    = try(values.role_name, "LXC")
+  tenant_name  = try(values.tenant_name, "")
+  site_name    = try(values.site_name, null)
 }
 
 unit "proxmox_lxc" {
@@ -470,6 +445,30 @@ unit "dns" {
     compute_path = "../proxmox-lxc"  # Enables dependency on LXC container IP
   }
 }
+
+unit "netbox_virtual_machine" {
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/netbox-virtual-machine?ref=${values.version}"
+  path   = "netbox-virtual-machine"  # REQUIRED: deployment path within .terragrunt-stack
+
+  values = {
+    version = values.version
+
+    virtual_machines = [
+      {
+        name         = "${local.env}-${local.app}"
+        cluster_name = local.cluster_name
+        description  = "LXC container for ${local.app} in ${local.env} environment"
+        role_name    = local.role_name
+        tenant_name  = local.tenant_name
+        site_name    = local.site_name
+        vcpus        = local.cores
+        memory_mb    = local.memory
+        disk_size_mb = local.disk_size
+      }
+    ]
+    dns_path = "../dns"
+  }
+}
 ```
 
 **Important Stack Requirements:**
@@ -487,7 +486,7 @@ unit "dns" {
 - The `dns` unit registers the container/VM IP address in DNS after creation
 - Set `TF_VAR_dns_key_secret` environment variable before deploying the stack
 - The DNS unit uses `compute_path` to create a dependency on the LXC or VM unit
-- Execution order: `proxmox_lxc`/`proxmox_vm` → `dns` (automatic via dependencies)
+- Execution order: `proxmox_lxc`/`proxmox_vm` → `dns` → `netbox_virtual_machine` (automatic via dependencies)
 - After deployment, resources are resolvable at `${env}-${app}.home.sflab.io`
 
 **Deploying a Stack with DNS:**
@@ -842,31 +841,9 @@ Current modules support:
 
 **NetBox Resources:**
 
-- **NetBox Organization** (`modules/netbox-organization`): Manages organizational hierarchy in NetBox
-  - Required inputs: `regions` (list), `sites` (list with facility/lat/lon/timezone), `tenant_groups`, `tenants`, `contact_groups`, `contact_roles`, `contacts` (with email/phone)
-  - Sites can optionally reference a `region_name`; tenants can reference `group_name`
-
-- **NetBox Racks** (`modules/netbox-racks`): Manages physical rack infrastructure
-  - Required inputs: `netbox_url` (string), `manufacturers`, `rack_types` (with model/manufacturer/form_factor/width/u_height), `racks` (with name/site_name/status/rack_type)
-
-- **NetBox Devices** (`modules/netbox-devices`): Manages physical device definitions
-  - Required inputs: `device_roles` (map with color_hex), `manufacturers`, `device_types` (with model/manufacturer_name/u_height), `devices` (with name/device_type/role/site/tenant/rack and interfaces with IP addresses)
-
-- **NetBox IPAM** (`modules/netbox-ipam`): Manages IP address management
-  - Required inputs: `vlans` (list with name/vid/optional description/tags), `prefixes` (list with prefix/status/optional description/tags/vlan_id)
-
-- **NetBox Virtualization** (`modules/netbox-virtualization`): Manages virtual cluster infrastructure
-  - Required inputs: `cluster_types` (list with name), `clusters` (list with name/cluster_type_name/optional site_name/tenant_name)
-
 - **NetBox Virtual Machine** (`modules/netbox-virtual-machine`): Manages VM records in NetBox
   - Required inputs: `virtual_machines` (list with name/cluster_name/optional description/tags/role_name/tenant_name/vcpus/memory_mb/disk_size_mb, and interfaces with name/address/status/dns_name)
-
-- **NetBox Wireless** (`modules/netbox-wireless`): Manages NetBox wireless LANs via the REST API
-  - Required inputs: `netbox_url` (string), `wireless_lans` (list with ssid/optional description/status/auth_type/auth_cipher/auth_psk/vlan_name/group_id/tenant_name/tags)
-  - Uses `restapi` provider alongside `netbox` provider (wireless LAN API not covered by the netbox provider)
-  - Outputs: `wireless_lans` (map of created wireless LANs keyed by SSID, with id and url)
-
-**NetBox Stack Deployment Order**: `netbox_organization` → `netbox_racks` → `netbox_devices` → `netbox_ipam` → `netbox_virtualization` + `netbox_wireless` (automatic via dependency paths)
+  - The unit (`units/netbox-virtual-machine`) accepts a `dns_path` to retrieve the IP address from the DNS unit output
 
 ### Provider Migration Notes
 

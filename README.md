@@ -1,6 +1,6 @@
 # Terragrunt Catalog Homelab
 
-A Terragrunt infrastructure catalog for managing Proxmox homelab environments. This project provides reusable infrastructure components (modules, units, and stacks) for deploying LXC containers, virtual machines, DNS records, and NetBox DCIM/IPAM resources using OpenTofu/Terraform and Terragrunt.
+A Terragrunt infrastructure catalog for managing Proxmox homelab environments. This project provides reusable infrastructure components (modules, units, and stacks) for deploying LXC containers, virtual machines, DNS records, and NetBox virtual machine records using OpenTofu/Terraform and Terragrunt.
 
 ## Table of Contents
 
@@ -14,6 +14,7 @@ A Terragrunt infrastructure catalog for managing Proxmox homelab environments. T
   - [Working with Units](#working-with-units)
   - [Working with Stacks](#working-with-stacks)
   - [Working with VMs](#working-with-vms)
+  - [DNS Records](#dns-records)
   - [Working with NetBox](#working-with-netbox)
 - [Available Modules](#available-modules)
 - [Available Commands](#available-commands)
@@ -34,7 +35,7 @@ This repository provides a three-layer architecture for managing infrastructure 
 - LXC container deployment on Proxmox
 - Virtual machine deployment via template cloning
 - Automated DNS record management (including wildcard records)
-- NetBox DCIM/IPAM management (organization, racks, devices, IPAM, virtualization, virtual machines)
+- NetBox virtual machine records management (auto-registered after deployment)
 - Standardized resource naming conventions
 - S3-compatible state management with MinIO
 - Pre-commit hooks for code quality
@@ -70,14 +71,8 @@ This repository provides a three-layer architecture for managing infrastructure 
 - **dns**: Manage DNS A records (normal and wildcard)
 - **naming**: Standardized resource naming (format: `{env}-{app}`)
 
-**NetBox DCIM/IPAM:**
-- **netbox-organization**: Manage regions, sites, tenants, and contacts
-- **netbox-racks**: Manage rack types and physical racks
-- **netbox-devices**: Manage device roles, manufacturers, device types, and devices
-- **netbox-ipam**: Manage VLANs and IP prefixes
-- **netbox-virtualization**: Manage cluster types and clusters
-- **netbox-virtual-machine**: Manage virtual machine records with interfaces and IPs
-- **netbox-wireless**: Manage wireless LANs in NetBox
+**NetBox:**
+- **netbox-virtual-machine**: Manage virtual machine records in NetBox (auto-registered via dns dependency)
 
 ## Prerequisites
 
@@ -178,31 +173,18 @@ terragrunt stack run apply
 ├── modules/              # Raw OpenTofu/Terraform modules
 │   ├── dns/             # DNS A record management
 │   ├── naming/          # Resource naming conventions
-│   ├── netbox-devices/  # NetBox device management
-│   ├── netbox-ipam/     # NetBox IPAM (VLANs/prefixes)
-│   ├── netbox-organization/  # NetBox org hierarchy
-│   ├── netbox-racks/    # NetBox rack management
 │   ├── netbox-virtual-machine/  # NetBox VM records
-│   ├── netbox-virtualization/   # NetBox cluster management
-│   ├── netbox-wireless/ # NetBox wireless LAN management
 │   ├── proxmox-lxc/     # LXC container deployment
 │   ├── proxmox-pool/    # Proxmox resource pools
 │   └── proxmox-vm/      # Virtual machine deployment
 ├── units/               # Terragrunt wrappers (production)
 │   ├── dns/
 │   ├── naming/
-│   ├── netbox-devices/
-│   ├── netbox-ipam/
-│   ├── netbox-organization/
-│   ├── netbox-racks/
 │   ├── netbox-virtual-machine/
-│   ├── netbox-virtualization/
-│   ├── netbox-wireless/
 │   ├── proxmox-lxc/
 │   ├── proxmox-pool/
 │   └── proxmox-vm/
 ├── stacks/              # Stack compositions (production)
-│   ├── homelab-netbox-init/
 │   ├── homelab-netbox-virtual-machine/
 │   ├── homelab-proxmox-lxc/
 │   └── homelab-proxmox-vm/
@@ -242,13 +224,6 @@ export TF_VAR_dns_key_secret="your-tsig-key-secret"
 
 # NetBox API Token (required only when using NetBox modules)
 export TF_VAR_netbox_token="your-netbox-api-token"
-```
-
-#### Optional: Edit Encrypted Secrets
-
-```bash
-# Edit SOPS-encrypted secrets file
-mise run secrets:edit
 ```
 
 ### Working with Units
@@ -310,19 +285,16 @@ Stacks combine multiple units into coordinated deployments.
 
 #### Available Production Stacks (`stacks/`)
 
-- **homelab-netbox-init**: NetBox initialization stack (organization → racks → devices → IPAM → virtualization)
-- **homelab-netbox-virtual-machine**: NetBox virtual machine records stack
-- **homelab-proxmox-lxc**: LXC container + DNS
-- **homelab-proxmox-vm**: Virtual machine + DNS
+- **homelab-proxmox-lxc**: LXC container + DNS + NetBox VM registration (3 units)
+- **homelab-proxmox-vm**: Virtual machine + DNS + NetBox VM registration (3 units)
+- **homelab-netbox-virtual-machine**: Standalone NetBox virtual machine records stack
 
 #### Available Example Stacks (`examples/terragrunt/stacks/`)
 
 - **homelab-proxmox-pool**: Proxmox resource pool only
-- **homelab-proxmox-lxc**: LXC container + DNS (uses production stack via Git reference)
-- **homelab-proxmox-vm**: Virtual machine + DNS (uses production stack via Git reference)
+- **homelab-proxmox-lxc**: LXC container + DNS + NetBox VM (uses production stack via Git reference)
+- **homelab-proxmox-vm**: Virtual machine + DNS + NetBox VM (uses production stack via Git reference)
 - **homelab-wildcard-dns**: Container with normal + wildcard DNS records
-- **homelab-netbox-init**: NetBox DCIM/IPAM initialization stack (organization → racks → devices → IPAM → virtualization)
-- **homelab-netbox-virtual-machine**: NetBox virtual machine records stack
 
 #### Deploy a Stack
 
@@ -495,53 +467,31 @@ dig api.dev-web.home.sflab.io @192.168.1.13
 
 ### Working with NetBox
 
-NetBox units manage DCIM (Data Center Infrastructure Management) and IPAM (IP Address Management) resources.
+NetBox virtual machine records are automatically created as part of the Proxmox stacks. The `netbox-virtual-machine` unit registers VM/container records in NetBox after DNS is configured.
 
-#### NetBox Deployment Order
+#### Automatic NetBox Registration (via Proxmox stacks)
 
-NetBox units have dependencies on each other and must be deployed in order:
+The production stacks (`homelab-proxmox-lxc` and `homelab-proxmox-vm`) automatically register resources in NetBox:
 
 ```
-netbox-organization → netbox-racks → netbox-devices → netbox-ipam → netbox-virtualization
+proxmox_lxc/proxmox_vm → dns → netbox_virtual_machine
 ```
 
-The `homelab-netbox` example stack manages all these dependencies automatically.
-
-#### Deploy the NetBox Initialization Stack
+Required environment variable for NetBox:
 
 ```bash
-cd examples/terragrunt/stacks/homelab-netbox-init
+export NETBOX_API_TOKEN="your-netbox-api-token"
+```
+
+#### Deploy Standalone NetBox VM Records
+
+```bash
+cd examples/terragrunt/units/netbox-virtual-machine
 
 # Set NetBox credentials
-export TF_VAR_netbox_token="your-netbox-api-token"
+export NETBOX_API_TOKEN="your-netbox-api-token"
 
-# Generate and deploy
-terragrunt stack generate
-terragrunt stack run apply
-```
-
-#### Deploy the NetBox Virtual Machine Stack
-
-```bash
-cd examples/terragrunt/stacks/homelab-netbox-virtual-machine
-
-# Set NetBox credentials
-export TF_VAR_netbox_token="your-netbox-api-token"
-
-# Generate and deploy
-terragrunt stack generate
-terragrunt stack run apply
-```
-
-#### Deploy Individual NetBox Units
-
-```bash
-# Example: deploy NetBox organization resources
-cd examples/terragrunt/units/netbox-organization
-terragrunt apply
-
-# Example: deploy NetBox IPAM resources
-cd examples/terragrunt/units/netbox-ipam
+terragrunt init
 terragrunt apply
 ```
 
@@ -633,68 +583,23 @@ Standardized resource naming using the homelab provider.
 **Outputs:**
 - `generated_name`: Generated name (format: `{env}-{app}`)
 
-### netbox-organization
-
-Manages organizational hierarchy in NetBox (regions, sites, tenants, contacts).
-
-**Required Inputs:**
-- `regions` (list): List of region objects with name and description
-- `sites` (list): List of site objects with facility, coordinates, timezone, and optional region
-- `tenant_groups` (list): List of tenant group objects
-- `tenants` (list): List of tenant objects with optional group reference
-- `contact_groups` (list): List of contact group objects
-- `contact_roles` (list): List of contact role objects
-- `contacts` (list): List of contact objects with email, phone, group, and role
-
-### netbox-racks
-
-Manages physical rack infrastructure in NetBox.
-
-**Required Inputs:**
-- `manufacturers` (list): List of manufacturer objects
-- `rack_types` (list): List of rack type objects with model, manufacturer, form factor, width, and height
-- `racks` (list): List of rack objects with name, site, status, and rack type
-
-### netbox-devices
-
-Manages physical device definitions in NetBox.
-
-**Required Inputs:**
-- `device_roles` (map): Map of device roles with color hex and VM role flag
-- `manufacturers` (list): List of manufacturer objects
-- `device_types` (list): List of device type objects with model, manufacturer, and height
-- `devices` (list): List of device objects with name, type, role, site, tenant, rack, and interfaces
-
-### netbox-ipam
-
-Manages IP address management resources in NetBox.
-
-**Required Inputs:**
-- `vlans` (list): List of VLAN objects with name, VID, and optional description
-- `prefixes` (list): List of prefix objects with prefix, status, and optional VLAN reference
-
-### netbox-virtualization
-
-Manages virtual cluster infrastructure in NetBox.
-
-**Required Inputs:**
-- `cluster_types` (list): List of cluster type objects with name
-- `clusters` (list): List of cluster objects with name, type, and optional site and tenant
-
 ### netbox-virtual-machine
 
-Manages virtual machine records in NetBox.
+Manages virtual machine records in NetBox with interfaces and IP addresses.
 
 **Required Inputs:**
-- `virtual_machines` (list): List of VM objects with name, cluster, optional description/role/tenant/resources, and interfaces with IP addresses
+- `virtual_machines` (list): List of VM objects with:
+  - `name` (string): VM name
+  - `cluster_name` (string): NetBox cluster to assign the VM to
+  - `vcpus` (number): vCPU count
+  - `memory_mb` (number): Memory in MB
+  - `disk_size_mb` (number): Disk size in MB
+  - Optional: `description`, `role_name`, `tenant_name`, `site_name`, `tags`
 
-### netbox-wireless
+**Unit Inputs:**
+- `dns_path` (string): Relative path to the DNS unit (used to retrieve the IP address)
 
-Manages wireless LAN records in NetBox.
-
-**Required Inputs:**
-- `netbox_url` (string): Base URL of the NetBox instance
-- `wireless_lans` (list): List of wireless LAN objects with SSID, optional description, status, auth settings (type/cipher/psk), VLAN, group, and tenant
+**Note:** The unit (`units/netbox-virtual-machine`) depends on the DNS unit output to automatically populate the VM interface IP address.
 
 ## Available Commands
 
@@ -707,13 +612,6 @@ mise run minio:list                 # List MinIO buckets and contents
 
 # Proxmox Management
 mise run proxmox:setup              # Setup Proxmox resources (role and user)
-
-# Network Management
-mise run network:configure          # Configure network settings
-mise run network:status             # Print network configuration
-
-# Secrets Management
-mise run secrets:edit               # Edit SOPS-encrypted secrets
 
 # Terragrunt Management
 mise run terragrunt:cleanup         # Clean up Terragrunt cache files
