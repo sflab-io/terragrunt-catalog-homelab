@@ -18,6 +18,7 @@ locals {
   cluster_name = try(values.cluster_name, "")
   role_name    = try(values.role_name, "LXC")
   tenant_name  = try(values.tenant_name, "")
+  site_name    = try(values.site_name, null)
 }
 
 unit "proxmox_lxc" {
@@ -67,6 +68,7 @@ unit "netbox_virtual_machine" {
         description  = "LXC container for ${local.app} in ${local.env} environment"
         role_name    = local.role_name
         tenant_name  = local.tenant_name
+        site_name    = local.site_name
         vcpus        = local.cores
         memory_mb    = local.memory
         disk_size_mb = local.disk_size
