@@ -5,13 +5,13 @@ data "netbox_cluster" "this" {
 }
 
 resource "netbox_device_role" "this" {
-  for_each = toset([for vm in var.virtual_machines : vm.role_name])
-  name     = each.value
-  color    = "9e9e9e"
-  vm_role  = true
+  for_each  = toset([for vm in var.virtual_machines : vm.role_name])
+  name      = each.value
+  color_hex = "9e9e9e"
+  vm_role   = true
 
   lifecycle {
-    ignore_changes = [color, description]
+    ignore_changes = [color_hex, description]
   }
 }
 
