@@ -5,7 +5,7 @@ locals {
   memory    = try(values.memory, 2048)
   cores     = try(values.cores, 2)
   disk_size = try(values.disk_size, 8)
-  cpu_type  = try(values.cpu_type, "x86-64-v2-AES")
+  cpu_type  = try(values.cpu_type, "qemu64")
 
   network_config = try(values.network_config, { type = "dhcp" })
 

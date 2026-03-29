@@ -26,5 +26,5 @@ inputs = {
     type = "dhcp"
   })
 
-  cpu_type = try(values.cpu_type, "x86-64-v2-AES")
+  cpu_type = try(values.cpu_type, "qemu64")
 }
