@@ -20,6 +20,12 @@ variable "cores" {
   default     = 2
 }
 
+variable "cpu_type" {
+  description = "The CPU type for the virtual machine (e.g., 'x86-64-v2-AES', 'host', 'kvm64')."
+  type        = string
+  default     = "x86-64-v2-AES"
+}
+
 variable "pool_id" {
   description = "The ID of the Proxmox pool to which the virtual machine will be assigned."
   type        = string

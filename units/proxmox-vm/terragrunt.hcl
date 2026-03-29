@@ -25,4 +25,6 @@ inputs = {
   network_config = try(values.network_config, {
     type = "dhcp"
   })
+
+  cpu_type = try(values.cpu_type, "x86-64-v2-AES")
 }

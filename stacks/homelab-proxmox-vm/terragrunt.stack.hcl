@@ -5,6 +5,7 @@ locals {
   memory    = try(values.memory, 2048)
   cores     = try(values.cores, 2)
   disk_size = try(values.disk_size, 8)
+  cpu_type  = try(values.cpu_type, "x86-64-v2-AES")
 
   network_config = try(values.network_config, { type = "dhcp" })
 
@@ -48,6 +49,7 @@ unit "proxmox_vm" {
     memory              = local.memory
     cores               = local.cores
     disk_size           = local.disk_size
+    cpu_type            = local.cpu_type
     pool_id             = local.pool_id
     ssh_public_key_path = local.ssh_public_key_path
     network_config      = local.network_config
