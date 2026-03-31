@@ -22,7 +22,7 @@ locals {
 
   virtual_machines = try(values.virtual_machines, [
     {
-      name         = "${local.env}-${local.app}"
+      name         = "${local.app}-${local.env}"
       cluster_name = local.cluster_name
       description  = "LXC container for ${local.app} in ${local.env} environment"
       role_name    = local.role_name
