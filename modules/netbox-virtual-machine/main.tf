@@ -34,6 +34,11 @@ resource "netbox_ip_address" "this" {
   object_type  = "virtualization.vminterface"
 }
 
+resource "netbox_tag" "this" {
+  for_each = toset(flatten([for vm in var.virtual_machines : vm.tags]))
+  name     = each.value
+}
+
 resource "netbox_virtual_machine" "this" {
   for_each     = { for vm in var.virtual_machines : vm.name => vm }
   name         = each.value.name
@@ -45,6 +50,7 @@ resource "netbox_virtual_machine" "this" {
   vcpus        = try(each.value.vcpus, null)
   memory_mb    = try(each.value.memory_mb, null)
   disk_size_mb = try(each.value.disk_size_mb, null)
+  tags         = [for tag in each.value.tags : netbox_tag.this[tag].name]
 }
 
 resource "netbox_primary_ip" "this" {

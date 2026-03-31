@@ -32,6 +32,7 @@ locals {
       vcpus        = local.cores
       memory_mb    = local.memory
       disk_size_mb = local.disk_size
+      tags          = ["${local.app}-${local.env}"]
     }
   ])
 }
