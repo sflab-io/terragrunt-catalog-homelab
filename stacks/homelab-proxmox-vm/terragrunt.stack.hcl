@@ -20,6 +20,7 @@ locals {
   role_name    = try(values.role_name, "VM")
   tenant_name  = try(values.tenant_name, "")
   site_name    = try(values.site_name, null)
+  tags         = try(values.tags, ["${local.app}-${local.env}"])
 
   virtual_machines = try(values.virtual_machines, [
     {
@@ -32,7 +33,7 @@ locals {
       vcpus        = local.cores
       memory_mb    = local.memory
       disk_size_mb = local.disk_size
-      tags          = ["${local.app}-${local.env}"]
+      tags         = local.tags
     }
   ])
 }
