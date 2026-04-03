@@ -6,6 +6,7 @@ variable "virtual_machines" {
     cluster_name = string
     description  = optional(string)
     tags         = optional(list(string), [])
+    extra_tags   = optional(list(string), [])
     role_name    = string
     tenant_name  = string
     site_name    = optional(string)
