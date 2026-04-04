@@ -59,7 +59,12 @@ resource "proxmox_virtual_environment_container" "this" {
   }
 }
 
-resource "proxmox_virtual_environment_pool_membership" "this" {
+moved {
+  from = proxmox_virtual_environment_pool_membership.this
+  to   = proxmox_pool_membership.this
+}
+
+resource "proxmox_pool_membership" "this" {
   count = var.pool_id != "" ? 1 : 0
 
   pool_id = var.pool_id
