@@ -56,6 +56,7 @@ Run `mise install` to install all required tools.
    - `dns`: Manages DNS A records on BIND9 servers (supports both normal and wildcard records)
    - `naming`: Wrapper around the homelab provider for standardized resource naming
    - `netbox-virtual-machine`: Manages NetBox virtual machines with interfaces and IPs
+   - `netbox-tags`: Creates tags in NetBox (idempotent, used by other NetBox modules)
    - These are basic building blocks with no Terragrunt-specific logic
 
 2. **Units** (`units/`): Terragrunt wrappers around modules
@@ -202,6 +203,12 @@ mise run terragrunt:stack:plan
 # Quick destroy for stacks (interactive selection menu)
 mise run terragrunt:stack:destroy
 
+# Configure network settings
+mise run network:configure
+
+# Show current network configuration
+mise run network:status
+
 # Generate stack locally
 mise run terragrunt:stack:generate
 
@@ -327,8 +334,9 @@ Examples:
 - `units/dns/terragrunt.hcl`: DNS record unit (supports both regular and wildcard DNS records via `record_types` parameter)
 - `units/naming/terragrunt.hcl`: Naming convention unit
 - `units/netbox-virtual-machine/terragrunt.hcl`: NetBox virtual machine unit (depends on `dns_path`)
+- `units/netbox-tags/terragrunt.hcl`: NetBox tags unit (creates tags idempotently; accepts `tags` list)
 
-**NetBox Unit Pattern**: The `netbox-virtual-machine` unit includes both `root` and `provider_netbox` configs. The `provider_netbox` include reads `provider-netbox-config.hcl` and generates a netbox provider block. It accepts a `dns_path` value to create a dependency on the DNS unit for IP address retrieval.
+**NetBox Unit Pattern**: The `netbox-virtual-machine` and `netbox-tags` units include both `root` and `provider_netbox` configs. The `provider_netbox` include reads `provider-netbox-config.hcl` and generates a netbox provider block. The `netbox-virtual-machine` unit accepts a `dns_path` value to create a dependency on the DNS unit for IP address retrieval.
 
 ### Adding New Stacks
 
@@ -752,7 +760,7 @@ Current modules support:
 - **LXC Containers** (`modules/proxmox-lxc`): Ubuntu 24.04 standard template on `pve1` node
   - Resources:
     - `proxmox_virtual_environment_container` - Main container resource
-    - `proxmox_virtual_environment_pool_membership` - Pool assignment (conditional, created only if pool_id provided)
+    - `proxmox_pool_membership` - Pool assignment (conditional, created only if pool_id provided)
     - Uses `naming` module internally for standardized hostname generation
   - Required inputs:
     - `env` (string): Environment name (e.g., "dev", "staging", "prod")
@@ -769,11 +777,11 @@ Current modules support:
   - Unprivileged containers by default
   - Hostname: Automatically generated as `<env>-<app>` via naming module
   - Outputs: `ipv4` (container IP address)
-  - **Note**: Pool assignment uses `proxmox_virtual_environment_pool_membership` resource (not deprecated `pool_id` attribute)
+  - **Note**: Pool assignment uses `proxmox_pool_membership` resource (not the deprecated `pool_id` attribute nor `proxmox_virtual_environment_pool_membership`)
 - **Virtual Machines** (`modules/proxmox-vm`): Single VM deployment on Proxmox via template cloning
   - Resources:
     - `proxmox_virtual_environment_vm` - Main VM resource
-    - `proxmox_virtual_environment_pool_membership` - Pool assignment (conditional, created only if pool_id provided)
+    - `proxmox_pool_membership` - Pool assignment (conditional, created only if pool_id provided)
     - Uses `naming` module internally for standardized VM name generation
   - Required inputs:
     - `env` (string): Environment name (e.g., "dev", "staging", "prod")
@@ -792,7 +800,7 @@ Current modules support:
   - Agent: QEMU guest agent enabled for IP address retrieval
   - VM name: Automatically generated as `<env>-<app>` via naming module
   - Outputs: `ipv4` (VM IP address), `vm_id` (Proxmox VM ID), `vm_name` (VM name), `disk` (disk size in GB)
-  - **Note**: Pool assignment uses `proxmox_virtual_environment_pool_membership` resource (not deprecated `pool_id` attribute)
+  - **Note**: Pool assignment uses `proxmox_pool_membership` resource (not the deprecated `pool_id` attribute nor `proxmox_virtual_environment_pool_membership`)
 - **Resource Pools** (`modules/proxmox-pool`): For organizing Proxmox resources
   - Resource: `proxmox_virtual_environment_pool`
   - Required inputs: `pool_id` (string)
@@ -842,8 +850,14 @@ Current modules support:
 **NetBox Resources:**
 
 - **NetBox Virtual Machine** (`modules/netbox-virtual-machine`): Manages VM records in NetBox
-  - Required inputs: `virtual_machines` (list with name/cluster_name/optional description/tags/role_name/tenant_name/vcpus/memory_mb/disk_size_mb, and interfaces with name/address/status/dns_name)
+  - Required inputs: `virtual_machines` (list with name/cluster_name/optional description/tags/extra_tags/role_name/tenant_name/vcpus/memory_mb/disk_size_mb, and interfaces with name/address/status/dns_name)
+  - `tags`: inline tags to create alongside the VM; `extra_tags`: pre-existing tags looked up by name
   - The unit (`units/netbox-virtual-machine`) accepts a `dns_path` to retrieve the IP address from the DNS unit output
+- **NetBox Tags** (`modules/netbox-tags`): Creates tags in NetBox idempotently
+  - Provider: `e-breuninger/netbox` (~> 5.1.0)
+  - Required inputs: `tags` (list of tag name strings, default: `[]`)
+  - Resource: `netbox_tag` (created for each tag via `for_each`)
+  - The unit (`units/netbox-tags`) includes `provider_netbox` config and accepts `tags` list via values
 
 ### Provider Migration Notes
 
