@@ -5,8 +5,8 @@ terraform {
       version = ">= 3.4.0"
     }
     homelab = {
-      source  = "registry.terraform.io/sflab-io/homelab"
-      version = ">= 0.3.0"
+      source  = "registry.opentofu.org/sflab-io/homelab"
+      version = ">= 0.5.0"
     }
   }
   required_version = ">= 1.9.0"

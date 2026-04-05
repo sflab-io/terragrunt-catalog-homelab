@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     homelab = {
-      source  = "registry.terraform.io/sflab-io/homelab"
-      version = ">= 0.3.0"
+      source  = "registry.opentofu.org/sflab-io/homelab"
+      version = ">= 0.5.0"
     }
   }
 }

@@ -30,5 +30,4 @@ CMD="tofu init"
 
 logCommand "$CMD" "$usage_dry_run"
 
-export TF_CLI_CONFIG_FILE=../../../.tofurc
 eval $CMD
