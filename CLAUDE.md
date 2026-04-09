@@ -203,12 +203,6 @@ mise run terragrunt:stack:plan
 # Quick destroy for stacks (interactive selection menu)
 mise run terragrunt:stack:destroy
 
-# Configure network settings
-mise run network:configure
-
-# Show current network configuration
-mise run network:status
-
 # Generate stack locally
 mise run terragrunt:stack:generate
 
@@ -790,6 +784,7 @@ Current modules support:
   - Optional inputs:
     - `memory` (number, default: 2048) - Memory allocation in MB
     - `cores` (number, default: 2) - CPU cores
+    - `cpu_type` (string, default: "qemu64") - CPU type (e.g., "qemu64", "host", "x86-64-v2-AES")
     - `disk_size` (number, default: 8) - Disk size in GB
     - `pool_id` (string, default: "") - Assigns VM to pool via pool_membership resource
     - `network_config` (object, default: DHCP) - Network configuration supporting both DHCP and static IP
@@ -838,7 +833,7 @@ Current modules support:
 
 - **Resource Naming** (`modules/naming`): Wrapper around the homelab provider for standardized naming conventions
   - Data Source: `homelab_naming` (from external homelab provider)
-  - Provider: `registry.terraform.io/sflab-io/homelab` (version >= 0.3.0)
+  - Provider: `registry.opentofu.org/sflab-io/homelab` (version >= 0.5.0)
   - Required inputs:
     - `env` (string): Environment name (e.g., "dev", "staging", "prod")
     - `app` (string): Application name (e.g., "web", "db", "api")
@@ -908,12 +903,6 @@ Sensitive credentials are stored in `.creds.env.yaml` (SOPS-encrypted):
 - `PROXMOX_VE_API_TOKEN`: Proxmox API token for bpg/proxmox provider
 - `DNS_TSIG_KEY_SECRET`: TSIG key secret for DNS dynamic updates
 - `NETBOX_API_TOKEN`: NetBox API token for NetBox provider
-
-To edit encrypted secrets:
-
-```bash
-mise run secrets:edit
-```
 
 **Module-specific variables** can be passed via:
 
