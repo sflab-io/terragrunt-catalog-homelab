@@ -10,9 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestModuleProxmoxLxc(t *testing.T) {
-	t.Parallel()
-
+func testModuleProxmoxLxc(t *testing.T) {
 	appName := fmt.Sprintf("test-%s", strings.ToLower(random.UniqueId()))
 	env := "dev"
 

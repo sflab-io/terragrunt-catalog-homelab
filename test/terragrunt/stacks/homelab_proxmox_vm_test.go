@@ -9,15 +9,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStackHomelabProxmoxVm(t *testing.T) {
-	t.Parallel()
+func testStackHomelabProxmoxVm(t *testing.T) {
+	envVars := setupPool(t)
 
 	vmOptions := &terraform.Options{
 		TerraformDir:    "../../../examples/terragrunt/stacks/homelab-proxmox-vm",
 		TerraformBinary: "terragrunt",
+		EnvVars:         envVars,
 	}
 
-	defer terraform.RunTerraformCommand(t, vmOptions, "stack", "run", "destroy")
+	t.Cleanup(func() {
+		terraform.RunTerraformCommand(t, vmOptions, "stack", "run", "destroy")
+	})
 
 	terraform.RunTerraformCommand(t, vmOptions, "stack", "run", "apply")
 

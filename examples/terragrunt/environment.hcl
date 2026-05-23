@@ -2,7 +2,7 @@
 # root.hcl configuration.
 locals {
   environment_name = "staging"
-  pool_id          = "example-stack-pool"
+  pool_id          = get_env("TERRATEST_POOL_ID", "example-stack-pool")
 
   # Shared catalog configuration
   # Tracks latest catalog changes. Promotes to production after validation.

@@ -7,9 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUnitNetboxTags(t *testing.T) {
-	t.Parallel()
-
+func testUnitNetboxTags(t *testing.T) {
 	terraformOptions := &terraform.Options{
 		TerraformDir:    "../../../examples/terragrunt/units/netbox-tags",
 		TerraformBinary: "terragrunt",

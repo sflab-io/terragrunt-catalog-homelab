@@ -31,6 +31,6 @@ terraform {
 }
 
 inputs = {
-  # Required inputs
-  pool_id = local.environment.locals.pool_id
+  # Use a distinct pool ID for unit tests to avoid race conditions with stack tests
+  pool_id = "example-unit-pool"
 }

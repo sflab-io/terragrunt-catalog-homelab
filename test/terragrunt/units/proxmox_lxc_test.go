@@ -7,9 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUnitProxmoxLxc(t *testing.T) {
-	t.Parallel()
-
+func testUnitProxmoxLxc(t *testing.T) {
 	terraformOptions := &terraform.Options{
 		TerraformDir:    "../../../examples/terragrunt/units/proxmox-lxc",
 		TerraformBinary: "terragrunt",

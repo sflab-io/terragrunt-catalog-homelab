@@ -10,9 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestModuleNaming(t *testing.T) {
-	t.Parallel()
-
+func testModuleNaming(t *testing.T) {
 	appName := fmt.Sprintf("test-%s", strings.ToLower(random.UniqueId()))
 
 	terraformOptions := &terraform.Options{

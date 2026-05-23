@@ -10,9 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestModuleNetboxTags(t *testing.T) {
-	t.Parallel()
-
+func testModuleNetboxTags(t *testing.T) {
 	suffix := strings.ToLower(random.UniqueId())
 	tags := []string{
 		fmt.Sprintf("test-tag-a-%s", suffix),

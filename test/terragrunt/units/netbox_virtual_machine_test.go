@@ -7,9 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUnitNetboxVirtualMachine(t *testing.T) {
-	t.Parallel()
-
+func testUnitNetboxVirtualMachine(t *testing.T) {
 	terraformOptions := &terraform.Options{
 		TerraformDir:    "../../../examples/terragrunt/units/netbox-virtual-machine",
 		TerraformBinary: "terragrunt",

@@ -7,9 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUnitDnsWildcard(t *testing.T) {
-	t.Parallel()
-
+func testUnitDnsWildcard(t *testing.T) {
 	terraformOptions := &terraform.Options{
 		TerraformDir:    "../../../examples/terragrunt/units/dns-wildcard",
 		TerraformBinary: "terragrunt",
@@ -24,9 +22,7 @@ func TestUnitDnsWildcard(t *testing.T) {
 	assert.Equal(t, "*.example-dev.home.sflab.io", fqdnWildcard)
 }
 
-func TestUnitDns(t *testing.T) {
-	t.Parallel()
-
+func testUnitDns(t *testing.T) {
 	terraformOptions := &terraform.Options{
 		TerraformDir:    "../../../examples/terragrunt/units/dns",
 		TerraformBinary: "terragrunt",

@@ -7,9 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUnitProxmoxPool(t *testing.T) {
-	t.Parallel()
-
+func testUnitProxmoxPool(t *testing.T) {
 	terraformOptions := &terraform.Options{
 		TerraformDir:    "../../../examples/terragrunt/units/proxmox-pool",
 		TerraformBinary: "terragrunt",
@@ -21,5 +19,5 @@ func TestUnitProxmoxPool(t *testing.T) {
 
 	poolID := terraform.Output(t, terraformOptions, "pool_id")
 
-	assert.Equal(t, "example-stack-pool", poolID)
+	assert.Equal(t, "example-unit-pool", poolID)
 }

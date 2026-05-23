@@ -10,9 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestModuleNetboxVirtualMachine(t *testing.T) {
-	t.Parallel()
-
+func testModuleNetboxVirtualMachine(t *testing.T) {
 	vmName := fmt.Sprintf("test-%s", strings.ToLower(random.UniqueId()))
 
 	terraformOptions := &terraform.Options{

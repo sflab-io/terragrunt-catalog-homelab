@@ -10,9 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestModuleProxmoxPool(t *testing.T) {
-	t.Parallel()
-
+func testModuleProxmoxPool(t *testing.T) {
 	poolID := fmt.Sprintf("test-%s", strings.ToLower(random.UniqueId()))
 
 	terraformOptions := &terraform.Options{

@@ -7,9 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUnitNaming(t *testing.T) {
-	t.Parallel()
-
+func testUnitNaming(t *testing.T) {
 	terraformOptions := &terraform.Options{
 		TerraformDir:    "../../../examples/terragrunt/units/naming",
 		TerraformBinary: "terragrunt",

@@ -8,9 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStackHomelabNetboxVirtualMachine(t *testing.T) {
-	t.Parallel()
-
+func testStackHomelabNetboxVirtualMachine(t *testing.T) {
 	options := &terraform.Options{
 		TerraformDir:    "../../../examples/terragrunt/stacks/homelab-netbox-virtual-machine",
 		TerraformBinary: "terragrunt",

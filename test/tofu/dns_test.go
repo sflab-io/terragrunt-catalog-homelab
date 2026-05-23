@@ -10,9 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestModuleDns(t *testing.T) {
-	t.Parallel()
-
+func testModuleDns(t *testing.T) {
 	appName := fmt.Sprintf("test-%s", strings.ToLower(random.UniqueId()))
 	zone := "home.sflab.io"
 	env := "dev"

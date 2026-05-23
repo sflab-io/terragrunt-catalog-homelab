@@ -1,14 +1,87 @@
 #!/usr/bin/env bash
 
-#MISE description "Run Terratest tests"
-#USAGE arg "[test]" help="Test name pattern to run (e.g. TestModuleNaming). Runs all tests if omitted." default=""
+set -o pipefail
 
-set -e
+#USAGE flag "-d --dir <dir>" help="Unterverzeichnis der Tests (z.B. 'tofu' oder 'terragrunt/units')"
+#USAGE flag "-n --name <name>" help="Func-Name eines einzelnen Tests (z.B. 'TestModuleNaming')"
+#USAGE flag "-f --force" help="Test-Cache umgehen und Tests immer neu ausführen"
 
-cd "$MISE_CONFIG_ROOT/test"
+TEST_ROOT="$(git rev-parse --show-toplevel)/test"
+CACHE_FLAG=""
+[ "$usage_force" = "true" ] && CACHE_FLAG="-count=1"
 
-if [[ -n "${usage_test:-}" ]]; then
-  go test -v -timeout 30m -run "${usage_test}" ./...
-else
-  go test -v -timeout 30m ./...
+if [ -n "$usage_dir" ] && [ -n "$usage_name" ]; then
+  echo "Fehler: --dir und --name können nicht gleichzeitig verwendet werden." >&2
+  exit 1
 fi
+
+TMPFILE=$(mktemp)
+trap 'rm -f "$TMPFILE"' EXIT
+
+cd "$TEST_ROOT"
+
+TEST_EXIT=0
+if [ -n "$usage_name" ]; then
+  echo "=== Führe Test '$usage_name' aus (alle Verzeichnisse) ==="
+  go test -v -timeout 30m $CACHE_FLAG -run "$usage_name" ./... 2>&1 | tee "$TMPFILE"
+  TEST_EXIT=${PIPESTATUS[0]}
+elif [ -n "$usage_dir" ]; then
+  TARGET="$TEST_ROOT/$usage_dir"
+  if [ ! -d "$TARGET" ]; then
+    echo "Fehler: Verzeichnis '$TARGET' existiert nicht." >&2
+    exit 1
+  fi
+  echo "=== Führe Tests in '$usage_dir' aus ==="
+  go test -v -timeout 30m $CACHE_FLAG "./$usage_dir/..." 2>&1 | tee "$TMPFILE"
+  TEST_EXIT=${PIPESTATUS[0]}
+else
+  echo "=== Führe alle Tests aus ==="
+  go test -v -timeout 30m $CACHE_FLAG ./... 2>&1 | tee "$TMPFILE"
+  TEST_EXIT=${PIPESTATUS[0]}
+fi
+
+# Testergebnisse aus der Ausgabe parsen
+PASSED_TESTS=()
+FAILED_TESTS=()
+
+while IFS= read -r line; do
+  if [[ "$line" =~ ^---\ PASS:\ ([^\ ]+) ]]; then
+    PASSED_TESTS+=("${BASH_REMATCH[1]}")
+  elif [[ "$line" =~ ^---\ FAIL:\ ([^\ ]+) ]]; then
+    FAILED_TESTS+=("${BASH_REMATCH[1]}")
+  fi
+done < "$TMPFILE"
+
+PASS_COUNT=${#PASSED_TESTS[@]}
+FAIL_COUNT=${#FAILED_TESTS[@]}
+TOTAL=$((PASS_COUNT + FAIL_COUNT))
+
+echo ""
+echo "========================================"
+echo "           Test-Übersicht"
+echo "========================================"
+echo ""
+
+if [ "$TOTAL" -eq 0 ]; then
+  echo "  Keine Testergebnisse (ggf. alle gecacht — benutze -f um Cache zu umgehen)."
+else
+  if [ "$PASS_COUNT" -gt 0 ]; then
+    echo "ERFOLGREICH ($PASS_COUNT):"
+    for test in "${PASSED_TESTS[@]}"; do
+      echo "  + $test"
+    done
+    echo ""
+  fi
+
+  if [ "$FAIL_COUNT" -gt 0 ]; then
+    echo "FEHLGESCHLAGEN ($FAIL_COUNT):"
+    for test in "${FAILED_TESTS[@]}"; do
+      echo "  - $test"
+    done
+    echo ""
+  fi
+fi
+
+echo "========================================"
+
+exit "$TEST_EXIT"
