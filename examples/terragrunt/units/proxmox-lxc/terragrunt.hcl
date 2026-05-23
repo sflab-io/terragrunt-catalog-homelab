@@ -36,8 +36,9 @@ dependency "proxmox_pool" {
   config_path = "../proxmox-pool"
 
   mock_outputs = {
-    pool_id = "mock-pool"
+    pool_id = ""
   }
+  mock_outputs_allowed_terraform_commands = ["apply", "plan", "validate", "output", "destroy"]
 }
 
 inputs = {

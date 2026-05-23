@@ -3,8 +3,7 @@ include "root" {
 }
 
 locals {
-  netbox_config    = read_terragrunt_config(find_in_parent_folders("provider-netbox-config.hcl"))
-
+  netbox_config      = read_terragrunt_config(find_in_parent_folders("provider-netbox-config.hcl"))
   server_url         = local.netbox_config.locals.netbox_server_url
   skip_version_check = local.netbox_config.locals.netbox_skip_version_check
 }
@@ -26,75 +25,40 @@ terraform {
 }
 
 inputs = {
-  # Variables for NetBox virtual machine module
   virtual_machines = [
     {
-      name         = "vault"
-      cluster_name = "Proxmox Production Cluster"
-      role_name    = "VM"
-      tenant_name  = "Platform Team"
-      vcpus        = 2
-      memory_mb    = 4096
-      disk_size_mb = 8000
-      interfaces   = [
-        {
-          name     = "eth0"
-          address  = "192.168.1.34/32"
-          status   = "active"
-          dns_name = "vault.home.sflab.local"
-        }
-      ]
-    },
-    {
-      name         = "netbox"
-      cluster_name = "Proxmox Production Cluster"
-      role_name    = "VM"
-      tenant_name  = "Platform Team"
-      vcpus        = 2
-      memory_mb    = 4096
-      disk_size_mb = 16000
-      interfaces   = [
-        {
-          name     = "eth0"
-          address  = "192.168.1.89/32"
-          status   = "active"
-          dns_name = "netbox.home.sflab.local"
-        }
-      ]
-    },
-    {
-      name         = "docker"
-      cluster_name = "Proxmox Production Cluster"
+      name         = "example-vm-a"
+      cluster_name = "Proxmox Cluster Production"
       role_name    = "VM"
       tenant_name  = "Platform Team"
       vcpus        = 2
       memory_mb    = 2048
       disk_size_mb = 8000
-      interfaces   = [
+      interfaces = [
         {
           name     = "eth0"
-          address  = "192.168.1.198/32"
+          address  = "10.99.99.10/32"
           status   = "active"
-          dns_name = "docker.home.sflab.local"
+          dns_name = "example-vm-a.home.sflab.io"
         }
       ]
     },
-    # {
-    #   name         = "minio"
-    #   cluster_name = "Proxmox Production Cluster"
-    #   role_name    = "LXC"
-    #   tenant_name  = "Platform Team"
-    #   vcpus        = 2
-    #   memory_mb    = 2048
-    #   disk_size_mb = 8000
-    #   interfaces = [
-    #     {
-    #       name     = "eth0"
-    #       address  = "192.168.1.33"
-    #       status   = "active"
-    #       dns_name = "minio.home.sflab.local"
-    #     }
-    #   ]
-    # },
+    {
+      name         = "example-vm-b"
+      cluster_name = "Proxmox Cluster Production"
+      role_name    = "VM"
+      tenant_name  = "Platform Team"
+      vcpus        = 2
+      memory_mb    = 2048
+      disk_size_mb = 8000
+      interfaces = [
+        {
+          name     = "eth0"
+          address  = "10.99.99.11/32"
+          status   = "active"
+          dns_name = "example-vm-b.home.sflab.io"
+        }
+      ]
+    },
   ]
 }
