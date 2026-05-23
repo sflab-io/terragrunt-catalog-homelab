@@ -10,7 +10,8 @@ PROJECT_NAME = "{{ config_root | basename }}"
 _.file = [
   { path = "{{env.HOME}}/.env", optional = true },
   { path = ".env", optional = true },
-  { path = ".creds.env.yaml", redact = true }
+  { path = ".creds.env.yaml" }
+  # { path = ".creds.env.yaml", redact = true }
 ]
 _.path = ["./scripts"]
 
