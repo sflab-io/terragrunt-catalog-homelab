@@ -23,9 +23,11 @@ terraform {
 }
 
 dependency "dns" {
-  config_path = values.dns_path
+  config_path = try(values.dns_path, "NONE")
 
-  # Mock outputs support single-VM pattern (both VM and LXC)
+  # Used when dns_path is not provided (standalone NetBox stacks) or dependency not yet applied
+  mock_outputs_allowed_terraform_commands = ["validate", "plan", "apply", "destroy", "output", "init"]
+
   mock_outputs = {
     addresses = ["192.168.1.99"]
     fqdn      = "example-vm.home.sflab.io"
