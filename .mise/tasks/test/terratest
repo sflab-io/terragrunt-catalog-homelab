@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+#MISE description "Run Terratest tests"
+#USAGE arg "[test]" help="Test name pattern to run (e.g. TestModuleNaming). Runs all tests if omitted." default=""
+
+set -e
+
+cd "$MISE_CONFIG_ROOT/test"
+
+if [[ -n "${usage_test:-}" ]]; then
+  go test -v -timeout 30m -run "${usage_test}" ./...
+else
+  go test -v -timeout 30m ./...
+fi

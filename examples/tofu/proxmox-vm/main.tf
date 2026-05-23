@@ -48,6 +48,9 @@ variable "network_config" {
     gateway     = optional(string)
     dns_servers = optional(list(string), [])
   })
+  default = {
+    type = "dhcp"
+  }
 }
 
 module "proxmox_vm" {
@@ -58,4 +61,14 @@ module "proxmox_vm" {
   pool_id             = var.pool_id
   network_config      = var.network_config
   ssh_public_key_path = "${path.module}/../../../keys/admin_id_ecdsa.pub"
+}
+
+output "ipv4" {
+  description = "IPv4 address of the virtual machine."
+  value       = module.proxmox_vm.ipv4
+}
+
+output "vm_name" {
+  description = "Name of the virtual machine."
+  value       = module.proxmox_vm.vm_name
 }

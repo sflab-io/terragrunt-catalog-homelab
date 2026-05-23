@@ -32,7 +32,7 @@ This is a Terragrunt infrastructure catalog for homelab environments. It provide
 
 Managed via mise (mise.toml):
 
-- **Go**: 1.24.2
+- **Go**: 1.26.3
 - **OpenTofu**: 1.11.5
 - **Terragrunt**: 0.99.4
 - **MinIO Client (mc)**: latest
@@ -215,6 +215,10 @@ mise run test:all -- -a  # Run all tests
 # Note: Stack tests require all changes to be committed and pushed to GitHub
 # because they fetch units from the remote repository (ref=main)
 
+# Run Terratest (Go-based) tests
+mise run test:terratest                    # Run all Terratest tests
+mise run test:terratest TestModuleNaming   # Run a specific test by name
+
 # Direct OpenTofu commands for examples/tofu (interactive selection or specify target)
 mise run tofu:init        # Interactive menu
 mise run tofu:init naming # Specific target
@@ -281,6 +285,31 @@ terragrunt stack run apply
 # Verify DNS resolution (note: DNS server runs on port 53)
 dig example-stack-vm.home.sflab.io @192.168.1.13
 ```
+
+### Terratest Commands
+
+Terratest (Go-based) tests live in `test/tofu/` and test OpenTofu modules using real provider calls.
+
+```bash
+# Run all Terratest tests
+mise run test:terratest
+
+# Run a specific test
+mise run test:terratest TestModuleNaming
+
+# Run manually from test/ directory
+cd test
+go test -v -timeout 30m ./...
+go test -v -timeout 30m -run TestModuleNaming ./...
+```
+
+**Test structure:**
+- `test/go.mod` — Go module (requires Go 1.26, Terratest v0.56.0)
+- `test/tofu/` — Module-level tests; each test points to a corresponding example in `examples/tofu/`
+- Tests use `TerraformBinary: "tofu"` and call `terraform.InitAndApply` + `terraform.Destroy`
+
+**Available tests:**
+- `TestModuleNaming` (`test/tofu/naming_test.go`): validates `modules/naming` output pattern
 
 ### Development Commands
 
@@ -480,7 +509,7 @@ unit "netbox_virtual_machine" {
 3. The DNS unit automatically gets the container/VM IP through its dependency on the compute unit (LXC or VM)
 4. Use `terragrunt stack run <command>` to operate on the entire stack
 5. Stack generates units into `.terragrunt-stack/` directory (gitignored)
-6. All infrastructure resources use standardized naming: `<env>-<app>` pattern via the naming module
+6. All infrastructure resources use standardized naming via the naming module: `<app>-<env>` for non-prod, `<app>` for prod
 7. Pool management is separate from LXC/VM stacks - pass `pool_id` as a value; create the pool separately using `examples/terragrunt/stacks/homelab-proxmox-pool`
 
 **DNS Stack Integration:**
@@ -489,7 +518,7 @@ unit "netbox_virtual_machine" {
 - Set `TF_VAR_dns_key_secret` environment variable before deploying the stack
 - The DNS unit uses `compute_path` to create a dependency on the LXC or VM unit
 - Execution order: `proxmox_lxc`/`proxmox_vm` → `dns` → `netbox_virtual_machine` (automatic via dependencies)
-- After deployment, resources are resolvable at `${env}-${app}.home.sflab.io`
+- After deployment, resources are resolvable at `${app}-${env}.home.sflab.io` (non-prod) or `${app}.home.sflab.io` (prod)
 
 **Deploying a Stack with DNS:**
 
@@ -508,8 +537,8 @@ terragrunt stack generate
 terragrunt stack run apply
 
 # Verify DNS resolution (note: DNS server runs on port 53)
-# Example: If env=staging and app=example-lxc, the FQDN will be staging-example-lxc.home.sflab.io
-dig staging-example-lxc.home.sflab.io @192.168.1.13
+# Example: If env=staging and app=example-lxc, the FQDN will be example-lxc-staging.home.sflab.io
+dig example-lxc-staging.home.sflab.io @192.168.1.13
 ```
 
 **Deploying Multiple VMs or Containers:**
@@ -638,11 +667,11 @@ unit "proxmox_vm" {
 The DNS module supports creating both normal and wildcard DNS records simultaneously through the `record_types` parameter.
 
 **Record Types**:
-- **Normal Record** (`record_types.normal = true`): Creates `{env}-{app}.home.sflab.io`
-  - Example: `dev-web.home.sflab.io`
-- **Wildcard Record** (`record_types.wildcard = true`): Creates `*.{env}-{app}.home.sflab.io`
-  - Example: `*.dev-web.home.sflab.io`
-  - Matches: `anything.dev-web.home.sflab.io`, `api.dev-web.home.sflab.io`, etc.
+- **Normal Record** (`record_types.normal = true`): Creates `{app}-{env}.home.sflab.io` (non-prod) or `{app}.home.sflab.io` (prod)
+  - Example: `web-dev.home.sflab.io` (env=dev, app=web)
+- **Wildcard Record** (`record_types.wildcard = true`): Creates `*.{app}-{env}.home.sflab.io`
+  - Example: `*.web-dev.home.sflab.io`
+  - Matches: `anything.web-dev.home.sflab.io`, `api.web-dev.home.sflab.io`, etc.
 
 **Default Behavior**: By default, only normal records are created (`normal = true`, `wildcard = false`).
 
@@ -676,8 +705,8 @@ unit "dns_both" {
     app          = "web"
     zone         = "home.sflab.io."
     record_types = {
-      normal   = true   # Creates dev-web.home.sflab.io
-      wildcard = true   # Creates *.dev-web.home.sflab.io
+      normal   = true   # Creates web-dev.home.sflab.io
+      wildcard = true   # Creates *.web-dev.home.sflab.io
     }
     compute_path = "../proxmox-lxc"
   }
@@ -769,7 +798,7 @@ Current modules support:
   - Network interface: `veth0` on `vmbr0` bridge (DHCP by default, static IP supported)
   - Disk: 8GB on `local-lvm` datastore (fixed size)
   - Unprivileged containers by default
-  - Hostname: Automatically generated as `<env>-<app>` via naming module
+  - Hostname: Automatically generated via naming module (pattern: `<app>-<env>` for non-prod, `<app>` for prod)
   - Outputs: `ipv4` (container IP address)
   - **Note**: Pool assignment uses `proxmox_pool_membership` resource (not the deprecated `pool_id` attribute nor `proxmox_virtual_environment_pool_membership`)
 - **Virtual Machines** (`modules/proxmox-vm`): Single VM deployment on Proxmox via template cloning
@@ -793,7 +822,7 @@ Current modules support:
   - Configuration: Clones from template VM 9002 on `pve1` node
   - Network: Supports both DHCP (default) and static IP configuration
   - Agent: QEMU guest agent enabled for IP address retrieval
-  - VM name: Automatically generated as `<env>-<app>` via naming module
+  - VM name: Automatically generated via naming module (pattern: `<app>-<env>` for non-prod, `<app>` for prod)
   - Outputs: `ipv4` (VM IP address), `vm_id` (Proxmox VM ID), `vm_name` (VM name), `disk` (disk size in GB)
   - **Note**: Pool assignment uses `proxmox_pool_membership` resource (not the deprecated `pool_id` attribute nor `proxmox_virtual_environment_pool_membership`)
 - **Resource Pools** (`modules/proxmox-pool`): For organizing Proxmox resources
@@ -816,10 +845,10 @@ Current modules support:
   - Optional inputs:
     - `ttl` (number, default: 300)
     - `record_types` (object, default: `{normal = true, wildcard = false}`) - Controls which DNS record types to create
-      - `normal` (bool): Creates standard `{env}-{app}` record
-      - `wildcard` (bool): Creates wildcard `*.{env}-{app}` record
+      - `normal` (bool): Creates standard record (name follows naming module pattern)
+      - `wildcard` (bool): Creates wildcard record prefixed with `*.`
       - Both can be true simultaneously to create both record types
-  - DNS record name: Automatically generated as `<env>-<app>` via naming module (or `*.<env>-<app>` for wildcard records)
+  - DNS record name: Automatically generated via naming module (pattern: `<app>-<env>` for non-prod, `<app>` for prod; wildcard prefix: `*.<app>-<env>`)
   - Outputs: `fqdn` (normal record FQDN, null if not created), `fqdn_wildcard` (wildcard record FQDN, null if not created), `addresses` (IP addresses)
   - DNS Server Configuration (in units):
     - Server: `192.168.1.13`
@@ -837,7 +866,7 @@ Current modules support:
   - Required inputs:
     - `env` (string): Environment name (e.g., "dev", "staging", "prod")
     - `app` (string): Application name (e.g., "web", "db", "api")
-  - Outputs: `generated_name` (generated name following pattern `<env>-<app>`)
+  - Outputs: `generated_name` (generated name; pattern: `<app>-<env>` for non-prod environments, `<app>` for prod)
   - Usage: Provides consistent naming across all infrastructure resources (LXC, VM, DNS)
 
 **Note**: The homelab provider is published to the Terraform Registry and does not require local installation. All modules (proxmox-lxc, proxmox-vm, dns) use the naming module internally to generate standardized names from `env` and `app` inputs.

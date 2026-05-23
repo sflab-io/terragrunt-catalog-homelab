@@ -42,6 +42,9 @@ variable "network_config" {
     gateway     = optional(string)
     dns_servers = optional(list(string), [])
   })
+  default = {
+    type = "dhcp"
+  }
 }
 
 module "proxmox_lxc" {
@@ -52,4 +55,9 @@ module "proxmox_lxc" {
   pool_id             = var.pool_id
   network_config      = var.network_config
   ssh_public_key_path = "${path.module}/../../../keys/admin_id_ecdsa.pub"
+}
+
+output "ipv4" {
+  description = "IPv4 address of the LXC container."
+  value       = module.proxmox_lxc.ipv4
 }

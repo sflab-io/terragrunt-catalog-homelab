@@ -4,13 +4,17 @@ terraform {
       source  = "hashicorp/dns"
       version = ">= 3.4.0"
     }
+    homelab = {
+      source  = "registry.opentofu.org/sflab-io/homelab"
+      version = ">= 0.5.0"
+    }
   }
   required_version = ">= 1.9.0"
 }
 
 provider "dns" {
   update {
-    server        = "192.168.1.13"
+    server        = var.dns_server
     port          = 53
     key_name      = "ddnskey."
     key_algorithm = "hmac-sha256"
@@ -19,70 +23,61 @@ provider "dns" {
 }
 
 variable "dns_key_secret" {
-  description = "The DNS key secret."
+  description = "TSIG key secret for DNS updates."
+  type        = string
+  sensitive   = true
+}
+
+variable "dns_server" {
+  description = "DNS server address."
+  type        = string
+  default     = "192.168.1.13"
+}
+
+variable "app" {
+  description = "Application name."
   type        = string
 }
 
-# Example 1: Regular DNS record only (default behavior)
-module "dns_regular" {
-  source = "../../../modules/dns"
-
-  env       = "dev"
-  app       = "test"
-  zone      = "home.sflab.io"
-  addresses = ["192.168.1.88"]
-  # record_types uses default: { normal = true, wildcard = false }
-  # Creates: dev-test.home.sflab.io
+variable "env" {
+  description = "Environment name."
+  type        = string
+  default     = "dev"
 }
 
-# Example 2: Wildcard DNS record only
-module "dns_wildcard" {
-  source = "../../../modules/dns"
-
-  env       = "dev"
-  app       = "wildcard"
-  zone      = "home.sflab.io"
-  addresses = ["192.168.1.99"]
-  record_types = {
-    normal   = false
-    wildcard = true
-  }
-  # Creates: *.dev-wildcard.home.sflab.io
+variable "zone" {
+  description = "DNS zone (without trailing dot)."
+  type        = string
+  default     = "home.sflab.io"
 }
 
-# Example 3: Both regular and wildcard DNS records
-module "dns_both" {
+variable "address" {
+  description = "IP address for the DNS record."
+  type        = string
+  default     = "192.168.1.200"
+}
+
+module "dns" {
   source = "../../../modules/dns"
 
-  env       = "dev"
-  app       = "dual"
-  zone      = "home.sflab.io"
-  addresses = ["192.168.1.77"]
+  env       = var.env
+  app       = var.app
+  zone      = var.zone
+  addresses = [var.address]
   record_types = {
     normal   = true
     wildcard = true
   }
-  # Creates both:
-  #   dev-dual.home.sflab.io
-  #   *.dev-dual.home.sflab.io
 }
 
-output "regular_fqdn" {
-  description = "Regular DNS record FQDN"
-  value       = module.dns_regular.fqdn
+output "fqdn" {
+  value = module.dns.fqdn
 }
 
-output "wildcard_only_fqdn" {
-  description = "Wildcard-only DNS record FQDN"
-  value       = module.dns_wildcard.fqdn_wildcard
+output "fqdn_wildcard" {
+  value = module.dns.fqdn_wildcard
 }
 
-output "both_fqdn_normal" {
-  description = "Dual example - normal FQDN"
-  value       = module.dns_both.fqdn
-}
-
-output "both_fqdn_wildcard" {
-  description = "Dual example - wildcard FQDN"
-  value       = module.dns_both.fqdn_wildcard
+output "addresses" {
+  value = module.dns.addresses
 }
