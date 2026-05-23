@@ -4,7 +4,7 @@ locals {
 }
 
 unit "netbox_virtual_machine" {
-  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/netbox-virtual-machine?ref=${values.version}"
+  source = "git::git@github.com:sflab-io/terragrunt-catalog-homelab.git//units/netbox-virtual-machine-direct?ref=${values.version}"
 
   path = "netbox_virtual_machine"
 

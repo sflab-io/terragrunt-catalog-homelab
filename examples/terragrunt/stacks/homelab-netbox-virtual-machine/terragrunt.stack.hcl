@@ -12,6 +12,14 @@ locals {
       disk_size_mb = 8000
       tags         = ["example-netbox-vm-staging"]
       extra_tags   = []
+      interfaces = [
+        {
+          name     = "eth0"
+          address  = "192.168.1.200/32"
+          dns_name = "example-netbox-vm-staging.home.sflab.io"
+          status   = "active"
+        }
+      ]
     }
   ]
 }
