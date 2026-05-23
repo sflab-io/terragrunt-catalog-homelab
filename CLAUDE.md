@@ -136,7 +136,7 @@ Units and stacks use Git URLs in their `source` field because they are designed 
 **NetBox Configuration** (`examples/terragrunt/provider-netbox-config.hcl`):
 
 - Centralized NetBox server configuration for all NetBox units
-- Server URL: `http://netbox-staging.home.sflab.io`
+- Server URL: `http://netbox.home.sflab.io`
 - `netbox_skip_version_check = true`
 - Used by all NetBox units to configure the NetBox provider
 

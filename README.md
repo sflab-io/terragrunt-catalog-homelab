@@ -739,7 +739,7 @@ Centralized NetBox server configuration.
 Configuration file: `examples/terragrunt/provider-netbox-config.hcl`
 
 ```hcl
-netbox_server_url         = "http://netbox-staging.home.sflab.io"
+netbox_server_url         = "http://netbox.home.sflab.io"
 netbox_skip_version_check = true
 ```
 
