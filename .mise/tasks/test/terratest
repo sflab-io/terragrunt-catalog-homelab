@@ -40,20 +40,49 @@ else
   TEST_EXIT=${PIPESTATUS[0]}
 fi
 
-# Testergebnisse aus der Ausgabe parsen
+# Testergebnisse aus der Ausgabe parsen (Subtests haben führende Leerzeichen)
 PASSED_TESTS=()
 FAILED_TESTS=()
 
 while IFS= read -r line; do
-  if [[ "$line" =~ ^---\ PASS:\ ([^\ ]+) ]]; then
+  if [[ "$line" =~ ^[[:space:]]*---[[:space:]]PASS:[[:space:]]([^[:space:]]+) ]]; then
     PASSED_TESTS+=("${BASH_REMATCH[1]}")
-  elif [[ "$line" =~ ^---\ FAIL:\ ([^\ ]+) ]]; then
+  elif [[ "$line" =~ ^[[:space:]]*---[[:space:]]FAIL:[[:space:]]([^[:space:]]+) ]]; then
     FAILED_TESTS+=("${BASH_REMATCH[1]}")
   fi
 done < "$TMPFILE"
 
-PASS_COUNT=${#PASSED_TESTS[@]}
-FAIL_COUNT=${#FAILED_TESTS[@]}
+# Prüfen ob Subtests vorhanden sind (Format: TestAll/SubtestName)
+HAS_SUBTESTS=false
+for t in "${PASSED_TESTS[@]}" "${FAILED_TESTS[@]}"; do
+  if [[ "$t" == */* ]]; then
+    HAS_SUBTESTS=true
+    break
+  fi
+done
+
+# Nur den Subtest-Namen anzeigen, Parent-Tests (z.B. TestAll) überspringen wenn Subtests existieren
+format_tests() {
+  for t in "$@"; do
+    if $HAS_SUBTESTS && [[ "$t" != */* ]]; then
+      continue  # Parent-Test überspringen
+    fi
+    echo "${t#*/}"  # TestAll/ Präfix entfernen
+  done
+}
+
+PASSED_DISPLAY=()
+while IFS= read -r line; do
+  [[ -n "$line" ]] && PASSED_DISPLAY+=("$line")
+done < <(format_tests "${PASSED_TESTS[@]}")
+
+FAILED_DISPLAY=()
+while IFS= read -r line; do
+  [[ -n "$line" ]] && FAILED_DISPLAY+=("$line")
+done < <(format_tests "${FAILED_TESTS[@]}")
+
+PASS_COUNT=${#PASSED_DISPLAY[@]}
+FAIL_COUNT=${#FAILED_DISPLAY[@]}
 TOTAL=$((PASS_COUNT + FAIL_COUNT))
 
 echo ""
@@ -67,7 +96,7 @@ if [ "$TOTAL" -eq 0 ]; then
 else
   if [ "$PASS_COUNT" -gt 0 ]; then
     echo "ERFOLGREICH ($PASS_COUNT):"
-    for test in "${PASSED_TESTS[@]}"; do
+    for test in "${PASSED_DISPLAY[@]}"; do
       echo "  + $test"
     done
     echo ""
@@ -75,7 +104,7 @@ else
 
   if [ "$FAIL_COUNT" -gt 0 ]; then
     echo "FEHLGESCHLAGEN ($FAIL_COUNT):"
-    for test in "${FAILED_TESTS[@]}"; do
+    for test in "${FAILED_DISPLAY[@]}"; do
       echo "  - $test"
     done
     echo ""
