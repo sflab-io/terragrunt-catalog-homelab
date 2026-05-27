@@ -1,0 +1,46 @@
+schema: spec-driven
+
+context: |
+  ## Project: terragrunt-catalog-homelab
+
+  ### Three-Layer Architecture
+  - **Modules** (`modules/`): Raw OpenTofu — no Terragrunt logic
+  - **Units** (`units/`): Terragrunt wrappers — parameterized via `values.*`, reference modules via Git URL
+  - **Stacks** (`stacks/`): `terragrunt.stack.hcl` composing multiple units — every `unit` block **requires a `path` attribute**
+  - **Examples** (`examples/terragrunt/`): Local testing only — use relative paths, never Git URLs
+
+  ### Provider: bpg/proxmox only (>= 0.69.0)
+  Common mistakes — always correct form on the right:
+  - LXC resource: ~~`proxmox_lxc`~~ → `proxmox_virtual_environment_container`
+  - Pool membership: ~~`proxmox_virtual_environment_pool_membership`~~ → `proxmox_pool_membership`
+  - Auth env var: ~~`PM_API_TOKEN_ID`~~ → `PROXMOX_VE_API_TOKEN=username@realm!tokenname=secret`
+  - Network interface: ~~`eth0`~~ → `veth0`
+
+  ### Key Conventions
+  - Resource names come from the `naming` module: `<app>-<env>` (non-prod), `<app>` (prod) — never hardcode
+  - Stack unit inter-dependencies via path refs (`compute_path`, `dns_path`), not `dependency` blocks
+  - Double-slash required in relative module paths: `../../../.././/modules/proxmox-lxc`
+  - SSH key paths in stacks must use `get_repo_root()` — relative paths break in `.terragrunt-cache`
+  - `backend.tf` and `provider.tf` are auto-generated — never commit them
+
+  ### Tool Versions (mise)
+  OpenTofu 1.11.5 · Terragrunt 0.99.4 · Go 1.26.3
+
+rules:
+  proposal:
+    - State which layers are affected (module / unit / stack / example)
+    - Catalog stack changes typically require updating the corresponding example stack too
+    - Note whether a new example in `examples/terragrunt/` is needed for testing
+    - Stack tests require changes committed and pushed to GitHub — flag if the change blocks test runs
+
+  design:
+    - Show actual HCL for new/modified resources, not prose descriptions
+    - New stacks: include `terragrunt.stack.hcl` skeleton with unit blocks and `path` attributes
+    - New units: show `terragrunt.hcl` with `include "root"`, any `include "provider_*"`, and `inputs` using `values.*`
+    - Include the matching example counterpart for any new unit or stack
+
+  tasks:
+    - Order tasks as: (1) modules, (2) units, (3) stacks, (4) examples, (5) tests
+    - After any HCL change: tofu fmt -recursive then pre-commit run --all-files
+    - Unit tests: mise run test:all -- -u (no commit required)
+    - Stack tests: mise run test:all -- -s (requires committed + pushed changes)
