@@ -23,6 +23,14 @@ locals {
   tags       = try(values.tags, ["${local.app}-${local.env}"])
   extra_tags = try(values.extra_tags, [])
 
+  # Optional: path attribute of the homelab-netbox-k8s-cluster stack in the parent stack.
+  # When set, VMs are automatically assigned to that K8s cluster in NetBox.
+  # Example: if the parent stack has `stack "cluster" { path = "netbox-k8s-cluster" }`,
+  # set cluster_stack_path = "netbox-k8s-cluster".
+  cluster_stack_path = try(values.cluster_stack_path, null)
+  # Path from the netbox-virtual-machine unit to the K8s cluster unit (3 levels up).
+  cluster_path = local.cluster_stack_path != null ? "../../../${local.cluster_stack_path}/.terragrunt-stack/netbox-k8s-cluster" : null
+
   virtual_machines = try(values.virtual_machines, [
     {
       name         = "${local.app}-${local.env}"
@@ -86,6 +94,7 @@ unit "netbox_virtual_machine" {
 
     virtual_machines = local.virtual_machines
 
-    dns_path = "../dns"
+    dns_path     = "../dns"
+    cluster_path = local.cluster_path
   }
 }
