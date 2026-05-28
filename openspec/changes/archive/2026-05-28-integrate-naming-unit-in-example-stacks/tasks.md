@@ -37,9 +37,9 @@
 **Note**: Plan validation confirms correct naming integration. Actual deployment (`apply`) was not performed to avoid creating/modifying live infrastructure.
 
 ### 5. Cleanup test resources
-- [ ] Run `terragrunt stack run destroy` for both stacks (if deployed)
-- [ ] Verify all resources (VMs, containers, DNS records) are removed
-- [ ] **Validation**: Check Proxmox UI and DNS server for no remaining resources
+- [x] Run `terragrunt stack run destroy` for both stacks (if deployed)
+- [x] Verify all resources (VMs, containers, DNS records) are removed
+- [x] **Validation**: Check Proxmox UI and DNS server for no remaining resources
 
 **Note**: Cleanup not required as resources were not deployed. Plan validation was sufficient to verify naming integration.
 
