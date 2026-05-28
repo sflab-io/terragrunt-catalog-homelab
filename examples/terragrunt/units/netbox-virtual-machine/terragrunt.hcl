@@ -28,9 +28,9 @@ inputs = {
   virtual_machines = [
     {
       name         = "example-vm-a"
-      cluster_name = "Proxmox Cluster Production"
+      cluster_name = "proxmox-production"
       role_name    = "VM"
-      tenant_name  = "Platform Team"
+      tenant_name  = "platform-team"
       vcpus        = 2
       memory_mb    = 2048
       disk_size_mb = 8000
@@ -45,9 +45,9 @@ inputs = {
     },
     {
       name         = "example-vm-b"
-      cluster_name = "Proxmox Cluster Production"
+      cluster_name = "proxmox-production"
       role_name    = "VM"
-      tenant_name  = "Platform Team"
+      tenant_name  = "platform-team"
       vcpus        = 2
       memory_mb    = 2048
       disk_size_mb = 8000

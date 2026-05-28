@@ -15,8 +15,8 @@ locals {
   }
 
   #
-  cluster_name = "Proxmox Cluster Production"
-  tenant_name  = "Platform Team"
+  cluster_name = "proxmox-production"
+  tenant_name  = "platform-team"
 }
 
 stack "homelab_proxmox_vm" {

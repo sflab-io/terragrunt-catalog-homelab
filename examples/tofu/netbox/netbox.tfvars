@@ -70,17 +70,17 @@ tenants = [
     group_name = "customers"
   },
   {
-    name       = "Platform Team"
+    name       = "platform-team"
     group_name = "internal"
   }
 ]
 
 contact_groups = [
   {
-    name = "Platform Team Contacts"
+    name = "platform-team-admins"
   },
   {
-    name = "Customer Contacts"
+    name = "team-a-admins"
   }
 ]
 
@@ -98,14 +98,14 @@ contacts = [
     name       = "John Doe"
     email      = "john.doe@example.com"
     phone      = "123-123123"
-    group_name = "Platform Team Contacts"
+    group_name = "platform-team-admins"
     # role_name  = "Primary Contact"
   },
   {
     name       = "Jane Smith"
     email      = "jane.smith@example.com"
     phone      = "456-456456"
-    group_name = "Customer Contacts"
+    group_name = "team-a-admins"
     # role_name  = "Secondary Contact"
   }
 ]
@@ -129,11 +129,11 @@ virtual_machines = [
   {
     name         = "k8s-control-plane-1"
     cluster_name = "k8s-cluster-mgm"
-    tenant_name  = "Platform Team"
+    tenant_name  = "platform-team"
   },
   {
     name         = "k8s-worker-1"
     cluster_name = "k8s-cluster-mgm"
-    tenant_name  = "Platform Team"
+    tenant_name  = "platform-team"
   }
 ]
