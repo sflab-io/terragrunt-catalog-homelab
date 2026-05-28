@@ -17,4 +17,5 @@ func TestAll(t *testing.T) {
 	t.Run("ModuleProxmoxVm", testModuleProxmoxVm)
 	t.Run("ModuleNetboxVirtualMachine", testModuleNetboxVirtualMachine)
 	t.Run("ModuleNetboxTags", testModuleNetboxTags)
+	t.Run("ModuleNetboxK8sCluster", testModuleNetboxK8sCluster)
 }

@@ -13,4 +13,5 @@ func TestAll(t *testing.T) {
 	t.Run("StackHomelabProxmoxLxc", testStackHomelabProxmoxLxc)
 	t.Run("StackHomelabProxmoxVm", testStackHomelabProxmoxVm)
 	t.Run("StackHomelabNetboxVirtualMachine", testStackHomelabNetboxVirtualMachine)
+	t.Run("StackHomelabNetboxK8sCluster", testStackHomelabNetboxK8sCluster)
 }

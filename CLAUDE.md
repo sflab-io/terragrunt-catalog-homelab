@@ -126,7 +126,7 @@ Units and stacks use Git URLs in their `source` field because they are designed 
 - Defines environment-wide shared variables for all stacks and units in the examples directory
 - `environment_name`: Environment label (e.g., "staging")
 - `pool_id`: Shared Proxmox pool ID for examples; reads from env var `TERRATEST_POOL_ID`, falls back to `"example-stack-pool"`
-- `catalog_version`: Version ref for catalog units/stacks (default: `"feat/terratest"` in examples; use `"main"` for stable)
+- `catalog_version`: Version ref for catalog units/stacks (default: `"feat/<feature name>"` in examples; use `"main"` for stable)
 - `zone`: DNS zone for records (e.g., "home.sflab.io.")
 - `admin_ssh_public_key_path`: Absolute path to admin SSH public key (`${get_repo_root()}/keys/admin_id_ecdsa.pub`)
 - `ansible_ssh_public_key_path`: Absolute path to Ansible SSH public key (`${get_repo_root()}/keys/ansible_id_ecdsa.pub`)

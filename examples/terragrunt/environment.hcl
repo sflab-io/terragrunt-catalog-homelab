@@ -6,7 +6,7 @@ locals {
 
   # Shared catalog configuration
   # Tracks latest catalog changes. Promotes to production after validation.
-  catalog_version = "feat/terratest"
+  catalog_version = "feat/homelab-netbox-k8s-cluster"
   zone            = "home.sflab.io"
 
   # SSH public key paths
