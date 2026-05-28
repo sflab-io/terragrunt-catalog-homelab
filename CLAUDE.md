@@ -62,19 +62,21 @@ The `examples/` directory contains working examples for local testing:
   - `dns`: DNS record management example (normal records only)
   - `dns-wildcard`: Wildcard DNS record example (wildcard records only)
   - `naming`: Naming convention example
-  - `netbox-virtual-machine`: NetBox virtual machine management example
+  - `netbox-virtual-machine`: NetBox virtual machine management example (with DNS dependency)
+  - `netbox-tags`: NetBox tags management example
 - `examples/terragrunt/stacks/`: Complete stack examples using catalog stacks
   - `homelab-proxmox-pool`: Proxmox resource pool only (uses local `unit` block)
   - `homelab-proxmox-lxc`: LXC container + DNS + NetBox VM (uses `stack` block referencing `stacks/homelab-proxmox-lxc`)
   - `homelab-proxmox-vm`: Virtual machine + DNS + NetBox VM (uses `stack` block referencing `stacks/homelab-proxmox-vm`)
   - `homelab-wildcard-dns`: LXC container with both regular and wildcard DNS records
+  - `homelab-netbox-virtual-machine`: Standalone NetBox VM records (uses `stack` block referencing `stacks/homelab-netbox-virtual-machine`)
   - **Note**: Stack examples that use `stack` blocks reference catalog stacks via Git URLs with `catalog_version` from `environment.hcl`
 - Unit examples use relative paths to modules (e.g., `../../../.././/modules/proxmox-lxc`)
 - Stack examples use relative paths to units (e.g., `../../../../units/dns`) for easier testing
 
 **Direct OpenTofu Examples** (`examples/tofu/`):
 - Direct module usage without Terragrunt wrappers
-- Available examples: `proxmox-lxc`, `proxmox-vm`, `proxmox-pool`, `dns`, `naming`, `netbox`
+- Available examples: `proxmox-lxc`, `proxmox-vm`, `proxmox-pool`, `dns`, `naming`, `netbox`, `netbox-tags`, `netbox-virtual-machine`
 - Useful for testing modules independently
 - Use relative paths to reference modules (e.g., `../../../modules/proxmox-lxc`)
 
@@ -123,8 +125,8 @@ Units and stacks use Git URLs in their `source` field because they are designed 
 
 - Defines environment-wide shared variables for all stacks and units in the examples directory
 - `environment_name`: Environment label (e.g., "staging")
-- `pool_id`: Shared Proxmox pool ID for examples (e.g., "example-stack-pool")
-- `catalog_version`: Version ref for catalog units/stacks (default: "main")
+- `pool_id`: Shared Proxmox pool ID for examples; reads from env var `TERRATEST_POOL_ID`, falls back to `"example-stack-pool"`
+- `catalog_version`: Version ref for catalog units/stacks (default: `"feat/terratest"` in examples; use `"main"` for stable)
 - `zone`: DNS zone for records (e.g., "home.sflab.io.")
 - `admin_ssh_public_key_path`: Absolute path to admin SSH public key (`${get_repo_root()}/keys/admin_id_ecdsa.pub`)
 - `ansible_ssh_public_key_path`: Absolute path to Ansible SSH public key (`${get_repo_root()}/keys/ansible_id_ecdsa.pub`)
@@ -267,28 +269,56 @@ dig example-stack-vm.home.sflab.io @192.168.1.13
 
 ### Terratest Commands
 
-Terratest (Go-based) tests live in `test/tofu/` and test OpenTofu modules using real provider calls.
+Terratest (Go-based) tests live in `test/` and cover OpenTofu modules, Terragrunt units, and Terragrunt stacks using real provider calls.
 
 ```bash
 # Run all Terratest tests
 mise run test:terratest
 
-# Run a specific test
-mise run test:terratest TestModuleNaming
+# Run tests in a specific directory
+mise run test:terratest -d tofu                   # Only module tests
+mise run test:terratest -d terragrunt/units        # Only unit tests
+mise run test:terratest -d terragrunt/stacks       # Only stack tests
+
+# Run a specific test by function name (across all directories)
+mise run test:terratest -n TestAll/ModuleNaming
+
+# Force-bypass Go test cache
+mise run test:terratest -f
 
 # Run manually from test/ directory
 cd test
 go test -v -timeout 30m ./...
-go test -v -timeout 30m -run TestModuleNaming ./...
+go test -v -timeout 30m ./tofu/...
+go test -v -timeout 30m ./terragrunt/units/...
+go test -v -timeout 30m ./terragrunt/stacks/...
 ```
 
 **Test structure:**
 - `test/go.mod` — Go module (requires Go 1.26, Terratest v0.56.0)
 - `test/tofu/` — Module-level tests; each test points to a corresponding example in `examples/tofu/`
+- `test/terragrunt/units/` — Unit-level tests; each test uses examples in `examples/terragrunt/units/`
+- `test/terragrunt/stacks/` — Stack-level tests; each test uses examples in `examples/terragrunt/stacks/`
 - Tests use `TerraformBinary: "tofu"` and call `terraform.InitAndApply` + `terraform.Destroy`
+- Tests are organized as subtests under `TestAll` (e.g., `TestAll/ModuleNaming`)
 
-**Available tests:**
-- `TestModuleNaming` (`test/tofu/naming_test.go`): validates `modules/naming` output pattern
+**Available tests (tofu module tests):**
+- `TestAll/ModuleNaming` — validates `modules/naming` output pattern
+- `TestAll/ModuleDns` — validates `modules/dns` DNS record creation
+- `TestAll/ModuleProxmoxPool` — validates `modules/proxmox-pool`
+- `TestAll/ModuleProxmoxLxc` — validates `modules/proxmox-lxc`
+- `TestAll/ModuleProxmoxVm` — validates `modules/proxmox-vm`
+- `TestAll/ModuleNetboxVirtualMachine` — validates `modules/netbox-virtual-machine`
+- `TestAll/ModuleNetboxTags` — validates `modules/netbox-tags`
+
+**Available tests (terragrunt unit tests):**
+- `TestAll/UnitNaming`, `TestAll/UnitDns`, `TestAll/UnitDnsWildcard`
+- `TestAll/UnitProxmoxPool`, `TestAll/UnitProxmoxLxc`, `TestAll/UnitProxmoxVm`
+- `TestAll/UnitNetboxTags`, `TestAll/UnitNetboxVirtualMachine`
+
+**Available tests (terragrunt stack tests):**
+- `TestAll/StackHomelabProxmoxLxc`, `TestAll/StackHomelabProxmoxVm`
+- `TestAll/StackHomelabNetboxVirtualMachine`
 
 ### Development Commands
 
@@ -335,10 +365,11 @@ Examples:
 - `units/proxmox-pool/terragrunt.hcl`: Resource pool unit
 - `units/dns/terragrunt.hcl`: DNS record unit (supports both regular and wildcard DNS records via `record_types` parameter)
 - `units/naming/terragrunt.hcl`: Naming convention unit
-- `units/netbox-virtual-machine/terragrunt.hcl`: NetBox virtual machine unit (depends on `dns_path`)
+- `units/netbox-virtual-machine/terragrunt.hcl`: NetBox virtual machine unit (depends on `dns_path` to retrieve IP from DNS unit)
+- `units/netbox-virtual-machine-direct/terragrunt.hcl`: NetBox virtual machine unit (accepts `virtual_machines` list directly, no DNS dependency; used by `stacks/homelab-netbox-virtual-machine`)
 - `units/netbox-tags/terragrunt.hcl`: NetBox tags unit (creates tags idempotently; accepts `tags` list)
 
-**NetBox Unit Pattern**: The `netbox-virtual-machine` and `netbox-tags` units include both `root` and `provider_netbox` configs. The `provider_netbox` include reads `provider-netbox-config.hcl` and generates a netbox provider block. The `netbox-virtual-machine` unit accepts a `dns_path` value to create a dependency on the DNS unit for IP address retrieval.
+**NetBox Unit Pattern**: The `netbox-virtual-machine`, `netbox-virtual-machine-direct`, and `netbox-tags` units include both `root` and `provider_netbox` configs. The `provider_netbox` include reads `provider-netbox-config.hcl` and generates a netbox provider block. The `netbox-virtual-machine` unit accepts a `dns_path` value to create a dependency on the DNS unit for IP address retrieval. The `netbox-virtual-machine-direct` unit accepts a `virtual_machines` list with full interface details directly, bypassing the DNS dependency.
 
 ### Adding New Stacks
 
@@ -356,13 +387,14 @@ Examples:
 Examples in `stacks/` (production stacks using Git URLs):
 - `stacks/homelab-proxmox-lxc/`: LXC container + DNS + NetBox VM (3 units; pool_id is passed as a value)
 - `stacks/homelab-proxmox-vm/`: Virtual machine + DNS + NetBox VM (3 units; pool_id is passed as a value)
-- `stacks/homelab-netbox-virtual-machine/`: Standalone NetBox virtual machine records stack
+- `stacks/homelab-netbox-virtual-machine/`: Standalone NetBox VM records stack (uses `netbox-virtual-machine-direct` unit; accepts `virtual_machines` list directly without compute/DNS dependency)
 
 Examples in `examples/terragrunt/stacks/` (testing stacks referencing catalog):
 - `examples/terragrunt/stacks/homelab-proxmox-pool/`: Proxmox resource pool only (uses direct `unit` block)
 - `examples/terragrunt/stacks/homelab-proxmox-lxc/`: References `stacks/homelab-proxmox-lxc` via `stack` block
 - `examples/terragrunt/stacks/homelab-proxmox-vm/`: References `stacks/homelab-proxmox-vm` via `stack` block
 - `examples/terragrunt/stacks/homelab-wildcard-dns/`: LXC container with both normal and wildcard DNS records
+- `examples/terragrunt/stacks/homelab-netbox-virtual-machine/`: References `stacks/homelab-netbox-virtual-machine` via `stack` block; accepts full `virtual_machines` list
 
 ### Working with Dependencies
 
