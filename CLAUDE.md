@@ -12,8 +12,8 @@ This is a Terragrunt infrastructure catalog for homelab environments. It provide
 Managed via mise (mise.toml):
 
 - **Go**: 1.26.3
-- **OpenTofu**: 1.11.5
-- **Terragrunt**: 0.99.4
+- **OpenTofu**: 1.12.1
+- **Terragrunt**: 1.0.6
 - **MinIO Client (mc)**: latest
 
 Run `mise install` to install all required tools.
@@ -36,6 +36,7 @@ Run `mise install` to install all required tools.
    - `naming`: Wrapper around the homelab provider for standardized resource naming
    - `netbox-virtual-machine`: Manages NetBox virtual machines with interfaces and IPs
    - `netbox-tags`: Creates tags in NetBox (idempotent, used by other NetBox modules)
+   - `netbox-k8s-cluster`: Manages Kubernetes cluster records in NetBox
    - These are basic building blocks with no Terragrunt-specific logic
 
 2. **Units** (`units/`): Terragrunt wrappers around modules
@@ -64,12 +65,14 @@ The `examples/` directory contains working examples for local testing:
   - `naming`: Naming convention example
   - `netbox-virtual-machine`: NetBox virtual machine management example (with DNS dependency)
   - `netbox-tags`: NetBox tags management example
+  - `netbox-k8s-cluster`: NetBox Kubernetes cluster management example
 - `examples/terragrunt/stacks/`: Complete stack examples using catalog stacks
   - `homelab-proxmox-pool`: Proxmox resource pool only (uses local `unit` block)
   - `homelab-proxmox-lxc`: LXC container + DNS + NetBox VM (uses `stack` block referencing `stacks/homelab-proxmox-lxc`)
   - `homelab-proxmox-vm`: Virtual machine + DNS + NetBox VM (uses `stack` block referencing `stacks/homelab-proxmox-vm`)
   - `homelab-wildcard-dns`: LXC container with both regular and wildcard DNS records
   - `homelab-netbox-virtual-machine`: Standalone NetBox VM records (uses `stack` block referencing `stacks/homelab-netbox-virtual-machine`)
+  - `homelab-netbox-k8s-cluster`: Standalone K8s cluster records (uses `stack` block referencing `stacks/homelab-netbox-k8s-cluster`)
   - **Note**: Stack examples that use `stack` blocks reference catalog stacks via Git URLs with `catalog_version` from `environment.hcl`
 - Unit examples use relative paths to modules (e.g., `../../../.././/modules/proxmox-lxc`)
 - Stack examples use relative paths to units (e.g., `../../../../units/dns`) for easier testing
@@ -310,15 +313,16 @@ go test -v -timeout 30m ./terragrunt/stacks/...
 - `TestAll/ModuleProxmoxVm` — validates `modules/proxmox-vm`
 - `TestAll/ModuleNetboxVirtualMachine` — validates `modules/netbox-virtual-machine`
 - `TestAll/ModuleNetboxTags` — validates `modules/netbox-tags`
+- `TestAll/ModuleNetboxK8sCluster` — validates `modules/netbox-k8s-cluster`
 
 **Available tests (terragrunt unit tests):**
 - `TestAll/UnitNaming`, `TestAll/UnitDns`, `TestAll/UnitDnsWildcard`
 - `TestAll/UnitProxmoxPool`, `TestAll/UnitProxmoxLxc`, `TestAll/UnitProxmoxVm`
-- `TestAll/UnitNetboxTags`, `TestAll/UnitNetboxVirtualMachine`
+- `TestAll/UnitNetboxTags`, `TestAll/UnitNetboxVirtualMachine`, `TestAll/UnitNetboxK8sCluster`
 
 **Available tests (terragrunt stack tests):**
 - `TestAll/StackHomelabProxmoxLxc`, `TestAll/StackHomelabProxmoxVm`
-- `TestAll/StackHomelabNetboxVirtualMachine`
+- `TestAll/StackHomelabNetboxVirtualMachine`, `TestAll/StackHomelabNetboxK8sCluster`
 
 ### Development Commands
 
@@ -368,8 +372,9 @@ Examples:
 - `units/netbox-virtual-machine/terragrunt.hcl`: NetBox virtual machine unit (depends on `dns_path` to retrieve IP from DNS unit)
 - `units/netbox-virtual-machine-direct/terragrunt.hcl`: NetBox virtual machine unit (accepts `virtual_machines` list directly, no DNS dependency; used by `stacks/homelab-netbox-virtual-machine`)
 - `units/netbox-tags/terragrunt.hcl`: NetBox tags unit (creates tags idempotently; accepts `tags` list)
+- `units/netbox-k8s-cluster/terragrunt.hcl`: NetBox K8s cluster unit (accepts `clusters` list; used by `stacks/homelab-netbox-k8s-cluster`)
 
-**NetBox Unit Pattern**: The `netbox-virtual-machine`, `netbox-virtual-machine-direct`, and `netbox-tags` units include both `root` and `provider_netbox` configs. The `provider_netbox` include reads `provider-netbox-config.hcl` and generates a netbox provider block. The `netbox-virtual-machine` unit accepts a `dns_path` value to create a dependency on the DNS unit for IP address retrieval. The `netbox-virtual-machine-direct` unit accepts a `virtual_machines` list with full interface details directly, bypassing the DNS dependency.
+**NetBox Unit Pattern**: The `netbox-virtual-machine`, `netbox-virtual-machine-direct`, `netbox-tags`, and `netbox-k8s-cluster` units include both `root` and `provider_netbox` configs. The `provider_netbox` include reads `provider-netbox-config.hcl` and generates a netbox provider block. The `netbox-virtual-machine` unit accepts a `dns_path` value to create a dependency on the DNS unit for IP address retrieval. The `netbox-virtual-machine-direct` unit accepts a `virtual_machines` list with full interface details directly, bypassing the DNS dependency. The `netbox-k8s-cluster` unit accepts a `clusters` list directly.
 
 ### Adding New Stacks
 
@@ -388,6 +393,7 @@ Examples in `stacks/` (production stacks using Git URLs):
 - `stacks/homelab-proxmox-lxc/`: LXC container + DNS + NetBox VM (3 units; pool_id is passed as a value)
 - `stacks/homelab-proxmox-vm/`: Virtual machine + DNS + NetBox VM (3 units; pool_id is passed as a value)
 - `stacks/homelab-netbox-virtual-machine/`: Standalone NetBox VM records stack (uses `netbox-virtual-machine-direct` unit; accepts `virtual_machines` list directly without compute/DNS dependency)
+- `stacks/homelab-netbox-k8s-cluster/`: Standalone K8s cluster records stack (uses `netbox-k8s-cluster` unit; accepts `clusters` list directly)
 
 Examples in `examples/terragrunt/stacks/` (testing stacks referencing catalog):
 - `examples/terragrunt/stacks/homelab-proxmox-pool/`: Proxmox resource pool only (uses direct `unit` block)
@@ -395,6 +401,7 @@ Examples in `examples/terragrunt/stacks/` (testing stacks referencing catalog):
 - `examples/terragrunt/stacks/homelab-proxmox-vm/`: References `stacks/homelab-proxmox-vm` via `stack` block
 - `examples/terragrunt/stacks/homelab-wildcard-dns/`: LXC container with both normal and wildcard DNS records
 - `examples/terragrunt/stacks/homelab-netbox-virtual-machine/`: References `stacks/homelab-netbox-virtual-machine` via `stack` block; accepts full `virtual_machines` list
+- `examples/terragrunt/stacks/homelab-netbox-k8s-cluster/`: References `stacks/homelab-netbox-k8s-cluster` via `stack` block; accepts full `clusters` list
 
 ### Working with Dependencies
 
@@ -893,6 +900,13 @@ Current modules support:
   - Required inputs: `tags` (list of tag name strings, default: `[]`)
   - Resource: `netbox_tag` (created for each tag via `for_each`)
   - The unit (`units/netbox-tags`) includes `provider_netbox` config and accepts `tags` list via values
+- **NetBox K8s Cluster** (`modules/netbox-k8s-cluster`): Manages Kubernetes cluster records in NetBox
+  - Provider: `e-breuninger/netbox` (~> 5.1.0)
+  - Required inputs: `clusters` (list of objects with `name`, optional `cluster_type_name` (default: `"kubernetes"`), `tenant_name`, `site_name`, `description`, `tags`)
+  - Resources: `netbox_cluster` (created for each cluster via `for_each`); uses `netbox_cluster_type`, `netbox_tenant`, and `netbox_site` data sources
+  - Outputs: `cluster_ids` (map of cluster name → NetBox ID), `cluster_names` (list of created cluster names)
+  - The unit (`units/netbox-k8s-cluster`) includes `provider_netbox` config and accepts `clusters` list via values
+  - The stack (`stacks/homelab-netbox-k8s-cluster`) wraps the unit; accepts `clusters` list directly without compute/DNS dependency
 
 ### Provider Migration Notes
 
