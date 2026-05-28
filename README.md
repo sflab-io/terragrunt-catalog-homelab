@@ -1,6 +1,6 @@
 # Terragrunt Catalog Homelab
 
-A Terragrunt infrastructure catalog for managing Proxmox homelab environments. This project provides reusable infrastructure components (modules, units, and stacks) for deploying LXC containers, virtual machines, DNS records, and NetBox virtual machine records using OpenTofu/Terraform and Terragrunt.
+A Terragrunt infrastructure catalog for managing Proxmox homelab environments. This project provides reusable infrastructure components (modules, units, and stacks) for deploying LXC containers, virtual machines, DNS records, NetBox virtual machine records, and Kubernetes cluster records using OpenTofu/Terraform and Terragrunt.
 
 ## Table of Contents
 
@@ -36,6 +36,8 @@ This repository provides a three-layer architecture for managing infrastructure 
 - Virtual machine deployment via template cloning
 - Automated DNS record management (including wildcard records)
 - NetBox virtual machine records management (auto-registered after deployment)
+- NetBox Kubernetes cluster records management
+- NetBox tag management (idempotent)
 - Standardized resource naming conventions
 - S3-compatible state management with MinIO
 - Pre-commit hooks for code quality
@@ -73,6 +75,8 @@ This repository provides a three-layer architecture for managing infrastructure 
 
 **NetBox:**
 - **netbox-virtual-machine**: Manage virtual machine records in NetBox (auto-registered via dns dependency)
+- **netbox-tags**: Manage tags in NetBox (idempotent creation)
+- **netbox-k8s-cluster**: Manage Kubernetes cluster records in NetBox
 
 ## Prerequisites
 
@@ -80,9 +84,9 @@ This repository provides a three-layer architecture for managing infrastructure 
 
 All tools are managed via [mise](https://mise.jdx.dev/):
 
-- Go 1.24.2
-- OpenTofu 1.11.5
-- Terragrunt 0.99.4
+- Go 1.26.3
+- OpenTofu 1.12.1
+- Terragrunt 1.0.6
 - MinIO Client (mc) - latest
 
 ### Required Services
@@ -131,7 +135,7 @@ export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 export TF_VAR_dns_key_secret="your-tsig-key-secret"
 
 # Set NetBox API token (if using NetBox modules)
-export TF_VAR_netbox_token="your-netbox-api-token"
+export NETBOX_API_TOKEN="your-netbox-api-token"
 ```
 
 ### 4. Deploy Your First Container
@@ -173,6 +177,8 @@ terragrunt stack run apply
 ├── modules/              # Raw OpenTofu/Terraform modules
 │   ├── dns/             # DNS A record management
 │   ├── naming/          # Resource naming conventions
+│   ├── netbox-k8s-cluster/      # NetBox K8s cluster records
+│   ├── netbox-tags/     # NetBox tag management
 │   ├── netbox-virtual-machine/  # NetBox VM records
 │   ├── proxmox-lxc/     # LXC container deployment
 │   ├── proxmox-pool/    # Proxmox resource pools
@@ -180,11 +186,15 @@ terragrunt stack run apply
 ├── units/               # Terragrunt wrappers (production)
 │   ├── dns/
 │   ├── naming/
+│   ├── netbox-k8s-cluster/
+│   ├── netbox-tags/
 │   ├── netbox-virtual-machine/
+│   ├── netbox-virtual-machine-direct/
 │   ├── proxmox-lxc/
 │   ├── proxmox-pool/
 │   └── proxmox-vm/
 ├── stacks/              # Stack compositions (production)
+│   ├── homelab-netbox-k8s-cluster/
 │   ├── homelab-netbox-virtual-machine/
 │   ├── homelab-proxmox-lxc/
 │   └── homelab-proxmox-vm/
@@ -200,7 +210,8 @@ terragrunt stack run apply
 │   │   └── stacks/     # Stack examples
 │   └── tofu/           # Direct OpenTofu examples
 ├── keys/                # SSH public keys for VMs
-│   └── admin_id_ecdsa.pub
+│   ├── admin_id_ecdsa.pub
+│   └── ansible_id_ecdsa.pub
 ├── openspec/            # OpenSpec change management
 └── mise.toml           # Tool version management
 ```
@@ -223,7 +234,7 @@ export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 export TF_VAR_dns_key_secret="your-tsig-key-secret"
 
 # NetBox API Token (required only when using NetBox modules)
-export TF_VAR_netbox_token="your-netbox-api-token"
+export NETBOX_API_TOKEN="your-netbox-api-token"
 ```
 
 ### Working with Units
@@ -288,6 +299,7 @@ Stacks combine multiple units into coordinated deployments.
 - **homelab-proxmox-lxc**: LXC container + DNS + NetBox VM registration (3 units)
 - **homelab-proxmox-vm**: Virtual machine + DNS + NetBox VM registration (3 units)
 - **homelab-netbox-virtual-machine**: Standalone NetBox virtual machine records stack
+- **homelab-netbox-k8s-cluster**: Standalone NetBox Kubernetes cluster records stack
 
 #### Available Example Stacks (`examples/terragrunt/stacks/`)
 
@@ -295,6 +307,8 @@ Stacks combine multiple units into coordinated deployments.
 - **homelab-proxmox-lxc**: LXC container + DNS + NetBox VM (uses production stack via Git reference)
 - **homelab-proxmox-vm**: Virtual machine + DNS + NetBox VM (uses production stack via Git reference)
 - **homelab-wildcard-dns**: Container with normal + wildcard DNS records
+- **homelab-netbox-virtual-machine**: Standalone NetBox VM records (uses production stack via Git reference)
+- **homelab-netbox-k8s-cluster**: Standalone NetBox K8s cluster records (uses production stack via Git reference)
 
 #### Deploy a Stack
 
@@ -469,6 +483,12 @@ dig api.dev-web.home.sflab.io @192.168.1.13
 
 NetBox virtual machine records are automatically created as part of the Proxmox stacks. The `netbox-virtual-machine` unit registers VM/container records in NetBox after DNS is configured.
 
+Required environment variable for all NetBox operations:
+
+```bash
+export NETBOX_API_TOKEN="your-netbox-api-token"
+```
+
 #### Automatic NetBox Registration (via Proxmox stacks)
 
 The production stacks (`homelab-proxmox-lxc` and `homelab-proxmox-vm`) automatically register resources in NetBox:
@@ -477,19 +497,28 @@ The production stacks (`homelab-proxmox-lxc` and `homelab-proxmox-vm`) automatic
 proxmox_lxc/proxmox_vm → dns → netbox_virtual_machine
 ```
 
-Required environment variable for NetBox:
-
-```bash
-export NETBOX_API_TOKEN="your-netbox-api-token"
-```
-
 #### Deploy Standalone NetBox VM Records
 
 ```bash
 cd examples/terragrunt/units/netbox-virtual-machine
 
-# Set NetBox credentials
-export NETBOX_API_TOKEN="your-netbox-api-token"
+terragrunt init
+terragrunt apply
+```
+
+#### Deploy Standalone NetBox K8s Cluster Records
+
+```bash
+cd examples/terragrunt/stacks/homelab-netbox-k8s-cluster
+
+terragrunt stack generate
+terragrunt stack run apply
+```
+
+#### Deploy NetBox Tags
+
+```bash
+cd examples/terragrunt/units/netbox-tags
 
 terragrunt init
 terragrunt apply
@@ -594,12 +623,34 @@ Manages virtual machine records in NetBox with interfaces and IP addresses.
   - `vcpus` (number): vCPU count
   - `memory_mb` (number): Memory in MB
   - `disk_size_mb` (number): Disk size in MB
-  - Optional: `description`, `role_name`, `tenant_name`, `site_name`, `tags`
+  - Optional: `description`, `role_name`, `tenant_name`, `site_name`, `tags`, `extra_tags`
 
 **Unit Inputs:**
 - `dns_path` (string): Relative path to the DNS unit (used to retrieve the IP address)
 
-**Note:** The unit (`units/netbox-virtual-machine`) depends on the DNS unit output to automatically populate the VM interface IP address.
+**Note:** The unit (`units/netbox-virtual-machine`) depends on the DNS unit output to automatically populate the VM interface IP address. The `units/netbox-virtual-machine-direct` variant accepts a `virtual_machines` list with full interface details directly, bypassing the DNS dependency.
+
+### netbox-tags
+
+Creates tags in NetBox idempotently.
+
+**Required Inputs:**
+- `tags` (list(string), default: `[]`): List of tag name strings to create
+
+**Note:** Tags are managed via `for_each`, so they can be safely re-applied without duplication.
+
+### netbox-k8s-cluster
+
+Manages Kubernetes cluster records in NetBox.
+
+**Required Inputs:**
+- `clusters` (list): List of cluster objects with:
+  - `name` (string): Cluster name
+  - Optional: `cluster_type_name` (default: `"kubernetes"`), `tenant_name`, `site_name`, `description`, `tags`
+
+**Outputs:**
+- `cluster_ids`: Map of cluster name → NetBox cluster ID
+- `cluster_names`: List of created cluster names
 
 ## Available Commands
 
@@ -691,10 +742,11 @@ The shared environment configuration is in `examples/terragrunt/environment.hcl`
 ```hcl
 locals {
   environment_name = "staging"
-  pool_id          = "example-stack-pool"
+  pool_id          = get_env("TERRATEST_POOL_ID", "example-stack-pool")
   catalog_version  = "main"
   zone             = "home.sflab.io."
-  admin_ssh_public_key_path = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
+  admin_ssh_public_key_path   = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
+  ansible_ssh_public_key_path = "${get_repo_root()}/keys/ansible_id_ecdsa.pub"
 }
 ```
 
@@ -816,7 +868,7 @@ For issues, questions, or contributions, please open an issue on GitHub.
 ## Related Documentation
 
 - [CLAUDE.md](./CLAUDE.md): Detailed technical documentation for AI assistants
-- [AGENTS.md](./AGENTS.md): OpenSpec agent documentation
+- [CHANGELOG.md](./CHANGELOG.md): Release history and version notes
 - [OpenTofu Documentation](https://opentofu.org/docs/)
 - [Terragrunt Documentation](https://terragrunt.gruntwork.io/docs/)
 - [Proxmox VE API](https://pve.proxmox.com/pve-docs/api-viewer/)
