@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-05-28
+
 ### Added
 
 - `homelab-netbox-k8s-cluster` stack: registers Kubernetes clusters in NetBox automatically
@@ -85,7 +87,8 @@ No user-facing changes — this version tag was created on the same commit as `v
 
 - Configurable `cpu_type` parameter for the `proxmox-vm` module, unit, and stack — allows specifying CPU types such as `host` or `qemu64` instead of the previous hardcoded default
 
-[Unreleased]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.15.0...v0.16.0
