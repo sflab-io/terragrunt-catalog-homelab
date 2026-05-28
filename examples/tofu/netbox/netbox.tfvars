@@ -111,16 +111,16 @@ contacts = [
 ]
 
 # virtualization
-cluster_types = ["Kubernetes", "Proxmox"]
+cluster_types = ["kubernetes", "proxmox-ve"]
 
 clusters = [
   {
     name         = "k8s-cluster-mgm"
-    cluster_type = "Kubernetes"
+    cluster_type = "kubernetes"
   },
   {
     name         = "proxmox-cluster-01"
-    cluster_type = "Proxmox"
+    cluster_type = "proxmox-ve"
     # cluster_group_id = 1
   }
 ]

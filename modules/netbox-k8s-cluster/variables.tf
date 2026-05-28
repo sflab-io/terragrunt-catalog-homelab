@@ -2,7 +2,7 @@ variable "clusters" {
   description = "A list of Kubernetes clusters to create in NetBox."
   type = list(object({
     name              = string
-    cluster_type_name = optional(string, "Kubernetes")
+    cluster_type_name = optional(string, "kubernetes")
     tenant_name       = optional(string)
     site_name         = optional(string)
     description       = optional(string)
