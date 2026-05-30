@@ -17,7 +17,7 @@ generate "provider" {
 provider "netbox" {
   server_url         = "${local.server_url}"
   skip_version_check = ${local.skip_version_check}
-  token              = "${local.netbox_token}"
+  api_token          = "${local.netbox_token}"
 }
 EOF
 }
