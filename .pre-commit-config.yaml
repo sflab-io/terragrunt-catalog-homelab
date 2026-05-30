@@ -1,4 +1,13 @@
 repos:
+  - repo: local
+    hooks:
+      - id: check-catalog-version
+        name: catalog_version muss "main" sein auf Branch main
+        language: script
+        entry: .hooks/check_catalog_version.sh
+        pass_filenames: false
+        always_run: true
+
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.30.0
     hooks:
