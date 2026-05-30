@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-05-30
+
+### Added
+
+- Pre-commit hook that enforces `catalog_version = "main"` in `examples/terragrunt/environment.hcl` when committing to the `main` branch — prevents accidental feature branch references from being merged
+
+### Changed
+
+- NetBox provider token parameter renamed from `token` to `api_token` across all units and configurations to align with the `e-breuninger/netbox` provider v5.1.x API — update any custom NetBox provider blocks accordingly
+
 ## [0.19.0] - 2026-05-28
 
 ### Added
@@ -87,7 +97,8 @@ No user-facing changes — this version tag was created on the same commit as `v
 
 - Configurable `cpu_type` parameter for the `proxmox-vm` module, unit, and stack — allows specifying CPU types such as `host` or `qemu64` instead of the previous hardcoded default
 
-[Unreleased]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.19.0...HEAD
+[Unreleased]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.20.0...HEAD
+[0.20.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.16.0...v0.17.0
