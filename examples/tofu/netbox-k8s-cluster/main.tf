@@ -8,9 +8,16 @@ terraform {
   required_version = ">= 1.9.0"
 }
 
+variable "netbox_api_token" {
+  description = "NetBox API token."
+  type        = string
+  sensitive   = true
+}
+
 provider "netbox" {
   server_url         = "http://netbox.home.sflab.io"
   skip_version_check = true
+  api_token          = var.netbox_api_token
 }
 
 variable "cluster_name" {

@@ -2,6 +2,7 @@ package tofu_test
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -21,7 +22,8 @@ func testModuleNetboxTags(t *testing.T) {
 		TerraformDir:    "../../examples/tofu/netbox-tags",
 		TerraformBinary: "tofu",
 		Vars: map[string]any{
-			"tags": tags,
+			"tags":             tags,
+			"netbox_api_token": os.Getenv("NETBOX_API_TOKEN_PRODUCTION"),
 		},
 	}
 

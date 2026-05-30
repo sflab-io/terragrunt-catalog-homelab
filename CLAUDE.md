@@ -151,7 +151,7 @@ export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 export TF_VAR_dns_key_secret="your-tsig-key-secret"
 
 # Set NetBox API token (required for NetBox modules)
-export NETBOX_API_TOKEN="your-netbox-api-token"
+export NETBOX_API_TOKEN_PRODUCTION="your-netbox-api-token"
 ```
 
 ### Mise Tasks
@@ -956,12 +956,11 @@ Sensitive credentials are stored in `.creds.env.yaml` (SOPS-encrypted):
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`: MinIO service account for Terragrunt backend
 - `PROXMOX_VE_API_TOKEN`: Proxmox API token for bpg/proxmox provider
 - `DNS_TSIG_KEY_SECRET`: TSIG key secret for DNS dynamic updates
-- `NETBOX_API_TOKEN`: NetBox API token for NetBox provider
+- `NETBOX_API_TOKEN_PRODUCTION`: NetBox API token for NetBox provider (injected directly into generated provider block via `get_env()`)
 
 **Module-specific variables** can be passed via:
 
 - `TF_VAR_*` environment variables (e.g., `TF_VAR_dns_key_secret`)
-- `NETBOX_API_TOKEN` environment variable (for NetBox provider authentication)
 - CLI arguments (e.g., `-var="dns_key_secret=..."`)
 - Terragrunt `extra_arguments` block (see "Passing Variables to Modules" section)
 
@@ -969,7 +968,7 @@ Example:
 
 ```bash
 export TF_VAR_dns_key_secret="your-tsig-key-secret"
-export NETBOX_API_TOKEN="your-netbox-api-token"
+export NETBOX_API_TOKEN_PRODUCTION="your-netbox-api-token"
 terragrunt apply
 ```
 

@@ -6,6 +6,7 @@ locals {
   netbox_config      = read_terragrunt_config(find_in_parent_folders("provider-netbox-config.hcl"))
   server_url         = local.netbox_config.locals.netbox_server_url
   skip_version_check = local.netbox_config.locals.netbox_skip_version_check
+  netbox_token       = local.netbox_config.locals.netbox_token
 }
 
 # Generate Netbox provider block
@@ -16,6 +17,7 @@ generate "provider" {
 provider "netbox" {
   server_url         = "${local.server_url}"
   skip_version_check = ${local.skip_version_check}
+  token              = "${local.netbox_token}"
 }
 EOF
 }
