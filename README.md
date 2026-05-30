@@ -88,6 +88,7 @@ All tools are managed via [mise](https://mise.jdx.dev/):
 - OpenTofu 1.12.1
 - Terragrunt 1.0.6
 - MinIO Client (mc) - latest
+- HashiCorp Vault 1.21.1
 
 ### Required Services
 
@@ -121,6 +122,8 @@ mise install
 ```
 
 ### 3. Configure Credentials
+
+Secrets are managed via HashiCorp Vault and loaded automatically when you enter the project directory (via `scripts/load-vault-secrets.sh` and mise). You can also set them manually:
 
 ```bash
 # Set MinIO credentials (for state backend)
@@ -210,9 +213,11 @@ terragrunt stack run apply
 │   │   └── stacks/     # Stack examples
 │   └── tofu/           # Direct OpenTofu examples
 ├── keys/                # SSH public keys for VMs
-│   ├── admin_id_ecdsa.pub
-│   └── ansible_id_ecdsa.pub
+│   └── admin_id_ecdsa.pub
+├── scripts/             # Helper scripts
+│   └── load-vault-secrets.sh  # Vault secret loader (auto-run by mise on enter)
 ├── openspec/            # OpenSpec change management
+├── .teller.yml          # Teller secrets management config
 └── mise.toml           # Tool version management
 ```
 
@@ -414,11 +419,11 @@ The DNS module supports both normal and wildcard DNS records.
 
 #### Record Types
 
-- **Normal Record**: Creates `{env}-{app}.home.sflab.io`
-  - Example: `dev-web.home.sflab.io`
-- **Wildcard Record**: Creates `*.{env}-{app}.home.sflab.io`
-  - Example: `*.dev-web.home.sflab.io`
-  - Matches: `api.dev-web.home.sflab.io`, `anything.dev-web.home.sflab.io`, etc.
+- **Normal Record**: Creates `{app}-{env}.home.sflab.io` (non-prod) or `{app}.home.sflab.io` (prod)
+  - Example: `web-dev.home.sflab.io` (env=dev, app=web)
+- **Wildcard Record**: Creates `*.{app}-{env}.home.sflab.io`
+  - Example: `*.web-dev.home.sflab.io`
+  - Matches: `api.web-dev.home.sflab.io`, `anything.web-dev.home.sflab.io`, etc.
 
 #### DNS Configuration Examples
 
@@ -429,7 +434,7 @@ unit "dns" {
   values = {
     env          = "dev"
     app          = "web"
-    zone         = "home.sflab.io."
+    zone         = "home.sflab.io"
     compute_path = "../proxmox-lxc"
   }
 }
@@ -442,7 +447,7 @@ unit "dns_wildcard" {
   values = {
     env          = "dev"
     app          = "web"
-    zone         = "home.sflab.io."
+    zone         = "home.sflab.io"
     record_types = {
       normal   = false
       wildcard = true
@@ -459,10 +464,10 @@ unit "dns_both" {
   values = {
     env          = "dev"
     app          = "web"
-    zone         = "home.sflab.io."
+    zone         = "home.sflab.io"
     record_types = {
-      normal   = true   # Creates dev-web.home.sflab.io
-      wildcard = true   # Creates *.dev-web.home.sflab.io
+      normal   = true   # Creates web-dev.home.sflab.io
+      wildcard = true   # Creates *.web-dev.home.sflab.io
     }
     compute_path = "../proxmox-lxc"
   }
@@ -473,10 +478,10 @@ unit "dns_both" {
 
 ```bash
 # Verify normal record
-dig dev-web.home.sflab.io @192.168.1.13
+dig web-dev.home.sflab.io @192.168.1.13
 
 # Verify wildcard record
-dig api.dev-web.home.sflab.io @192.168.1.13
+dig api.web-dev.home.sflab.io @192.168.1.13
 ```
 
 ### Working with NetBox
@@ -566,6 +571,7 @@ Deploy virtual machines via template cloning.
 - `ipv4`: VM IP address
 - `vm_id`: Proxmox VM ID
 - `vm_name`: VM name
+- `disk`: Disk size in GB
 
 ### proxmox-pool
 
@@ -610,7 +616,7 @@ Standardized resource naming using the homelab provider.
 - `app` (string): Application name
 
 **Outputs:**
-- `generated_name`: Generated name (format: `{env}-{app}`)
+- `generated_name`: Generated name (format: `{app}-{env}` for non-prod, `{app}` for prod)
 
 ### netbox-virtual-machine
 
@@ -627,6 +633,9 @@ Manages virtual machine records in NetBox with interfaces and IP addresses.
 
 **Unit Inputs:**
 - `dns_path` (string): Relative path to the DNS unit (used to retrieve the IP address)
+
+**Outputs:**
+- `vm_names`: List of created NetBox virtual machine names
 
 **Note:** The unit (`units/netbox-virtual-machine`) depends on the DNS unit output to automatically populate the VM interface IP address. The `units/netbox-virtual-machine-direct` variant accepts a `virtual_machines` list with full interface details directly, bypassing the DNS dependency.
 
@@ -744,7 +753,7 @@ locals {
   environment_name = "staging"
   pool_id          = get_env("TERRATEST_POOL_ID", "example-stack-pool")
   catalog_version  = "main"
-  zone             = "home.sflab.io."
+  zone             = "home.sflab.io"
   admin_ssh_public_key_path   = "${get_repo_root()}/keys/admin_id_ecdsa.pub"
   ansible_ssh_public_key_path = "${get_repo_root()}/keys/ansible_id_ecdsa.pub"
 }
@@ -801,11 +810,11 @@ netbox_skip_version_check = true
 
 The repository uses pre-commit hooks to maintain code quality:
 
+- **check-catalog-version**: Enforces `catalog_version = "main"` on the main branch
 - **gitleaks**: Detects hardcoded secrets
 - **fix end of files**: Ensures files end with newline
 - **trim trailing whitespace**: Removes trailing whitespace
 - **OpenTofu fmt**: Formats .tf files
-- **OpenTofu validate**: Validates module syntax
 
 Hooks are automatically installed when you enter the project directory.
 

@@ -15,6 +15,7 @@ Managed via mise (mise.toml):
 - **OpenTofu**: 1.12.1
 - **Terragrunt**: 1.0.6
 - **MinIO Client (mc)**: latest
+- **Vault**: 1.21.1
 
 Run `mise install` to install all required tools.
 
@@ -90,9 +91,9 @@ Units and stacks use Git URLs in their `source` field because they are designed 
 
 **Root Configuration** (`examples/terragrunt/root.hcl`):
 
-- Defines shared locals for S3 backend and provider configuration
-- Reads from `backend-config.hcl`, `provider-proxmox-config.hcl`, and `provider-dns-config.hcl`
-- Generates `backend.tf` and `provider.tf` for all child modules
+- Defines shared locals for S3 backend configuration
+- Reads from `backend-config.hcl` and generates `backend.tf` for all child modules
+- Provider configs (`provider-proxmox-config.hcl`, `provider-dns-config.hcl`, `provider-netbox-config.hcl`) are included individually by each unit that needs them
 - All units must include this via `include "root"`
 
 **Backend Configuration** (`examples/terragrunt/backend-config.hcl`):
@@ -129,7 +130,7 @@ Units and stacks use Git URLs in their `source` field because they are designed 
 - Defines environment-wide shared variables for all stacks and units in the examples directory
 - `environment_name`: Environment label (e.g., "staging")
 - `pool_id`: Shared Proxmox pool ID for examples; reads from env var `TERRATEST_POOL_ID`, falls back to `"example-stack-pool"`
-- `catalog_version`: Version ref for catalog units/stacks (default: `"feat/<feature name>"` in examples; use `"main"` for stable)
+- `catalog_version`: Version ref for catalog units/stacks (default: `"main"` on the main branch; use a feature branch ref like `"feat/<feature name>"` during development — a pre-commit hook enforces `"main"` on the main branch)
 - `zone`: DNS zone for records (e.g., "home.sflab.io.")
 - `admin_ssh_public_key_path`: Absolute path to admin SSH public key (`${get_repo_root()}/keys/admin_id_ecdsa.pub`)
 - `ansible_ssh_public_key_path`: Absolute path to Ansible SSH public key (`${get_repo_root()}/keys/ansible_id_ecdsa.pub`)
@@ -374,7 +375,7 @@ Examples:
 - `units/netbox-tags/terragrunt.hcl`: NetBox tags unit (creates tags idempotently; accepts `tags` list)
 - `units/netbox-k8s-cluster/terragrunt.hcl`: NetBox K8s cluster unit (accepts `clusters` list; used by `stacks/homelab-netbox-k8s-cluster`)
 
-**NetBox Unit Pattern**: The `netbox-virtual-machine`, `netbox-virtual-machine-direct`, `netbox-tags`, and `netbox-k8s-cluster` units include both `root` and `provider_netbox` configs. The `provider_netbox` include reads `provider-netbox-config.hcl` and generates a netbox provider block. The `netbox-virtual-machine` unit accepts a `dns_path` value to create a dependency on the DNS unit for IP address retrieval. The `netbox-virtual-machine-direct` unit accepts a `virtual_machines` list with full interface details directly, bypassing the DNS dependency. The `netbox-k8s-cluster` unit accepts a `clusters` list directly.
+**NetBox Unit Pattern**: The `netbox-virtual-machine`, `netbox-virtual-machine-direct`, `netbox-tags`, and `netbox-k8s-cluster` units include both `root` and `provider_netbox` configs. The `provider_netbox` include reads `provider-netbox-config.hcl` and generates a netbox provider block. The `netbox-virtual-machine` unit accepts a `dns_path` value to create a dependency on the DNS unit for IP address retrieval. It also optionally accepts a `cluster_path` value to create a dependency on a `netbox-k8s-cluster` unit for automatic cluster assignment. The `netbox-virtual-machine-direct` unit accepts a `virtual_machines` list with full interface details directly, bypassing the DNS dependency. The `netbox-k8s-cluster` unit accepts a `clusters` list directly.
 
 ### Adding New Stacks
 
@@ -391,7 +392,7 @@ Examples:
 
 Examples in `stacks/` (production stacks using Git URLs):
 - `stacks/homelab-proxmox-lxc/`: LXC container + DNS + NetBox VM (3 units; pool_id is passed as a value)
-- `stacks/homelab-proxmox-vm/`: Virtual machine + DNS + NetBox VM (3 units; pool_id is passed as a value)
+- `stacks/homelab-proxmox-vm/`: Virtual machine + DNS + NetBox VM (3 units; pool_id is passed as a value; supports optional `cpu_type`, `tags`, `extra_tags`, and `cluster_stack_path` for automatic K8s cluster assignment in NetBox)
 - `stacks/homelab-netbox-virtual-machine/`: Standalone NetBox VM records stack (uses `netbox-virtual-machine-direct` unit; accepts `virtual_machines` list directly without compute/DNS dependency)
 - `stacks/homelab-netbox-k8s-cluster/`: Standalone K8s cluster records stack (uses `netbox-k8s-cluster` unit; accepts `clusters` list directly)
 
@@ -504,7 +505,7 @@ unit "netbox_virtual_machine" {
 
     virtual_machines = [
       {
-        name         = "${local.env}-${local.app}"
+        name         = "${local.app}-${local.env}"
         cluster_name = local.cluster_name
         description  = "LXC container for ${local.app} in ${local.env} environment"
         role_name    = local.role_name
@@ -513,6 +514,7 @@ unit "netbox_virtual_machine" {
         vcpus        = local.cores
         memory_mb    = local.memory
         disk_size_mb = local.disk_size
+        tags         = ["${local.app}-${local.env}"]
       }
     ]
     dns_path = "../dns"
@@ -678,7 +680,7 @@ unit "proxmox_vm" {
 
 **Available SSH Keys** (in `keys/` directory):
 - `admin_id_ecdsa.pub`: ECDSA public key for admin user SSH access
-- `ansible_id_ecdsa.pub`: ECDSA public key for Ansible user SSH access (referenced in `environment.hcl` but must be provisioned separately if needed)
+- `ansible_id_ecdsa.pub`: ECDSA public key for Ansible user SSH access (referenced in `environment.hcl` as `ansible_ssh_public_key_path` but the key file is not committed and must be provisioned separately)
 
 ### Wildcard DNS Records
 
@@ -781,7 +783,6 @@ terragrunt apply
 - State is stored in MinIO (S3-compatible storage)
 - Bucket naming: `${prefix}-tfstates`
 - State files: `${path_relative_to_include()}/tofu.tfstate`
-- Locking is enabled via `use_lockfile = true`
 
 ### Generated Files
 
@@ -894,7 +895,8 @@ Current modules support:
 - **NetBox Virtual Machine** (`modules/netbox-virtual-machine`): Manages VM records in NetBox
   - Required inputs: `virtual_machines` (list with name/cluster_name/optional description/tags/extra_tags/role_name/tenant_name/vcpus/memory_mb/disk_size_mb, and interfaces with name/address/status/dns_name)
   - `tags`: inline tags to create alongside the VM; `extra_tags`: pre-existing tags looked up by name
-  - The unit (`units/netbox-virtual-machine`) accepts a `dns_path` to retrieve the IP address from the DNS unit output
+  - Outputs: `vm_names` (list of created VM names)
+  - The unit (`units/netbox-virtual-machine`) accepts a `dns_path` to retrieve the IP address from the DNS unit output, and an optional `cluster_path` to link VMs to a K8s cluster unit
 - **NetBox Tags** (`modules/netbox-tags`): Creates tags in NetBox idempotently
   - Provider: `e-breuninger/netbox` (~> 5.1.0)
   - Required inputs: `tags` (list of tag name strings, default: `[]`)
@@ -934,13 +936,13 @@ This repository uses the **bpg/proxmox** provider (version >= 0.69.0), not the o
 
 ### Pre-commit Hooks
 
-The repository uses pre-commit hooks to maintain code quality:
+The repository uses pre-commit hooks to maintain code quality (defined in `.pre-commit-config.yaml`):
 
+- **check-catalog-version**: Enforces that `catalog_version = "main"` in `environment.hcl` when committing to the `main` branch (implemented via `.hooks/check_catalog_version.sh`)
 - **gitleaks**: Detects hardcoded secrets and credentials
 - **fix end of files**: Ensures files end with a newline
 - **trim trailing whitespace**: Removes trailing whitespace
 - **OpenTofu fmt**: Formats all .tf files
-- **OpenTofu validate**: Validates Terraform module syntax and configuration
 
 Hooks run automatically on commit. To run manually:
 
@@ -950,13 +952,15 @@ pre-commit run --all-files
 
 ### Environment Variables
 
-Sensitive credentials are stored in `.creds.env.yaml` (SOPS-encrypted):
+Sensitive credentials are loaded from Vault via Teller on directory entry (`scripts/load-vault-secrets.sh` is sourced automatically by mise). Additional values can be provided via `.creds.env.yaml` (loaded by mise `[env] _.file`):
 
 - `MINIO_USERNAME`, `MINIO_PASSWORD`: MinIO admin credentials
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`: MinIO service account for Terragrunt backend
 - `PROXMOX_VE_API_TOKEN`: Proxmox API token for bpg/proxmox provider
 - `DNS_TSIG_KEY_SECRET`: TSIG key secret for DNS dynamic updates
 - `NETBOX_API_TOKEN_PRODUCTION`: NetBox API token for NetBox provider (injected directly into generated provider block via `get_env()`)
+- `VAULT_ADDR`: HashiCorp Vault address (defaults to `https://vault.home.sflab.io:8200`)
+- `VAULT_TOKEN` / `VAULT_ROLE_ID`: Vault authentication credentials (used by `load-vault-secrets.sh`)
 
 **Module-specific variables** can be passed via:
 
