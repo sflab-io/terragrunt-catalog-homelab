@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-05-31
+
+### Added
+
+- Technitium DNS TSIG key (`tsig_key_name`, `tsig_key_secret`) is now loaded automatically from HashiCorp Vault via Teller — no manual export required when entering the project directory
+
+### Changed
+
+- DNS TSIG key secret environment variable renamed from `TF_VAR_dns_key_secret` to `TECHNITIUM_TSIG_KEY_SECRET` — update any local exports or CI/CD secrets accordingly
+
 ## [0.20.0] - 2026-05-30
 
 ### Added
