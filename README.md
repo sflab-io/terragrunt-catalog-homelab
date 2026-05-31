@@ -94,7 +94,7 @@ All tools are managed via [mise](https://mise.jdx.dev/):
 
 - **Proxmox VE**: Version 8.x (configured with API access)
 - **MinIO**: S3-compatible storage for Terragrunt state
-- **BIND9 DNS Server**: For dynamic DNS updates (optional)
+- **Technitium DNS Server** (or any RFC 2136-compatible DNS server): For dynamic DNS updates (optional)
 - **NetBox**: DCIM/IPAM platform (optional, for NetBox modules)
 
 ### SSH Keys for VMs
@@ -135,7 +135,7 @@ export AWS_SECRET_ACCESS_KEY="your-secret-key"
 export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # Set DNS TSIG key secret (if using DNS module)
-export TF_VAR_dns_key_secret="your-tsig-key-secret"
+export TECHNITIUM_TSIG_KEY_SECRET="your-tsig-key-secret"
 
 # Set NetBox API token (if using NetBox modules)
 export NETBOX_API_TOKEN_PRODUCTION="your-netbox-api-token"
@@ -236,7 +236,7 @@ export AWS_SECRET_ACCESS_KEY="your-minio-secret-key"
 export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # DNS TSIG Key (required only when using DNS module)
-export TF_VAR_dns_key_secret="your-tsig-key-secret"
+export TECHNITIUM_TSIG_KEY_SECRET="your-tsig-key-secret"
 
 # NetBox API Token (required only when using NetBox modules)
 export NETBOX_API_TOKEN_PRODUCTION="your-netbox-api-token"
@@ -593,7 +593,7 @@ Manage DNS A records on BIND9 servers via RFC 2136 dynamic updates.
 **Required Inputs:**
 - `env` (string): Environment name
 - `app` (string): Application name
-- `zone` (string): DNS zone (e.g., "home.sflab.io.")
+- `zone` (string): DNS zone (e.g., "home.sflab.io") — without trailing dot (module appends it)
 - `addresses` (list(string)): List of IPv4 addresses
 
 **Optional Inputs:**
@@ -687,11 +687,17 @@ mise run terragrunt:stack:plan      # Quick plan for stacks
 mise run terragrunt:stack:destroy   # Quick destroy for stacks
 mise run terragrunt:stack:generate  # Generate stack locally
 
-# Testing
+# Testing (mise tasks)
 mise run test:all -- -t             # Run only tofu module tests
 mise run test:all -- -u             # Run only terragrunt unit tests
 mise run test:all -- -s             # Run only terragrunt stack tests
 mise run test:all -- -a             # Run all tests
+
+# Testing (Terratest / Go-based)
+mise run test:terratest             # Run all Terratest tests
+mise run test:terratest -d tofu     # Only module tests
+mise run test:terratest -n TestAll/ModuleNaming  # Single test by name
+mise run test:terratest -f          # Force-bypass test cache
 
 # Direct OpenTofu Operations (Interactive or with target)
 mise run tofu:init                  # Initialize OpenTofu modules
@@ -826,6 +832,8 @@ pre-commit run --all-files
 
 ### Running Tests
 
+#### Integration Tests (mise tasks)
+
 ```bash
 # Run all tests
 mise run test:all -- -a
@@ -841,6 +849,24 @@ mise run test:all -- -s
 ```
 
 **Note**: Stack tests require all changes to be committed and pushed to GitHub because they fetch units from the remote repository.
+
+#### Terratest (Go-based tests)
+
+```bash
+# Run all Terratest tests
+mise run test:terratest
+
+# Run tests for a specific layer
+mise run test:terratest -d tofu                 # Module tests only
+mise run test:terratest -d terragrunt/units     # Unit tests only
+mise run test:terratest -d terragrunt/stacks    # Stack tests only
+
+# Run a specific test by name
+mise run test:terratest -n TestAll/ModuleNaming
+
+# Force-bypass test cache
+mise run test:terratest -f
+```
 
 ### Adding New Modules
 

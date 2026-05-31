@@ -80,7 +80,7 @@ The `examples/` directory contains working examples for local testing:
 
 **Direct OpenTofu Examples** (`examples/tofu/`):
 - Direct module usage without Terragrunt wrappers
-- Available examples: `proxmox-lxc`, `proxmox-vm`, `proxmox-pool`, `dns`, `naming`, `netbox`, `netbox-tags`, `netbox-virtual-machine`
+- Available examples: `proxmox-lxc`, `proxmox-vm`, `proxmox-pool`, `dns`, `naming`, `netbox`, `netbox-tags`, `netbox-virtual-machine`, `netbox-k8s-cluster`
 - Useful for testing modules independently
 - Use relative paths to reference modules (e.g., `../../../modules/proxmox-lxc`)
 
@@ -131,7 +131,7 @@ Units and stacks use Git URLs in their `source` field because they are designed 
 - `environment_name`: Environment label (e.g., "staging")
 - `pool_id`: Shared Proxmox pool ID for examples; reads from env var `TERRATEST_POOL_ID`, falls back to `"example-stack-pool"`
 - `catalog_version`: Version ref for catalog units/stacks (default: `"main"` on the main branch; use a feature branch ref like `"feat/<feature name>"` during development — a pre-commit hook enforces `"main"` on the main branch)
-- `zone`: DNS zone for records (e.g., "home.sflab.io.")
+- `zone`: DNS zone for records (e.g., "home.sflab.io") — without trailing dot (the DNS module appends it automatically)
 - `admin_ssh_public_key_path`: Absolute path to admin SSH public key (`${get_repo_root()}/keys/admin_id_ecdsa.pub`)
 - `ansible_ssh_public_key_path`: Absolute path to Ansible SSH public key (`${get_repo_root()}/keys/ansible_id_ecdsa.pub`)
 
@@ -149,7 +149,7 @@ export AWS_SECRET_ACCESS_KEY="your-secret-key"
 export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # Set DNS TSIG key secret (required for DNS module)
-export TF_VAR_dns_key_secret="your-tsig-key-secret"
+export TECHNITIUM_TSIG_KEY_SECRET="your-tsig-key-secret"
 
 # Set NetBox API token (required for NetBox modules)
 export NETBOX_API_TOKEN_PRODUCTION="your-netbox-api-token"
@@ -202,7 +202,6 @@ mise run test:all -- -a  # Run all tests
 
 # Run Terratest (Go-based) tests
 mise run test:terratest                    # Run all Terratest tests
-mise run test:terratest TestModuleNaming   # Run a specific test by name
 
 # Direct OpenTofu commands for examples/tofu (interactive selection or specify target)
 mise run tofu:init        # Interactive menu
@@ -261,7 +260,7 @@ cd examples/terragrunt/stacks/homelab-proxmox-vm
 export AWS_ACCESS_KEY_ID="your-minio-access-key"
 export AWS_SECRET_ACCESS_KEY="your-minio-secret-key"
 export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx"
-export TF_VAR_dns_key_secret="your-tsig-key-secret"
+export TECHNITIUM_TSIG_KEY_SECRET="your-tsig-key-secret"
 
 # Generate and deploy VM stack
 terragrunt stack generate
@@ -535,7 +534,7 @@ unit "netbox_virtual_machine" {
 **DNS Stack Integration:**
 
 - The `dns` unit registers the container/VM IP address in DNS after creation
-- Set `TF_VAR_dns_key_secret` environment variable before deploying the stack
+- Set `TECHNITIUM_TSIG_KEY_SECRET` environment variable before deploying the stack
 - The DNS unit uses `compute_path` to create a dependency on the LXC or VM unit
 - Execution order: `proxmox_lxc`/`proxmox_vm` → `dns` → `netbox_virtual_machine` (automatic via dependencies)
 - After deployment, resources are resolvable at `${app}-${env}.home.sflab.io` (non-prod) or `${app}.home.sflab.io` (prod)
@@ -547,7 +546,7 @@ unit "netbox_virtual_machine" {
 export AWS_ACCESS_KEY_ID="your-minio-access-key"
 export AWS_SECRET_ACCESS_KEY="your-minio-secret-key"
 export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx"
-export TF_VAR_dns_key_secret="your-tsig-key-secret"
+export TECHNITIUM_TSIG_KEY_SECRET="your-tsig-key-secret"
 
 # Navigate to stack directory
 cd examples/terragrunt/stacks/homelab-proxmox-lxc
@@ -597,7 +596,7 @@ Both modules (proxmox-vm and proxmox-lxc) follow a single-instance pattern. To d
      values = {
        env          = "dev"
        app          = "web-1"
-       zone         = "home.sflab.io."
+       zone         = "home.sflab.io"
        compute_path = "../proxmox-vm-1"
      }
    }
@@ -608,7 +607,7 @@ Both modules (proxmox-vm and proxmox-lxc) follow a single-instance pattern. To d
      values = {
        env          = "dev"
        app          = "web-2"
-       zone         = "home.sflab.io."
+       zone         = "home.sflab.io"
        compute_path = "../proxmox-vm-2"
      }
    }
@@ -706,7 +705,7 @@ unit "dns_wildcard" {
   values = {
     env          = "dev"
     app          = "web"
-    zone         = "home.sflab.io."
+    zone         = "home.sflab.io"
     record_types = {
       normal   = false
       wildcard = true
@@ -723,7 +722,7 @@ unit "dns_both" {
   values = {
     env          = "dev"
     app          = "web"
-    zone         = "home.sflab.io."
+    zone         = "home.sflab.io"
     record_types = {
       normal   = true   # Creates web-dev.home.sflab.io
       wildcard = true   # Creates *.web-dev.home.sflab.io
@@ -859,7 +858,7 @@ Current modules support:
   - Required inputs:
     - `env` (string): Environment name (e.g., "dev", "staging", "prod")
     - `app` (string): Application name (e.g., "web", "db", "api")
-    - `zone` (string): DNS zone name (e.g., "home.sflab.io.")
+    - `zone` (string): DNS zone name (e.g., "home.sflab.io") — without trailing dot (module appends it)
     - `addresses` (list(string)): List of IPv4 addresses
   - Optional inputs:
     - `ttl` (number, default: 300)
@@ -875,7 +874,7 @@ Current modules support:
     - TSIG Key: `ddnskey.` (fully-qualified with trailing dot)
     - Algorithm: `hmac-sha256`
     - Authentication: Uses TSIG (Transaction Signature) for secure dynamic DNS updates
-    - Secret: Passed via `TF_VAR_dns_key_secret` environment variable
+    - Secret: Passed via `TECHNITIUM_TSIG_KEY_SECRET` environment variable
 
 **Naming Resources:**
 
@@ -957,21 +956,23 @@ Sensitive credentials are loaded from Vault via Teller on directory entry (`scri
 - `MINIO_USERNAME`, `MINIO_PASSWORD`: MinIO admin credentials
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`: MinIO service account for Terragrunt backend
 - `PROXMOX_VE_API_TOKEN`: Proxmox API token for bpg/proxmox provider
-- `DNS_TSIG_KEY_SECRET`: TSIG key secret for DNS dynamic updates
-- `NETBOX_API_TOKEN_PRODUCTION`: NetBox API token for NetBox provider (injected directly into generated provider block via `get_env()`)
+- `TECHNITIUM_TSIG_KEY_NAME`: TSIG key name for DNS dynamic updates (loaded from Vault via Teller)
+- `TECHNITIUM_TSIG_KEY_SECRET`: TSIG key secret for DNS dynamic updates (loaded from Vault via Teller)
+- `NETBOX_API_TOKEN_PRODUCTION`: NetBox API token for production NetBox (injected directly into generated provider block via `get_env()`)
+- `NETBOX_API_TOKEN_STAGING`: NetBox API token for staging NetBox (loaded from Vault via Teller)
 - `VAULT_ADDR`: HashiCorp Vault address (defaults to `https://vault.home.sflab.io:8200`)
 - `VAULT_TOKEN` / `VAULT_ROLE_ID`: Vault authentication credentials (used by `load-vault-secrets.sh`)
 
 **Module-specific variables** can be passed via:
 
-- `TF_VAR_*` environment variables (e.g., `TF_VAR_dns_key_secret`)
-- CLI arguments (e.g., `-var="dns_key_secret=..."`)
+- `TF_VAR_*` environment variables
+- CLI arguments (e.g., `-var="some_var=..."`)
 - Terragrunt `extra_arguments` block (see "Passing Variables to Modules" section)
 
 Example:
 
 ```bash
-export TF_VAR_dns_key_secret="your-tsig-key-secret"
+export TECHNITIUM_TSIG_KEY_SECRET="your-tsig-key-secret"
 export NETBOX_API_TOKEN_PRODUCTION="your-netbox-api-token"
 terragrunt apply
 ```
