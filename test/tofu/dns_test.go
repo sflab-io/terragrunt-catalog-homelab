@@ -2,6 +2,7 @@ package tofu_test
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -24,6 +25,9 @@ func testModuleDns(t *testing.T) {
 			"env":     env,
 			"zone":    zone,
 			"address": address,
+		},
+		EnvVars: map[string]string{
+			"TF_VAR_technitium_tsig_key_secret": os.Getenv("TECHNITIUM_TSIG_KEY_SECRET"),
 		},
 	}
 

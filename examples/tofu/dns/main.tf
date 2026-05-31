@@ -18,11 +18,11 @@ provider "dns" {
     port          = 53
     key_name      = "ddnskey."
     key_algorithm = "hmac-sha256"
-    key_secret    = var.dns_key_secret
+    key_secret    = var.technitium_tsig_key_secret
   }
 }
 
-variable "dns_key_secret" {
+variable "technitium_tsig_key_secret" {
   description = "TSIG key secret for DNS updates."
   type        = string
   sensitive   = true
