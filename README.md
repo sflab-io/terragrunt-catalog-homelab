@@ -71,7 +71,7 @@ This repository provides a three-layer architecture for managing infrastructure 
 - **proxmox-vm**: Deploy virtual machines via template cloning
 - **proxmox-pool**: Create and manage Proxmox resource pools
 - **dns**: Manage DNS A records (normal and wildcard)
-- **naming**: Standardized resource naming (format: `{env}-{app}`)
+- **naming**: Standardized resource naming (format: `{app}-{env}`)
 
 **NetBox:**
 - **netbox-virtual-machine**: Manage virtual machine records in NetBox (auto-registered via dns dependency)
@@ -380,6 +380,7 @@ unit "proxmox_vm" {
       cidr        = 24
       gateway     = "192.168.1.1"
       dns_servers = ["8.8.8.8", "8.8.4.4"]  # Optional
+      domain      = "home.sflab.io"           # Optional, default: "home.sflab.io"
     }
   }
 }
@@ -544,7 +545,7 @@ Deploy Ubuntu 24.04 LXC containers on Proxmox.
 - `memory` (number, default: 2048): Memory in MB
 - `cores` (number, default: 2): CPU cores
 - `pool_id` (string): Proxmox pool ID for resource organization
-- `network_config` (object): Network configuration (DHCP or static)
+- `network_config` (object): Network configuration (DHCP or static); supports optional `domain` field (default: `"home.sflab.io"`)
 - `network_bridge` (string, default: "vmbr0"): Network bridge to connect to
 
 **Outputs:**
@@ -562,10 +563,12 @@ Deploy virtual machines via template cloning.
 **Optional Inputs:**
 - `memory` (number, default: 2048): Memory in MB
 - `cores` (number, default: 2): CPU cores
+- `cpu_type` (string, default: "qemu64"): CPU type (e.g., "host", "qemu64", "x86-64-v2-AES")
 - `disk_size` (number, default: 8): Disk size in GB
 - `pool_id` (string): Proxmox pool ID
-- `network_config` (object): Network configuration (DHCP or static)
+- `network_config` (object): Network configuration (DHCP or static); supports optional `domain` field (default: `"home.sflab.io"`)
 - `username` (string, default: "admin"): SSH username
+- `network_bridge` (string, default: "vmbr0"): Network bridge to connect to
 
 **Outputs:**
 - `ipv4`: VM IP address
@@ -599,8 +602,8 @@ Manage DNS A records on BIND9 servers via RFC 2136 dynamic updates.
 **Optional Inputs:**
 - `ttl` (number, default: 300): DNS record TTL
 - `record_types` (object): Control which DNS record types to create
-  - `normal` (bool, default: true): Create `{env}-{app}` record
-  - `wildcard` (bool, default: false): Create `*.{env}-{app}` record
+  - `normal` (bool, default: true): Create `{app}-{env}` record
+  - `wildcard` (bool, default: false): Create `*.{app}-{env}` record
 
 **Outputs:**
 - `fqdn`: Normal record FQDN (null if not created)

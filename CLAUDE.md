@@ -642,6 +642,7 @@ unit "proxmox_vm" {
       cidr        = 24
       gateway     = "192.168.1.1"
       dns_servers = ["8.8.8.8", "8.8.4.4"]  # Optional
+      domain      = "home.sflab.io"           # Optional, default: "home.sflab.io"
     }
   }
 }
@@ -811,7 +812,7 @@ Current modules support:
     - `memory` (number, default: 2048) - Memory allocation in MB
     - `cores` (number, default: 2) - CPU cores
     - `pool_id` (string, default: "") - Assigns container to pool via pool_membership resource
-    - `network_config` (object, default: DHCP) - Network configuration supporting both DHCP and static IP (same structure as proxmox-vm)
+    - `network_config` (object, default: DHCP) - Network configuration supporting both DHCP and static IP (same structure as proxmox-vm); optional `domain` field (default: `"home.sflab.io"`)
     - `network_bridge` (string, default: "vmbr0") - Network bridge to connect to
   - Network interface: `veth0` on `vmbr0` bridge (DHCP by default, static IP supported)
   - Disk: 8GB on `local-lvm` datastore (fixed size)
@@ -834,7 +835,7 @@ Current modules support:
     - `cpu_type` (string, default: "qemu64") - CPU type (e.g., "qemu64", "host", "x86-64-v2-AES")
     - `disk_size` (number, default: 8) - Disk size in GB
     - `pool_id` (string, default: "") - Assigns VM to pool via pool_membership resource
-    - `network_config` (object, default: DHCP) - Network configuration supporting both DHCP and static IP
+    - `network_config` (object, default: DHCP) - Network configuration supporting both DHCP and static IP; optional `domain` field (default: `"home.sflab.io"`)
     - `username` (string, default: "admin") - Username for SSH access
     - `network_bridge` (string, default: "vmbr0") - Network bridge to connect to
   - Configuration: Clones from template VM 9002 on `pve1` node
@@ -979,4 +980,4 @@ terragrunt apply
 
 ## Important Reminders
 
-- Do not add any 'DNS TSIG Key Setup' instructions to CLUADE.md because the setup is done in a separate Ansible project
+- Do not add any 'DNS TSIG Key Setup' instructions to CLAUDE.md because the setup is done in a separate Ansible project
