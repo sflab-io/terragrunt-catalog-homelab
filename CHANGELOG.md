@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-06-04
+
+### Added
+
+- `VAULT_ADDR` is now set automatically via mise — no manual export required when entering the project directory
+- Vault AppRole login support via `mise run vault:login` for non-interactive authentication
+
+### Changed
+
+- Vault KV secrets loading migrated from Teller to `fnox` — run `mise install` to install the `fnox` tool; `.teller.yml` is no longer used
+- Environment variables renamed: `NETBOX_API_TOKEN_PRODUCTION` → `NETBOX_API_TOKEN`, `TECHNITIUM_TSIG_KEY_NAME` → `TSIG_KEY_NAME`, `TECHNITIUM_TSIG_KEY_SECRET` → `TSIG_KEY_SECRET` — update any local overrides or CI/CD secrets accordingly
+
 ## [0.21.0] - 2026-05-31
 
 ### Added
@@ -107,7 +119,9 @@ No user-facing changes — this version tag was created on the same commit as `v
 
 - Configurable `cpu_type` parameter for the `proxmox-vm` module, unit, and stack — allows specifying CPU types such as `host` or `qemu64` instead of the previous hardcoded default
 
-[Unreleased]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.20.0...HEAD
+[Unreleased]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.22.0...HEAD
+[0.22.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.21.0...v0.22.0
+[0.21.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/sflab-io/terragrunt-catalog-homelab/compare/v0.17.0...v0.18.0
