@@ -18,7 +18,7 @@ provider "dns" {
     port          = "${include.dns-config.locals.dns_port}"
     key_name      = "${include.dns-config.locals.key_name}"
     key_algorithm = "${include.dns-config.locals.key_algorithm}"
-    key_secret    = "${get_env("TECHNITIUM_TSIG_KEY_SECRET", "mock-secret-for-testing")}"
+    key_secret    = "${get_env("TSIG_KEY_SECRET", "mock-secret-for-testing")}"
   }
 }
 EOF

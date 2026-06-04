@@ -19,7 +19,7 @@ func testModuleNetboxVirtualMachine(t *testing.T) {
 		TerraformBinary: "tofu",
 		Vars: map[string]any{
 			"vm_name":          vmName,
-			"netbox_api_token": os.Getenv("NETBOX_API_TOKEN_PRODUCTION"),
+			"netbox_api_token": os.Getenv("NETBOX_API_TOKEN"),
 		},
 	}
 

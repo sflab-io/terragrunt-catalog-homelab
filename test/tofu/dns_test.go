@@ -27,7 +27,7 @@ func testModuleDns(t *testing.T) {
 			"address": address,
 		},
 		EnvVars: map[string]string{
-			"TF_VAR_technitium_tsig_key_secret": os.Getenv("TECHNITIUM_TSIG_KEY_SECRET"),
+			"TF_VAR_technitium_tsig_key_secret": os.Getenv("TSIG_KEY_SECRET"),
 		},
 	}
 

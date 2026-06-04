@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# mise description: "Create Vault token from AppRole credentials"
+
+exec "${MISE_PROJECT_ROOT}/.mise/scripts/create-vault_token.sh"

@@ -26,7 +26,7 @@ variable "record_types" {
 }
 
 variable "zone" {
-  description = "The DNS zone name (e.g., 'home.sflab.io'). Must end with a dot."
+  description = "The DNS zone name without trailing dot (e.g., 'home.sflab.io'). The module appends the dot automatically."
   type        = string
 }
 

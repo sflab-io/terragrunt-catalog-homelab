@@ -135,10 +135,10 @@ export AWS_SECRET_ACCESS_KEY="your-secret-key"
 export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # Set DNS TSIG key secret (if using DNS module)
-export TECHNITIUM_TSIG_KEY_SECRET="your-tsig-key-secret"
+export TSIG_KEY_SECRET="your-tsig-key-secret"
 
 # Set NetBox API token (if using NetBox modules)
-export NETBOX_API_TOKEN_PRODUCTION="your-netbox-api-token"
+export NETBOX_API_TOKEN="your-netbox-api-token"
 ```
 
 ### 4. Deploy Your First Container
@@ -214,10 +214,7 @@ terragrunt stack run apply
 │   └── tofu/           # Direct OpenTofu examples
 ├── keys/                # SSH public keys for VMs
 │   └── admin_id_ecdsa.pub
-├── scripts/             # Helper scripts
-│   └── load-vault-secrets.sh  # Vault secret loader (auto-run by mise on enter)
 ├── openspec/            # OpenSpec change management
-├── .teller.yml          # Teller secrets management config
 └── mise.toml           # Tool version management
 ```
 
@@ -236,10 +233,10 @@ export AWS_SECRET_ACCESS_KEY="your-minio-secret-key"
 export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # DNS TSIG Key (required only when using DNS module)
-export TECHNITIUM_TSIG_KEY_SECRET="your-tsig-key-secret"
+export TSIG_KEY_SECRET="your-tsig-key-secret"
 
 # NetBox API Token (required only when using NetBox modules)
-export NETBOX_API_TOKEN_PRODUCTION="your-netbox-api-token"
+export NETBOX_API_TOKEN="your-netbox-api-token"
 ```
 
 ### Working with Units
@@ -492,7 +489,7 @@ NetBox virtual machine records are automatically created as part of the Proxmox 
 Required environment variable for all NetBox operations:
 
 ```bash
-export NETBOX_API_TOKEN_PRODUCTION="your-netbox-api-token"
+export NETBOX_API_TOKEN="your-netbox-api-token"
 ```
 
 #### Automatic NetBox Registration (via Proxmox stacks)

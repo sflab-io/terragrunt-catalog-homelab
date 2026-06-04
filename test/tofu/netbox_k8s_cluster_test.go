@@ -19,7 +19,7 @@ func testModuleNetboxK8sCluster(t *testing.T) {
 		TerraformBinary: "tofu",
 		Vars: map[string]any{
 			"cluster_name":     clusterName,
-			"netbox_api_token": os.Getenv("NETBOX_API_TOKEN_PRODUCTION"),
+			"netbox_api_token": os.Getenv("NETBOX_API_TOKEN"),
 		},
 	}
 
