@@ -19,6 +19,7 @@ Three-layer structure: **modules** (raw OpenTofu) → **units** (Terragrunt wrap
 - Pool management is separate — pass `pool_id` as a value; deploy pools via `examples/terragrunt/stacks/homelab-proxmox-pool`
 - SSH key paths in stacks must be absolute: `"${get_repo_root()}/keys/admin_id_ecdsa.pub"` (relative paths break in `.terragrunt-cache`)
 - `catalog_version` in `examples/terragrunt/environment.hcl` must be `"main"` on main branch (enforced by pre-commit hook)
+- `homelab-wildcard-dns` stack deploys wildcard DNS records independently (no compute dependency); use `dns-wildcard` unit
 
 **DNS:**
 - Zone input is WITHOUT trailing dot — the module appends it automatically
@@ -46,18 +47,67 @@ Vault token at `~/.vault-token` is read on directory entry. If missing: create `
 
 ## Testing
 
+Two test runners exist with different purposes:
+
+### Terratest (Go-based, automated)
+
 Stack tests fetch units from the remote repo — **all changes must be committed and pushed before running stack tests.**
 
 ```bash
-mise run test:terratest                        # All tests
-mise run test:terratest -d tofu               # Module tests only
-mise run test:terratest -d terragrunt/units   # Unit tests only
-mise run test:terratest -d terragrunt/stacks  # Stack tests only (requires pushed commits)
-mise run test:terratest -n TestAll/ModuleDns  # Specific test by name
-mise run test:terratest -f                    # Bypass Go test cache
+mise run test:terratest                              # All tests
+mise run test:terratest -d tofu                     # Module tests only
+mise run test:terratest -d terragrunt/units         # Unit tests only
+mise run test:terratest -d terragrunt/stacks        # Stack tests only (requires pushed commits)
+mise run test:terratest -n TestAll/ModuleDns        # Specific test by name
+mise run test:terratest -f                          # Bypass Go test cache
 ```
 
-Tests are organized as subtests under `TestAll` (e.g., `TestAll/ModuleDns`, `TestAll/UnitDns`, `TestAll/StackHomelabProxmoxLxc`).
+Tests are organized as subtests under `TestAll`. Available subtests:
+- **tofu/**: `ModuleNaming`, `ModuleDns`, `ModuleProxmoxPool`, `ModuleProxmoxLxc`, `ModuleProxmoxVm`, `ModuleNetboxVirtualMachine`, `ModuleNetboxTags`, `ModuleNetboxK8sCluster`
+- **terragrunt/units/**: `UnitNaming`, `UnitDns`, `UnitDnsWildcard`, `UnitProxmoxPool`, `UnitProxmoxVm`, `UnitProxmoxLxc`, `UnitNetboxTags`, `UnitNetboxVirtualMachine`, `UnitNetboxK8sCluster`
+- **terragrunt/stacks/**: `StackHomelabProxmoxLxc`, `StackHomelabProxmoxVm`, `StackHomelabNetboxVirtualMachine`, `StackHomelabNetboxK8sCluster`
+
+### Integration Tests (shell-based, sequential deploy+destroy)
+
+```bash
+mise run test:all -a    # All integration tests
+mise run test:all -t    # Tofu module tests only
+mise run test:all -u    # Terragrunt unit tests only
+mise run test:all -s    # Terragrunt stack tests only
+```
+
+Runs actual apply+destroy cycles in order. A flag is required — running without flags exits with an error.
+
+## Mise Tasks Reference
+
+```bash
+# Terragrunt Units (examples/terragrunt/units/)
+mise run terragrunt:unit:apply <unit>     # Apply a unit (interactive picker if no arg)
+mise run terragrunt:unit:plan <unit>
+mise run terragrunt:unit:destroy <unit>
+
+# Terragrunt Stacks (examples/terragrunt/stacks/)
+mise run terragrunt:stack:apply <stack>   # Apply a stack (-y for non-interactive)
+mise run terragrunt:stack:plan <stack>
+mise run terragrunt:stack:destroy <stack>
+mise run terragrunt:stack:generate <stack>
+mise run terragrunt:cleanup               # Remove .terragrunt-stack/.terragrunt-cache/.terraform
+
+# Tofu Modules (examples/tofu/)
+mise run tofu:init <module>
+mise run tofu:plan <module>               # Outputs .tfplan and .tfplan.tfgraph
+mise run tofu:apply <module>
+mise run tofu:destroy <module>
+mise run tofu:output <module>
+
+# Infrastructure Setup
+mise run vault:login                      # Create Vault token from AppRole credentials
+mise run minio:setup                      # Setup MinIO service account and bucket
+mise run minio:list                       # List MinIO buckets
+mise run proxmox:setup                    # Setup Proxmox user/role for Terraform
+```
+
+All tasks support `-d`/`--dry-run` to print the command without executing it. Unit/stack tasks show an interactive picker (via `gum`) when no target is provided.
 
 ## Important Reminders
 

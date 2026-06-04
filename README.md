@@ -721,10 +721,10 @@ mise run terragrunt:stack:destroy   # Quick destroy for stacks
 mise run terragrunt:stack:generate  # Generate stack locally
 
 # Testing (mise tasks)
-mise run test:all -- -t             # Run only tofu module tests
-mise run test:all -- -u             # Run only terragrunt unit tests
-mise run test:all -- -s             # Run only terragrunt stack tests
-mise run test:all -- -a             # Run all tests
+mise run test:all -t                # Run only tofu module tests
+mise run test:all -u                # Run only terragrunt unit tests
+mise run test:all -s                # Run only terragrunt stack tests
+mise run test:all -a                # Run all tests
 
 # Testing (Terratest / Go-based)
 mise run test:terratest             # Run all Terratest tests
@@ -805,8 +805,11 @@ State is stored in MinIO (S3-compatible storage).
 Configuration file: `examples/terragrunt/backend-config.hcl`
 
 ```hcl
-endpoint = "http://minio.home.sflab.io:9000"
-bucket   = "examples-terragrunt-tfstates"
+locals {
+  prefix   = "examples-terragrunt"          # bucket = "${prefix}-tfstates"
+  region   = "eu-central-1"
+  endpoint = "http://minio.home.sflab.io:9000"
+}
 ```
 
 ### Proxmox Provider Configuration
@@ -816,7 +819,11 @@ Uses the bpg/proxmox provider (>= 0.69.0).
 Configuration file: `examples/terragrunt/provider-proxmox-config.hcl`
 
 ```hcl
-endpoint = "proxmox.home.sflab.io:8006"
+locals {
+  proxmox_host     = "proxmox.home.sflab.io"
+  proxmox_port     = 8006
+  proxmox_insecure = true
+}
 ```
 
 ### DNS Configuration
@@ -826,10 +833,12 @@ Centralized DNS server configuration.
 Configuration file: `examples/terragrunt/provider-dns-config.hcl`
 
 ```hcl
-server    = "192.168.1.13"
-port      = 53
-key_name  = "ddnskey."
-algorithm = "hmac-sha256"
+locals {
+  dns_server    = "192.168.1.13"
+  dns_port      = 53
+  key_name      = "ddnskey."
+  key_algorithm = "hmac-sha256"
+}
 ```
 
 ### NetBox Configuration
@@ -839,8 +848,11 @@ Centralized NetBox server configuration.
 Configuration file: `examples/terragrunt/provider-netbox-config.hcl`
 
 ```hcl
-netbox_server_url         = "http://netbox.home.sflab.io"
-netbox_skip_version_check = true
+locals {
+  netbox_server_url         = "http://netbox.home.sflab.io"
+  netbox_skip_version_check = true
+  netbox_token              = get_env("NETBOX_API_TOKEN", "")
+}
 ```
 
 ## Development
@@ -869,16 +881,16 @@ pre-commit run --all-files
 
 ```bash
 # Run all tests
-mise run test:all -- -a
+mise run test:all -a
 
 # Run only module tests
-mise run test:all -- -t
+mise run test:all -t
 
 # Run only unit tests
-mise run test:all -- -u
+mise run test:all -u
 
 # Run only stack tests (requires committed changes)
-mise run test:all -- -s
+mise run test:all -s
 ```
 
 **Note**: Stack tests require all changes to be committed and pushed to GitHub because they fetch units from the remote repository.
