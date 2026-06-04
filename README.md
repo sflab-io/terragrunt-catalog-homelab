@@ -89,6 +89,7 @@ All tools are managed via [mise](https://mise.jdx.dev/):
 - Terragrunt 1.0.6
 - MinIO Client (mc) - latest
 - HashiCorp Vault 1.21.1
+- fnox - latest (Vault KV secrets loader)
 
 ### Required Services
 
@@ -123,21 +124,43 @@ mise install
 
 ### 3. Configure Credentials
 
-Secrets are managed via HashiCorp Vault and loaded automatically when you enter the project directory (via `scripts/load-vault-secrets.sh` and mise). You can also set them manually:
+Secrets are automatically loaded when you enter the project directory via two mechanisms:
+
+- **sops** (`.creds.env.yaml`): MinIO and Proxmox credentials
+- **fnox** (`fnox.toml`): Vault KV secrets (NetBox API token, DNS TSIG key)
+
+#### Vault Token Setup
+
+fnox requires a valid Vault token at `~/.vault-token`. On first setup, create `~/.vault-approle` with your AppRole credentials:
 
 ```bash
-# Set MinIO credentials (for state backend)
+# Create AppRole credentials file
+cat > ~/.vault-approle <<EOF
+role_id=your-role-id
+secret_id=your-secret-id
+EOF
+
+# Then log in to create ~/.vault-token
+mise run vault:login
+```
+
+The token is refreshed automatically on directory entry if `~/.vault-approle` exists.
+
+#### Manual Override
+
+```bash
+# MinIO credentials (for state backend)
 export AWS_ACCESS_KEY_ID="your-access-key"
 export AWS_SECRET_ACCESS_KEY="your-secret-key"
 
-# Set Proxmox credentials
-# Format: username@realm!tokenname=secret
+# Proxmox credentials (format: username@realm!tokenname=secret)
 export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
-# Set DNS TSIG key secret (if using DNS module)
+# DNS TSIG key (auto-loaded via fnox if Vault is configured)
+export TSIG_KEY_NAME="your-tsig-key-name"
 export TSIG_KEY_SECRET="your-tsig-key-secret"
 
-# Set NetBox API token (if using NetBox modules)
+# NetBox API token (auto-loaded via fnox if Vault is configured)
 export NETBOX_API_TOKEN="your-netbox-api-token"
 ```
 
@@ -222,22 +245,20 @@ terragrunt stack run apply
 
 ### Environment Setup
 
-#### Required Environment Variables
+#### Environment Variables
 
-```bash
-# MinIO Backend (required for all operations)
-export AWS_ACCESS_KEY_ID="your-minio-access-key"
-export AWS_SECRET_ACCESS_KEY="your-minio-secret-key"
+All variables are loaded automatically on directory entry — manual exports are only needed as overrides.
 
-# Proxmox Provider (required for Proxmox operations)
-export PROXMOX_VE_API_TOKEN="root@pam!tofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-
-# DNS TSIG Key (required only when using DNS module)
-export TSIG_KEY_SECRET="your-tsig-key-secret"
-
-# NetBox API Token (required only when using NetBox modules)
-export NETBOX_API_TOKEN="your-netbox-api-token"
-```
+| Variable | Source | Required for |
+|---|---|---|
+| `AWS_ACCESS_KEY_ID` | sops `.creds.env.yaml` | All operations (MinIO state) |
+| `AWS_SECRET_ACCESS_KEY` | sops `.creds.env.yaml` | All operations (MinIO state) |
+| `PROXMOX_VE_API_TOKEN` | sops `.creds.env.yaml` | Proxmox operations |
+| `PROXMOX_VE_ENDPOINT` | sops `.creds.env.yaml` | Proxmox operations |
+| `VAULT_ADDR` | mise.toml (auto) | Vault / fnox |
+| `NETBOX_API_TOKEN` | fnox → Vault KV | NetBox operations |
+| `TSIG_KEY_NAME` | fnox → Vault KV | DNS operations |
+| `TSIG_KEY_SECRET` | fnox → Vault KV | DNS operations |
 
 ### Working with Units
 
@@ -637,7 +658,16 @@ Manages virtual machine records in NetBox with interfaces and IP addresses.
 **Outputs:**
 - `vm_names`: List of created NetBox virtual machine names
 
-**Note:** The unit (`units/netbox-virtual-machine`) depends on the DNS unit output to automatically populate the VM interface IP address. The `units/netbox-virtual-machine-direct` variant accepts a `virtual_machines` list with full interface details directly, bypassing the DNS dependency.
+**Note:** The unit (`units/netbox-virtual-machine`) depends on the DNS unit output to automatically populate the VM interface IP address.
+
+### netbox-virtual-machine-direct
+
+Registers virtual machine records in NetBox without any DNS or compute dependency — useful for standalone NetBox stacks.
+
+**Unit Inputs:**
+- `virtual_machines` (list): List of VM objects with full interface details (same schema as `netbox-virtual-machine`, but includes `ip_address` directly)
+
+**Use when:** You already know the IP addresses and don't want to depend on a DNS or compute unit.
 
 ### netbox-tags
 
@@ -666,6 +696,9 @@ Manages Kubernetes cluster records in NetBox.
 ### Mise Tasks
 
 ```bash
+# Vault / Secrets
+mise run vault:login                # Create Vault token from AppRole credentials (~/.vault-approle)
+
 # MinIO Management
 mise run minio:setup                # Setup MinIO bucket and service account
 mise run minio:list                 # List MinIO buckets and contents

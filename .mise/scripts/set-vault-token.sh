@@ -16,5 +16,3 @@ if [[ -z "${VAULT_TOKEN:-}" ]]; then
   fi
   export VAULT_TOKEN
 fi
-
-eval "$(teller sh 2>/dev/null | grep "^export")" || true
