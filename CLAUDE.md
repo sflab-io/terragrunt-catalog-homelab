@@ -43,7 +43,9 @@ Auto-loaded on directory entry — do not manually set unless overriding:
 - **sops `.creds.env.yaml`**: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `PROXMOX_VE_API_TOKEN`, `PROXMOX_VE_ENDPOINT`, `PROXMOX_VE_INSECURE`, `TF_VAR_dns_key_secret`
 - **fnox (Vault KV)**: `NETBOX_API_TOKEN`, `TSIG_KEY_NAME`, `TSIG_KEY_SECRET`
 
-Vault token at `~/.vault-token` is read on directory entry. If missing: create `~/.vault-approle` with `role_id`/`secret_id` and run `mise run vault:login`.
+Vault token at `~/.vault-token` is read on directory entry. If missing or expired: create/update `~/.vault-approle` with `role_id`/`secret_id` and run `mise run vault:login`.
+
+**Note:** `create-vault-token.sh` reads credentials **exclusively** from `~/.vault-approle`. `VAULT_ROLE_ID`/`VAULT_SECRET_ID` environment variables (e.g. inherited from the parent `sflab` project) are intentionally ignored to prevent stale values from causing login failures.
 
 ## Testing
 
@@ -64,7 +66,7 @@ mise run test:terratest -f                          # Bypass Go test cache
 
 Tests are organized as subtests under `TestAll`. Available subtests:
 - **tofu/**: `ModuleNaming`, `ModuleDns`, `ModuleProxmoxPool`, `ModuleProxmoxLxc`, `ModuleProxmoxVm`, `ModuleNetboxVirtualMachine`, `ModuleNetboxTags`, `ModuleNetboxK8sCluster`
-- **terragrunt/units/**: `UnitNaming`, `UnitDns`, `UnitDnsWildcard`, `UnitProxmoxPool`, `UnitProxmoxVm`, `UnitProxmoxLxc`, `UnitNetboxTags`, `UnitNetboxVirtualMachine`, `UnitNetboxK8sCluster`
+- **terragrunt/units/**: `UnitNaming`, `UnitDnsWildcard`, `UnitDns`, `UnitProxmoxPool`, `UnitProxmoxVm`, `UnitProxmoxLxc`, `UnitNetboxTags`, `UnitNetboxVirtualMachine`, `UnitNetboxK8sCluster`
 - **terragrunt/stacks/**: `StackHomelabProxmoxLxc`, `StackHomelabProxmoxVm`, `StackHomelabNetboxVirtualMachine`, `StackHomelabNetboxK8sCluster`
 
 ### Integration Tests (shell-based, sequential deploy+destroy)

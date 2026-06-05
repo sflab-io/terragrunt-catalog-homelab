@@ -131,20 +131,22 @@ Secrets are automatically loaded when you enter the project directory via two me
 
 #### Vault Token Setup
 
-fnox requires a valid Vault token at `~/.vault-token`. On first setup, create `~/.vault-approle` with your AppRole credentials:
+fnox requires a valid Vault token at `~/.vault-token`. If the token is missing or expired, create/update `~/.vault-approle` with your AppRole credentials and run:
 
 ```bash
-# Create AppRole credentials file
+# Create or update AppRole credentials file
 cat > ~/.vault-approle <<EOF
 role_id=your-role-id
 secret_id=your-secret-id
 EOF
 
-# Then log in to create ~/.vault-token
+# Create ~/.vault-token
 mise run vault:login
 ```
 
-The token is refreshed automatically on directory entry if `~/.vault-approle` exists.
+The token is refreshed automatically on directory entry via `~/.vault-approle`.
+
+> **Note:** Credentials are read **exclusively** from `~/.vault-approle`. Environment variables `VAULT_ROLE_ID` / `VAULT_SECRET_ID` (e.g. inherited from a parent project) are intentionally ignored to prevent stale values from causing authentication failures.
 
 #### Manual Override
 
@@ -320,7 +322,7 @@ Stacks combine multiple units into coordinated deployments.
 #### Available Production Stacks (`stacks/`)
 
 - **homelab-proxmox-lxc**: LXC container + DNS + NetBox VM registration (3 units)
-- **homelab-proxmox-vm**: Virtual machine + DNS + NetBox VM registration (3 units)
+- **homelab-proxmox-vm**: Virtual machine + DNS + NetBox VM registration (3 units); supports optional `cluster_stack_path` to assign VMs to a NetBox K8s cluster
 - **homelab-netbox-virtual-machine**: Standalone NetBox virtual machine records stack
 - **homelab-netbox-k8s-cluster**: Standalone NetBox Kubernetes cluster records stack
 
