@@ -11,7 +11,6 @@ set -euo pipefail
 source "$MISE_CONFIG_ROOT/.mise/common.sh"
 
 VAULT_ADDR="${VAULT_ADDR:-https://vault.home.sflab.io:8200}"
-APPROLE_FILE="${HOME}/.vault-approle"
 TOKEN_FILE="${HOME}/.vault-token"
 
 # check vault server availability before proceeding
@@ -26,31 +25,15 @@ if ! curl --silent --max-time 5 --insecure "${VAULT_ADDR}/v1/sys/health" >/dev/n
   exit 1
 fi
 
-if [[ -f "${APPROLE_FILE}" ]]; then
-  # shellcheck source=/dev/null
-  source "${APPROLE_FILE}"
-else
-  echo "" >&2
-  echo "${BOLD}${RED}[vault] AppRole credentials file not found: ${APPROLE_FILE}${RESET}" >&2
-  echo "[vault] Create ${APPROLE_FILE} with:" >&2
-  echo "  role_id=..." >&2
-  echo "  secret_id=..." >&2
-  echo ""
-  exit 1
-fi
-
-ROLE_ID="${role_id:-}"
-SECRET_ID="${secret_id:-}"
-
-if [[ -z "${ROLE_ID}" || -z "${SECRET_ID}" ]]; then
+if [[ -z "${VAULT_ROLE_ID}" || -z "${VAULT_SECRET_ID}" ]]; then
   echo "[vault] AppRole credentials not found." >&2
-  echo "[vault] Create ${APPROLE_FILE} with role_id=... and secret_id=..." >&2
+  echo "[vault] Missing VAULT_ROLE_ID or VAULT_SECRET_ID environment variables." >&2
   exit 1
 fi
 
-TOKEN=$(VAULT_ADDR="${VAULT_ADDR}" VAULT_SKIP_VERIFY=true vault write -field=token auth/approle/login \
-  role_id="${ROLE_ID}" \
-  secret_id="${SECRET_ID}" 2>&1) || {
+TOKEN=$(HOME=$(mktemp -d) VAULT_ADDR="${VAULT_ADDR}" VAULT_SKIP_VERIFY=${VAULT_SKIP_VERIFY} vault write -field=token auth/approle/login \
+  role_id="${VAULT_ROLE_ID}" \
+  secret_id="${VAULT_SECRET_ID}" 2>&1) || {
   echo "[vault] Failed to create token: ${TOKEN}" >&2
   exit 1
 }
