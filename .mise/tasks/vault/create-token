@@ -1,16 +1,10 @@
 #!/usr/bin/env bash
 # Creates a Vault AppRole token and saves it to ~/.vault-token.
-# Credentials are read from ~/.vault-approle (format: role_id=... / secret_id=...)
-# or from VAULT_ROLE_ID / VAULT_SECRET_ID environment variables.
-#
-# Note: The AppRole secret_id must be configured for multiple uses
-# (secret_id_num_uses = 0) in Vault, otherwise it expires after first use.
 
 set -euo pipefail
 
 source "$MISE_CONFIG_ROOT/.mise/common.sh"
 
-VAULT_ADDR="${VAULT_ADDR:-https://vault.home.sflab.io:8200}"
 TOKEN_FILE="${HOME}/.vault-token"
 
 # check vault server availability before proceeding
@@ -19,7 +13,7 @@ TOKEN_FILE="${HOME}/.vault-token"
 if ! curl --silent --max-time 5 --insecure "${VAULT_ADDR}/v1/sys/health" >/dev/null 2>&1; then
   echo "" >&2
   echo "${BOLD}${YELLOW}⚠️ fnox environment variables could not be loaded.${RESET}" >&2
-  echo "${BOLD}${YELLOW}[vault] [vault] Vault server is not reachable at: ${VAULT_ADDR}${RESET}" >&2
+  echo "${BOLD}${YELLOW}[vault] Vault server is not reachable at: ${VAULT_ADDR}${RESET}" >&2
   echo "${BOLD}${YELLOW}[vault] Is the Vault server running?${RESET}" >&2
   echo ""
   exit 1

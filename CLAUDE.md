@@ -43,9 +43,9 @@ Auto-loaded on directory entry — do not manually set unless overriding:
 - **sops `.creds.env.yaml`**: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `PROXMOX_VE_API_TOKEN`, `PROXMOX_VE_ENDPOINT`, `PROXMOX_VE_INSECURE`, `TF_VAR_dns_key_secret`
 - **fnox (Vault KV)**: `NETBOX_API_TOKEN`, `TSIG_KEY_NAME`, `TSIG_KEY_SECRET`
 
-Vault token at `~/.vault-token` is read on directory entry. If missing or expired: create/update `~/.vault-approle` with `role_id`/`secret_id` and run `mise run vault:login`.
+Vault token at `~/.vault-token` is created automatically on directory entry via `mise run vault:create-token` (part of the `hooks:enter` task).
 
-**Note:** `create-vault-token.sh` reads credentials **exclusively** from `~/.vault-approle`. `VAULT_ROLE_ID`/`VAULT_SECRET_ID` environment variables (e.g. inherited from the parent `sflab` project) are intentionally ignored to prevent stale values from causing login failures.
+**Note:** `vault:create-token` requires `VAULT_ROLE_ID` and `VAULT_SECRET_ID` to be set as environment variables (e.g. via `~/.env`). It fails fast with a clear message if the Vault server is unreachable or these variables are missing.
 
 ## Testing
 
@@ -103,7 +103,7 @@ mise run tofu:destroy <module>
 mise run tofu:output <module>
 
 # Infrastructure Setup
-mise run vault:login                      # Create Vault token from AppRole credentials
+mise run vault:create-token               # Create Vault token from AppRole credentials (requires VAULT_ROLE_ID/VAULT_SECRET_ID)
 mise run minio:setup                      # Setup MinIO service account and bucket
 mise run minio:list                       # List MinIO buckets
 mise run proxmox:setup                    # Setup Proxmox user/role for Terraform

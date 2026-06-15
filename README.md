@@ -131,22 +131,22 @@ Secrets are automatically loaded when you enter the project directory via two me
 
 #### Vault Token Setup
 
-fnox requires a valid Vault token at `~/.vault-token`. If the token is missing or expired, create/update `~/.vault-approle` with your AppRole credentials and run:
+fnox requires a valid Vault token at `~/.vault-token`. The token is created automatically on directory entry via `mise run vault:create-token` (part of the `hooks:enter` task).
+
+This requires `VAULT_ROLE_ID` and `VAULT_SECRET_ID` to be set as environment variables (e.g. via `~/.env`):
 
 ```bash
-# Create or update AppRole credentials file
-cat > ~/.vault-approle <<EOF
-role_id=your-role-id
-secret_id=your-secret-id
-EOF
-
-# Create ~/.vault-token
-mise run vault:login
+export VAULT_ROLE_ID="your-role-id"
+export VAULT_SECRET_ID="your-secret-id"
 ```
 
-The token is refreshed automatically on directory entry via `~/.vault-approle`.
+If the Vault server is unreachable or these variables are missing, `vault:create-token` fails with a clear error message instead of a generic curl error.
 
-> **Note:** Credentials are read **exclusively** from `~/.vault-approle`. Environment variables `VAULT_ROLE_ID` / `VAULT_SECRET_ID` (e.g. inherited from a parent project) are intentionally ignored to prevent stale values from causing authentication failures.
+To create or refresh `~/.vault-token` manually:
+
+```bash
+mise run vault:create-token
+```
 
 #### Manual Override
 
@@ -699,7 +699,7 @@ Manages Kubernetes cluster records in NetBox.
 
 ```bash
 # Vault / Secrets
-mise run vault:login                # Create Vault token from AppRole credentials (~/.vault-approle)
+mise run vault:create-token         # Create Vault token from AppRole credentials (requires VAULT_ROLE_ID/VAULT_SECRET_ID)
 
 # MinIO Management
 mise run minio:setup                # Setup MinIO bucket and service account
