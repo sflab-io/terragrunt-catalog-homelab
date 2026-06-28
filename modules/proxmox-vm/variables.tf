@@ -23,7 +23,7 @@ variable "cores" {
 variable "cpu_type" {
   description = "The CPU type for the virtual machine (e.g., 'x86-64-v2-AES', 'host', 'kvm64')."
   type        = string
-  default     = "qemu64"
+  default     = "host"
 }
 
 variable "pool_id" {

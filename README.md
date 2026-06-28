@@ -583,7 +583,7 @@ Deploy virtual machines via template cloning.
 **Optional Inputs:**
 - `memory` (number, default: 2048): Memory in MB
 - `cores` (number, default: 2): CPU cores
-- `cpu_type` (string, default: "qemu64"): CPU type (e.g., "host", "qemu64", "x86-64-v2-AES")
+- `cpu_type` (string, default: "host"): CPU type (e.g., "host", "host", "host")
 - `disk_size` (number, default: 8): Disk size in GB
 - `pool_id` (string): Proxmox pool ID
 - `network_config` (object): Network configuration (DHCP or static); supports optional `domain` field (default: `"home.sflab.io"`)

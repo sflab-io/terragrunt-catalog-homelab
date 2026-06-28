@@ -26,5 +26,5 @@ inputs = {
     type = "dhcp"
   })
 
-  cpu_type = try(values.cpu_type, "qemu64")
+  cpu_type = try(values.cpu_type, "host")
 }
